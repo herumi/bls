@@ -23,7 +23,6 @@ struct Sign;
 void init();
 
 class Sign {
-public:
 	impl::Sign *self_;
 	int id_;
 	friend class PublicKey;
