@@ -89,6 +89,13 @@ CYBOZU_TEST_AUTO(k_of_n)
 		}
 	}
 	{
+		prvVec[0] = allPrvVec[0];
+		prvVec[1] = allPrvVec[1];
+		prvVec[2] = allPrvVec[0]; // same of prvVec[0]
+		bls::PrivateKey prv;
+		CYBOZU_TEST_EXCEPTION_MESSAGE(prv.recover(prvVec), std::exception, "same id");
+	}
+	{
 		/*
 			n-out-of-n
 			can recover
