@@ -52,23 +52,13 @@ static const G2& getQ()
 	return Q;
 }
 
-static void hash(Fp& t, const std::string& m)
-{
-	std::string digest = cybozu::crypto::Hash::digest(cybozu::crypto::Hash::N_SHA256, m);
-	t.setArrayMask(digest.c_str(), digest.size());
-}
-
-static void mapToG1(G1& P, const Fp& t)
-{
-	static mcl::bn::MapTo<Fp> mapTo;
-	mapTo.calcG1(P, t);
-}
-
 static void HashAndMapToG1(G1& P, const std::string& m)
 {
+	static mcl::bn::MapTo<Fp> mapTo;
+	std::string digest = cybozu::crypto::Hash::digest(cybozu::crypto::Hash::N_SHA256, m);
 	Fp t;
-	hash(t, m);
-	mapToG1(P, t);
+	t.setArrayMask(digest.c_str(), digest.size());
+	mapTo.calcG1(P, t);
 }
 
 struct Polynomial {
