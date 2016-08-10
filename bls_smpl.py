@@ -21,7 +21,7 @@ def recover(ids):
 	subprocess.check_call(cmd)
 
 def main():
-	m = "abc"
+	m = "hello bls threshold signature"
 	n = 10
 	ids = [1, 5, 3, 7]
 	k = len(ids)
@@ -31,6 +31,8 @@ def main():
 	share(n, k)
 	for i in ids:
 		sign(m, i)
+		verify(m, i)
+	subprocess.check_call(["rm", "sample/sign.txt"])
 	recover(ids)
 	verify(m)
 
