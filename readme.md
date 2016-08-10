@@ -20,6 +20,10 @@ To make lib/libbls.a and test, run
 cd bls
 make test
 ```
+To make sample programs, run
+```
+make sample_test
+```
 
 # License
 

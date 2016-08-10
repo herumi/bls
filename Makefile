@@ -5,9 +5,13 @@ EXE_DIR=bin
 
 SRC_SRC=bls.cpp
 TEST_SRC=bls_test.cpp
-#SAMPLE_SRC=
+SAMPLE_SRC=bls_smpl.cpp
 
 CFLAGS+=-I../mcl/include
+
+sample_test: $(EXE_DIR)/bls_smpl.exe
+	python bls_smpl.py
+
 ##################################################################
 BLS_LIB=$(LIB_DIR)/libbls.a
 all: $(BLS_LIB)

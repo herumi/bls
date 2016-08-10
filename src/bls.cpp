@@ -65,7 +65,7 @@ struct Polynomial {
 	FrVec c; // f[x] = sum_{i=0}^{k-1} c[i] x^i
 	void init(const Fr& s, int k)
 	{
-		if (k < 2) throw cybozu::Exception("Polynomial:init:bad k") << k;
+		if (k < 2) throw cybozu::Exception("bls:Polynomial:init:bad k") << k;
 		c.resize(k);
 		c[0] = s;
 		for (size_t i = 1; i < c.size(); i++) {
@@ -75,8 +75,8 @@ struct Polynomial {
 	// y = f(id)
 	void eval(Fr& y, int id) const
 	{
-		if (id == 0) throw cybozu::Exception("Polynomial:calc_f:i is zero");
-		if (c.size() < 2) throw cybozu::Exception("Polynomial:calc_f:bad size") << c.size();
+		if (id == 0) throw cybozu::Exception("bls:Polynomial:eval:id is zero");
+		if (c.size() < 2) throw cybozu::Exception("bls:Polynomial:eval:bad size") << c.size();
 		const Fr x(id);
 		y = c[c.size() - 1];
 		for (int i = (int)c.size() - 2; i >= 0; i--) {
@@ -93,7 +93,7 @@ struct Polynomial {
 static void calcDelta(FrVec& delta, const IntVec& S)
 {
 	const size_t k = S.size();
-	if (k < 2) throw cybozu::Exception("BLS:calcDelta:bad size") << k;
+	if (k < 2) throw cybozu::Exception("bls:calcDelta:bad size") << k;
 	delta.resize(k);
 	Fr a = S[0];
 	for (size_t i = 1; i < k; i++) {
@@ -364,6 +364,7 @@ void PrivateKey::sign(Sign& sign, const std::string& m) const
 void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k)
 {
 	if (id_ != 0) throw cybozu::Exception("bls:PrivateKey:share:already shared") << id_;
+	if (n <= 0 || k <= 0 || k > n) throw cybozu::Exception("bls:PrivateKey:share:bad n, k") << n << k;
 	Polynomial poly;
 	poly.init(self_->s, k);
 	prvVec.resize(n);
