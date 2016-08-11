@@ -113,7 +113,7 @@ static void calcDelta(FrVec& delta, const IntVec& S)
 }
 
 template<class G, class T>
-void LagrangeIntepolation(G& r, const T& vec)
+void LagrangeInterpolation(G& r, const T& vec)
 {
 	IntVec S(vec.size());
 	for (size_t i = 0; i < vec.size(); i++) {
@@ -230,7 +230,7 @@ std::istream& operator>>(std::istream& os, Sign& s)
 void Sign::recover(const std::vector<Sign>& signVec)
 {
 	G1 sHm;
-	LagrangeIntepolation(sHm, signVec);
+	LagrangeInterpolation(sHm, signVec);
 	self_->sHm = sHm;
 	id_ = 0;
 }
@@ -378,7 +378,7 @@ void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k)
 void PrivateKey::recover(const std::vector<PrivateKey>& prvVec)
 {
 	Fr s;
-	LagrangeIntepolation(s, prvVec);
+	LagrangeInterpolation(s, prvVec);
 	self_->s = s;
 	id_ = 0;
 }
