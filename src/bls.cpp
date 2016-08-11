@@ -52,13 +52,28 @@ static const G2& getQ()
 	return Q;
 }
 
-static void HashAndMapToG1(G1& P, const std::string& m)
+static void mapToG1(G1& P, const Fp& t)
 {
 	static mcl::bn::MapTo<Fp> mapTo;
+	mapTo.calcG1(P, t);
+}
+static void HashAndMapToG1(G1& P, const std::string& m)
+{
 	std::string digest = cybozu::crypto::Hash::digest(cybozu::crypto::Hash::N_SHA256, m);
 	Fp t;
 	t.setArrayMask(digest.c_str(), digest.size());
-	mapTo.calcG1(P, t);
+	mapToG1(P, t);
+}
+
+template<class T, class G>
+void evalPoly(G& y, const T& x, const std::vector<G>& c)
+{
+	if (c.size() < 2) throw cybozu::Exception("bls:evalPoly:bad size") << c.size();
+	y = c[c.size() - 1];
+	for (int i = (int)c.size() - 2; i >= 0; i--) {
+		G::mul(y, y, x);
+		G::add(y, y, c[i]);
+	}
 }
 
 struct Polynomial {
@@ -76,13 +91,7 @@ struct Polynomial {
 	void eval(Fr& y, int id) const
 	{
 		if (id == 0) throw cybozu::Exception("bls:Polynomial:eval:id is zero");
-		if (c.size() < 2) throw cybozu::Exception("bls:Polynomial:eval:bad size") << c.size();
-		const Fr x(id);
-		y = c[c.size() - 1];
-		for (int i = (int)c.size() - 2; i >= 0; i--) {
-			y *= x;
-			y += c[i];
-		}
+		evalPoly(y, Fr(id), c);
 	}
 };
 
@@ -153,6 +162,10 @@ struct PublicKey {
 		return e1 == e2;
 	}
 	const G2& get() const { return sQ; }
+};
+
+struct Verifier {
+	std::vector<G2> vecR;
 };
 
 struct PrivateKey {
@@ -236,6 +249,53 @@ void Sign::recover(const std::vector<Sign>& signVec)
 	id_ = 0;
 }
 
+Verifier::Verifier()
+	: self_(new impl::Verifier())
+{
+}
+
+Verifier::~Verifier()
+{
+	delete self_;
+}
+
+Verifier::Verifier(const Verifier& rhs)
+	: self_(new impl::Verifier(*rhs.self_))
+{
+}
+
+Verifier& Verifier::operator=(const Verifier& rhs)
+{
+	*self_ = *rhs.self_;
+	return *this;
+}
+
+bool Verifier::operator==(const Verifier& rhs) const
+{
+	return self_->vecR == rhs.self_->vecR;
+}
+
+std::ostream& operator<<(std::ostream& os, const Verifier& ver)
+{
+	const size_t n = ver.self_->vecR.size();
+	os << n;
+	for (size_t i = 0; i < n; i++) {
+		os << '\n' << ver.self_->vecR[i];
+	}
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, Verifier& ver)
+{
+	size_t n;
+	is >> n;
+	ver.self_->vecR.resize(n);
+	for (size_t i = 0; i < n; i++) {
+		is >> ver.self_->vecR[i];
+	}
+	return is;
+}
+
 PublicKey::PublicKey()
 	: self_(new impl::PublicKey())
 	, id_(0)
@@ -299,6 +359,13 @@ void PublicKey::recover(const std::vector<PublicKey>& pubVec)
 	LagrangeInterpolation(sQ, pubVec);
 	self_->sQ = sQ;
 	id_ = 0;
+}
+
+bool PublicKey::isValid(const Verifier& ver) const
+{
+	G2 v;
+	evalPoly(v, Fr(id_), ver.self_->vecR);
+	return v == self_->sQ;
 }
 
 PrivateKey::PrivateKey()
@@ -370,7 +437,7 @@ void PrivateKey::sign(Sign& sign, const std::string& m) const
 	sign.id_ = id_;
 }
 
-void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k)
+void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k, Verifier *ver)
 {
 	if (id_ != 0) throw cybozu::Exception("bls:PrivateKey:share:already shared") << id_;
 	if (n <= 0 || k <= 0 || k > n) throw cybozu::Exception("bls:PrivateKey:share:bad n, k") << n << k;
@@ -381,6 +448,12 @@ void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k)
 		int id = i + 1;
 		poly.eval(prvVec[i].self_->s, id);
 		prvVec[i].id_ = id;
+	}
+	if (ver == 0) return;
+	std::vector<G2>& vecR = ver->self_->vecR;
+	vecR.resize(k);
+	for (size_t i = 0; i < vecR.size(); i++) {
+		G2::mul(vecR[i], getQ(), poly.c[i]);
 	}
 }
 

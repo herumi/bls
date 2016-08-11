@@ -1,6 +1,7 @@
 #include <bls.hpp>
 #include <cybozu/test.hpp>
 #include <iostream>
+#include <sstream>
 
 CYBOZU_TEST_AUTO(bls)
 {
@@ -42,7 +43,6 @@ CYBOZU_TEST_AUTO(bls)
 
 CYBOZU_TEST_AUTO(k_of_n)
 {
-	bls::init();
 	const std::string m = "abc";
 	const int n = 5;
 	const int k = 3;
@@ -168,5 +168,32 @@ CYBOZU_TEST_AUTO(k_of_n)
 		bls::PublicKey pub;
 		pub.recover(pubVec);
 		CYBOZU_TEST_EQUAL(pub, pub0);
+	}
+}
+
+CYBOZU_TEST_AUTO(verifier)
+{
+	const int n = 6;
+	const int k = 3;
+	bls::PrivateKey prv0;
+	prv0.init();
+	bls::PublicKey pub0;
+	prv0.getPublicKey(pub0);
+	std::vector<bls::PrivateKey> prvVec;
+	bls::Verifier ver;
+	prv0.share(prvVec, n, k, &ver);
+	CYBOZU_TEST_ASSERT(pub0.isValid(ver));
+	for (size_t i = 0; i < prvVec.size(); i++) {
+		bls::PublicKey pub;
+		prvVec[i].getPublicKey(pub);
+		CYBOZU_TEST_ASSERT(pub.isValid(ver));
+	}
+	{
+		std::ostringstream oss;
+		oss << ver;
+		bls::Verifier ver2;
+		std::istringstream iss(oss.str());
+		iss >> ver2;
+		CYBOZU_TEST_EQUAL(ver, ver2);
 	}
 }

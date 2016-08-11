@@ -17,6 +17,7 @@ namespace impl {
 struct PublicKey;
 struct PrivateKey;
 struct Sign;
+struct Verifier;
 
 } // bls::impl
 
@@ -48,6 +49,24 @@ public:
 	void recover(const std::vector<Sign>& signVec);
 };
 
+/*
+	Feldman's verifiable secret sharing
+*/
+class Verifier {
+	impl::Verifier *self_;
+	friend class PrivateKey;
+	friend class PublicKey;
+public:
+	Verifier();
+	~Verifier();
+	Verifier(const Verifier& rhs);
+	Verifier& operator=(const Verifier& rhs);
+	bool operator==(const Verifier& rhs) const;
+	bool operator!=(const Verifier& rhs) const { return !(*this == rhs); }
+	friend std::ostream& operator<<(std::ostream& os, const Verifier& ver);
+	friend std::istream& operator>>(std::istream& is, Verifier& ver);
+};
+
 class PublicKey {
 	impl::PublicKey *self_;
 	int id_;
@@ -71,6 +90,10 @@ public:
 		recover publicKey from k pubVec
 	*/
 	void recover(const std::vector<PublicKey>& pubVec);
+	/*
+		validate self by Verifier
+	*/
+	bool isValid(const Verifier& ver) const;
 };
 
 class PrivateKey {
@@ -95,8 +118,9 @@ public:
 	void sign(Sign& sign, const std::string& m) const;
 	/*
 		k-out-of-n secret sharing of privateKey
+		set verifier if ver is not 0
 	*/
-	void share(std::vector<PrivateKey>& prvVec, int n, int k);
+	void share(std::vector<PrivateKey>& prvVec, int n, int k, Verifier *ver = 0);
 	/*
 		recover privateKey from k prvVec
 	*/
