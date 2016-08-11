@@ -158,4 +158,15 @@ CYBOZU_TEST_AUTO(k_of_n)
 			CYBOZU_TEST_ASSERT(s != s0);
 		}
 	}
+	// share and recover publicKey
+	{
+		std::vector<bls::PublicKey> pubVec(k);
+		// select [0, k) publicKey
+		for (int i = 0; i < k; i++) {
+			allPrvVec[i].getPublicKey(pubVec[i]);
+		}
+		bls::PublicKey pub;
+		pub.recover(pubVec);
+		CYBOZU_TEST_EQUAL(pub, pub0);
+	}
 }

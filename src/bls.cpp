@@ -152,6 +152,7 @@ struct PublicKey {
 		BN::pairing(e2, sQ, Hm); // e(sQ, Hm)
 		return e1 == e2;
 	}
+	const G2& get() const { return sQ; }
 };
 
 struct PrivateKey {
@@ -290,6 +291,14 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 bool PublicKey::verify(const Sign& sign, const std::string& m) const
 {
 	return self_->verify(*sign.self_, m);
+}
+
+void PublicKey::recover(const std::vector<PublicKey>& pubVec)
+{
+	G2 sQ;
+	LagrangeInterpolation(sQ, pubVec);
+	self_->sQ = sQ;
+	id_ = 0;
 }
 
 PrivateKey::PrivateKey()

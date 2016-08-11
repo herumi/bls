@@ -67,6 +67,10 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
 	bool verify(const Sign& sign, const std::string& m) const;
+	/*
+		recover publicKey from k pubVec
+	*/
+	void recover(const std::vector<PublicKey>& pubVec);
 };
 
 class PrivateKey {
