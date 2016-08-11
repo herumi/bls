@@ -28,7 +28,7 @@ class Sign {
 	friend class PublicKey;
 	friend class PrivateKey;
 	template<class G, class T>
-	friend void LagrangeIntepolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
 	Sign();
 	~Sign();
@@ -52,6 +52,8 @@ class PublicKey {
 	impl::PublicKey *self_;
 	int id_;
 	friend class PrivateKey;
+	template<class G, class T>
+	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
 	PublicKey();
 	~PublicKey();
@@ -71,7 +73,7 @@ class PrivateKey {
 	impl::PrivateKey *self_;
 	int id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
-	friend void LagrangeIntepolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
 	PrivateKey();
 	~PrivateKey();
