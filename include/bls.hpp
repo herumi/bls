@@ -21,6 +21,15 @@ struct MasterPublicKey;
 
 } // bls::impl
 
+/*
+	e : G2 x G1 -> Fp12
+	Q in G2 ; fixed global parameter
+	H : {str} -> G1
+	s : private key
+	sQ ; public key
+	s H(m) ; signature of m
+	verify ; e(sQ, H(m)) = e(Q, s H(m))
+*/
 void init();
 
 class Sign {
@@ -48,7 +57,11 @@ public:
 };
 
 /*
-	Feldman's verifiable secret sharing
+	(Q, sQ, c_1 Q, ..., c_{k-1}Q)
+	s = c_0 ; private key
+	c_1, ..., c_{k-1} ; secret sharing
+	f(x) = c_0 + c_1 x + ... + c_{k-1} x^{k-1}
+	f(id) ; private key for user id(>0)
 */
 class MasterPublicKey {
 	impl::MasterPublicKey *self_;
@@ -65,6 +78,9 @@ public:
 	friend std::istream& operator>>(std::istream& is, MasterPublicKey& mpk);
 };
 
+/*
+	sQ ; public key
+*/
 class PublicKey {
 	impl::PublicKey *self_;
 	int id_;
