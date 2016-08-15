@@ -39,7 +39,7 @@ void init()
 {
 	BN::init(mcl::bn::CurveFp254BNb);
 	G1::setCompressedExpression();
-//	G2::setCompressedExpression();
+	G2::setCompressedExpression();
 	Fr::init(BN::param.r);
 }
 
