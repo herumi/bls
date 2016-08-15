@@ -164,7 +164,7 @@ struct PublicKey {
 	const G2& get() const { return sQ; }
 };
 
-struct Verifier {
+struct MasterPublicKey {
 	std::vector<G2> vecR;
 };
 
@@ -236,49 +236,49 @@ void Sign::recover(const std::vector<Sign>& signVec)
 	id_ = 0;
 }
 
-Verifier::Verifier()
-	: self_(new impl::Verifier())
+MasterPublicKey::MasterPublicKey()
+	: self_(new impl::MasterPublicKey())
 {
 }
 
-Verifier::~Verifier()
+MasterPublicKey::~MasterPublicKey()
 {
 	delete self_;
 }
 
-Verifier::Verifier(const Verifier& rhs)
-	: self_(new impl::Verifier(*rhs.self_))
+MasterPublicKey::MasterPublicKey(const MasterPublicKey& rhs)
+	: self_(new impl::MasterPublicKey(*rhs.self_))
 {
 }
 
-Verifier& Verifier::operator=(const Verifier& rhs)
+MasterPublicKey& MasterPublicKey::operator=(const MasterPublicKey& rhs)
 {
 	*self_ = *rhs.self_;
 	return *this;
 }
 
-bool Verifier::operator==(const Verifier& rhs) const
+bool MasterPublicKey::operator==(const MasterPublicKey& rhs) const
 {
 	return self_->vecR == rhs.self_->vecR;
 }
 
-std::ostream& operator<<(std::ostream& os, const Verifier& ver)
+std::ostream& operator<<(std::ostream& os, const MasterPublicKey& mpk)
 {
-	const size_t n = ver.self_->vecR.size();
+	const size_t n = mpk.self_->vecR.size();
 	os << n;
 	for (size_t i = 0; i < n; i++) {
-		os << '\n' << ver.self_->vecR[i];
+		os << '\n' << mpk.self_->vecR[i];
 	}
 	return os;
 }
 
-std::istream& operator>>(std::istream& is, Verifier& ver)
+std::istream& operator>>(std::istream& is, MasterPublicKey& mpk)
 {
 	size_t n;
 	is >> n;
-	ver.self_->vecR.resize(n);
+	mpk.self_->vecR.resize(n);
 	for (size_t i = 0; i < n; i++) {
-		is >> ver.self_->vecR[i];
+		is >> mpk.self_->vecR[i];
 	}
 	return is;
 }
@@ -335,10 +335,10 @@ void PublicKey::recover(const std::vector<PublicKey>& pubVec)
 	id_ = 0;
 }
 
-bool PublicKey::isValid(const Verifier& ver) const
+bool PublicKey::isValid(const MasterPublicKey& mpk) const
 {
 	G2 v;
-	evalPoly(v, Fr(id_), ver.self_->vecR);
+	evalPoly(v, Fr(id_), mpk.self_->vecR);
 	return v == self_->sQ;
 }
 
@@ -398,7 +398,7 @@ void PrivateKey::sign(Sign& sign, const std::string& m) const
 	sign.id_ = id_;
 }
 
-void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k, Verifier *ver)
+void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k, MasterPublicKey *mpk)
 {
 	if (id_ != 0) throw cybozu::Exception("bls:PrivateKey:share:already shared") << id_;
 	if (n <= 0 || k <= 0 || k > n) throw cybozu::Exception("bls:PrivateKey:share:bad n, k") << n << k;
@@ -410,8 +410,8 @@ void PrivateKey::share(std::vector<PrivateKey>& prvVec, int n, int k, Verifier *
 		poly.eval(prvVec[i].self_->s, id);
 		prvVec[i].id_ = id;
 	}
-	if (ver == 0) return;
-	std::vector<G2>& vecR = ver->self_->vecR;
+	if (mpk == 0) return;
+	std::vector<G2>& vecR = mpk->self_->vecR;
 	vecR.resize(k);
 	for (size_t i = 0; i < vecR.size(); i++) {
 		G2::mul(vecR[i], getQ(), poly.c[i]);

@@ -17,7 +17,7 @@ namespace impl {
 struct PublicKey;
 struct PrivateKey;
 struct Sign;
-struct Verifier;
+struct MasterPublicKey;
 
 } // bls::impl
 
@@ -50,19 +50,19 @@ public:
 /*
 	Feldman's verifiable secret sharing
 */
-class Verifier {
-	impl::Verifier *self_;
+class MasterPublicKey {
+	impl::MasterPublicKey *self_;
 	friend class PrivateKey;
 	friend class PublicKey;
 public:
-	Verifier();
-	~Verifier();
-	Verifier(const Verifier& rhs);
-	Verifier& operator=(const Verifier& rhs);
-	bool operator==(const Verifier& rhs) const;
-	bool operator!=(const Verifier& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const Verifier& ver);
-	friend std::istream& operator>>(std::istream& is, Verifier& ver);
+	MasterPublicKey();
+	~MasterPublicKey();
+	MasterPublicKey(const MasterPublicKey& rhs);
+	MasterPublicKey& operator=(const MasterPublicKey& rhs);
+	bool operator==(const MasterPublicKey& rhs) const;
+	bool operator!=(const MasterPublicKey& rhs) const { return !(*this == rhs); }
+	friend std::ostream& operator<<(std::ostream& os, const MasterPublicKey& mpk);
+	friend std::istream& operator>>(std::istream& is, MasterPublicKey& mpk);
 };
 
 class PublicKey {
@@ -87,9 +87,9 @@ public:
 	*/
 	void recover(const std::vector<PublicKey>& pubVec);
 	/*
-		validate self by Verifier
+		validate self by MasterPublicKey
 	*/
-	bool isValid(const Verifier& ver) const;
+	bool isValid(const MasterPublicKey& mpk) const;
 };
 
 class PrivateKey {
@@ -112,9 +112,9 @@ public:
 	void sign(Sign& sign, const std::string& m) const;
 	/*
 		k-out-of-n secret sharing of privateKey
-		set verifier if ver is not 0
+		set verifier if mpk is not 0
 	*/
-	void share(std::vector<PrivateKey>& prvVec, int n, int k, Verifier *ver = 0);
+	void share(std::vector<PrivateKey>& prvVec, int n, int k, MasterPublicKey *mpk = 0);
 	/*
 		recover privateKey from k prvVec
 	*/

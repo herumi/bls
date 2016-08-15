@@ -172,20 +172,13 @@ CYBOZU_TEST_AUTO(verifier)
 	bls::PublicKey pub0;
 	prv0.getPublicKey(pub0);
 	std::vector<bls::PrivateKey> prvVec;
-	bls::Verifier ver;
-	prv0.share(prvVec, n, k, &ver);
-	CYBOZU_TEST_ASSERT(pub0.isValid(ver));
+	bls::MasterPublicKey mpk;
+	prv0.share(prvVec, n, k, &mpk);
+	CYBOZU_TEST_ASSERT(pub0.isValid(mpk));
 	for (size_t i = 0; i < prvVec.size(); i++) {
 		bls::PublicKey pub;
 		prvVec[i].getPublicKey(pub);
-		CYBOZU_TEST_ASSERT(pub.isValid(ver));
+		CYBOZU_TEST_ASSERT(pub.isValid(mpk));
 	}
-	{
-		std::ostringstream oss;
-		oss << ver;
-		bls::Verifier ver2;
-		std::istringstream iss(oss.str());
-		iss >> ver2;
-		CYBOZU_TEST_EQUAL(ver, ver2);
-	}
+	streamTest(mpk);
 }
