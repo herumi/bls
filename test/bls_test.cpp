@@ -3,27 +3,25 @@
 #include <iostream>
 #include <sstream>
 
+template<class T>
+void streamTest(const T& t)
+{
+	std::ostringstream oss;
+	oss << t;
+	std::istringstream iss(oss.str());
+	T t2;
+	iss >> t2;
+	CYBOZU_TEST_EQUAL(t, t2);
+}
 CYBOZU_TEST_AUTO(bls)
 {
 	bls::init();
 	bls::PrivateKey prv;
 	prv.init();
-	{
-		std::string str;
-		prv.getStr(str);
-		bls::PrivateKey prv2;
-		prv2.setStr(str);
-		CYBOZU_TEST_EQUAL(prv, prv2);
-	}
+	streamTest(prv);
 	bls::PublicKey pub;
 	prv.getPublicKey(pub);
-	{
-		std::string str;
-		pub.getStr(str);
-		bls::PublicKey pub2;
-		pub2.setStr(str);
-		CYBOZU_TEST_EQUAL(pub, pub2);
-	}
+	streamTest(pub);
 	for (int i = 0; i < 5; i++) {
 		std::string m = "hello";
 		m += char('0' + i);
@@ -31,13 +29,7 @@ CYBOZU_TEST_AUTO(bls)
 		prv.sign(s, m);
 		CYBOZU_TEST_ASSERT(pub.verify(s, m));
 		CYBOZU_TEST_ASSERT(!pub.verify(s, m + "a"));
-		{
-			std::string str;
-			s.getStr(str);
-			bls::Sign s2;
-			s2.setStr(str);
-			CYBOZU_TEST_EQUAL(s, s2);
-		}
+		streamTest(s);
 	}
 }
 

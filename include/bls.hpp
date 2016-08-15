@@ -35,8 +35,6 @@ public:
 	~Sign();
 	Sign(const Sign& rhs);
 	Sign& operator=(const Sign& rhs);
-	void setStr(const std::string& str);
-	void getStr(std::string& str) const;
 	bool operator==(const Sign& rhs) const;
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
@@ -78,8 +76,6 @@ public:
 	~PublicKey();
 	PublicKey(const PublicKey& rhs);
 	PublicKey& operator=(const PublicKey& rhs);
-	void setStr(const std::string& str);
-	void getStr(std::string& str) const;
 	bool operator==(const PublicKey& rhs) const;
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
@@ -106,8 +102,6 @@ public:
 	~PrivateKey();
 	PrivateKey(const PrivateKey& rhs);
 	PrivateKey& operator=(const PrivateKey& rhs);
-	void setStr(const std::string& str);
-	void getStr(std::string& str) const;
 	bool operator==(const PrivateKey& rhs) const;
 	bool operator!=(const PrivateKey& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
@@ -127,4 +121,4 @@ public:
 	void recover(const std::vector<PrivateKey>& prvVec);
 };
 
-} // bls
+} //bls

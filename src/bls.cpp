@@ -213,19 +213,6 @@ Sign& Sign::operator=(const Sign& rhs)
 	return *this;
 }
 
-void Sign::setStr(const std::string& str)
-{
-	std::istringstream iss(str);
-	iss >> *this;
-}
-
-void Sign::getStr(std::string& str) const
-{
-	std::ostringstream oss(str);
-	oss << *this;
-	str = oss.str();
-}
-
 bool Sign::operator==(const Sign& rhs) const
 {
 	return id_ == rhs.id_ && self_->sHm == rhs.self_->sHm;
@@ -320,19 +307,6 @@ PublicKey& PublicKey::operator=(const PublicKey& rhs)
 	return *this;
 }
 
-void PublicKey::setStr(const std::string& str)
-{
-	std::istringstream iss(str);
-	iss >> *this;
-}
-
-void PublicKey::getStr(std::string& str) const
-{
-	std::ostringstream oss(str);
-	oss << *this;
-	str = oss.str();
-}
-
 bool PublicKey::operator==(const PublicKey& rhs) const
 {
 	return id_ == rhs.id_ && self_->sQ == rhs.self_->sQ;
@@ -390,19 +364,6 @@ PrivateKey& PrivateKey::operator=(const PrivateKey& rhs)
 	*self_ = *rhs.self_;
 	id_ = rhs.id_;
 	return *this;
-}
-
-void PrivateKey::setStr(const std::string& str)
-{
-	std::istringstream iss(str);
-	iss >> *this;
-}
-
-void PrivateKey::getStr(std::string& str) const
-{
-	std::ostringstream oss(str);
-	oss << *this;
-	str = oss.str();
 }
 
 bool PrivateKey::operator==(const PrivateKey& rhs) const
