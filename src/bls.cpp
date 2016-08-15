@@ -236,6 +236,12 @@ void Sign::recover(const std::vector<Sign>& signVec)
 	id_ = 0;
 }
 
+void Sign::add(const Sign& rhs)
+{
+	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:Sign:add:bad id") << id_ << rhs.id_;
+	self_->sHm += rhs.self_->sHm;
+}
+
 MasterPublicKey::MasterPublicKey()
 	: self_(new impl::MasterPublicKey())
 {
@@ -342,6 +348,12 @@ bool PublicKey::isValid(const MasterPublicKey& mpk) const
 	return v == self_->sQ;
 }
 
+void PublicKey::add(const PublicKey& rhs)
+{
+	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:PublicKey:add:bad id") << id_ << rhs.id_;
+	self_->sQ += rhs.self_->sQ;
+}
+
 PrivateKey::PrivateKey()
 	: self_(new impl::PrivateKey())
 	, id_(0)
@@ -424,6 +436,12 @@ void PrivateKey::recover(const std::vector<PrivateKey>& prvVec)
 	LagrangeInterpolation(s, prvVec);
 	self_->s = s;
 	id_ = 0;
+}
+
+void PrivateKey::add(const PrivateKey& rhs)
+{
+	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:PrivateKey:add:bad id") << id_ << rhs.id_;
+	self_->s += rhs.self_->s;
 }
 
 } // bls

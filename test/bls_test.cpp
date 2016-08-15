@@ -163,7 +163,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 }
 
-CYBOZU_TEST_AUTO(verifier)
+CYBOZU_TEST_AUTO(MasterPublicKey)
 {
 	const int n = 6;
 	const int k = 3;
@@ -181,4 +181,22 @@ CYBOZU_TEST_AUTO(verifier)
 		CYBOZU_TEST_ASSERT(pub.isValid(mpk));
 	}
 	streamTest(mpk);
+}
+
+CYBOZU_TEST_AUTO(add)
+{
+	bls::PrivateKey prv1, prv2;
+	prv1.init();
+	prv2.init();
+	CYBOZU_TEST_ASSERT(prv1 != prv2);
+
+	bls::PublicKey pub1, pub2;
+	prv1.getPublicKey(pub1);
+	prv2.getPublicKey(pub2);
+
+	const std::string m = "doremi";
+	bls::Sign s1, s2;
+	prv1.sign(s1, m);
+	prv2.sign(s2, m);
+	CYBOZU_TEST_ASSERT((pub1 + pub2).verify(s1 + s2, m));
 }

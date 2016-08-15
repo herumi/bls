@@ -49,11 +49,14 @@ public:
 	int getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
-
 	/*
 		recover sign from k signVec
 	*/
 	void recover(const std::vector<Sign>& signVec);
+	/*
+		add signature key only if id_ == 0
+	*/
+	void add(const Sign& rhs);
 };
 
 /*
@@ -106,8 +109,15 @@ public:
 		validate self by MasterPublicKey
 	*/
 	bool isValid(const MasterPublicKey& mpk) const;
+	/*
+		add public key only if id_ == 0
+	*/
+	void add(const PublicKey& rhs);
 };
 
+/*
+	s ; private key
+*/
 class PrivateKey {
 	impl::PrivateKey *self_;
 	int id_; // master if id_ = 0, shared if id_ > 0
@@ -135,6 +145,14 @@ public:
 		recover privateKey from k prvVec
 	*/
 	void recover(const std::vector<PrivateKey>& prvVec);
+	/*
+		add private key only if id_ == 0
+	*/
+	void add(const PrivateKey& rhs);
 };
+
+inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
+inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }
+inline PrivateKey operator+(const PrivateKey& a, const PrivateKey& b) { PrivateKey r(a); r.add(b); return r; }
 
 } //bls
