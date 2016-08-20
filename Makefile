@@ -2,6 +2,7 @@ include ../mcl/common.mk
 LIB_DIR=lib
 OBJ_DIR=obj
 EXE_DIR=bin
+CFLAGS += -std=c++11
 
 SRC_SRC=bls.cpp
 TEST_SRC=bls_test.cpp
