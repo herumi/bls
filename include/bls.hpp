@@ -22,6 +22,7 @@ struct MasterPublicKey;
 } // bls::impl
 
 /*
+	BLS signature
 	e : G2 x G1 -> Fp12
 	Q in G2 ; fixed global parameter
 	H : {str} -> G1
@@ -30,6 +31,11 @@ struct MasterPublicKey;
 	s H(m) ; signature of m
 	verify ; e(sQ, H(m)) = e(Q, s H(m))
 */
+
+class Sign;
+class PublicKey;
+class PrivateKey;
+
 void init();
 
 class Sign {
@@ -49,6 +55,7 @@ public:
 	int getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
+	bool verify(const PublicKey& pub, const std::string& m) const;
 	/*
 		recover sign from k signVec
 	*/
@@ -88,6 +95,7 @@ class PublicKey {
 	impl::PublicKey *self_;
 	int id_;
 	friend class PrivateKey;
+	friend class Sign;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
@@ -100,7 +108,6 @@ public:
 	int getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
-	bool verify(const Sign& sign, const std::string& m) const;
 	/*
 		recover publicKey from k pubVec
 	*/

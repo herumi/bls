@@ -144,6 +144,7 @@ namespace impl {
 struct Sign {
 	G1 sHm; // s Hash(m)
 	const G1& get() const { return sHm; }
+	bool verify(const PublicKey& pub, const std::string& m) const;
 };
 
 struct PublicKey {
@@ -152,17 +153,18 @@ struct PublicKey {
 	{
 		G2::mul(sQ, getQ(), s);
 	}
-	bool verify(const Sign& sign, const std::string& m) const
-	{
-		G1 Hm;
-		HashAndMapToG1(Hm, m); // Hm = Hash(m)
-		Fp12 e1, e2;
-		BN::pairing(e1, getQ(), sign.sHm); // e(Q, s Hm)
-		BN::pairing(e2, sQ, Hm); // e(sQ, Hm)
-		return e1 == e2;
-	}
 	const G2& get() const { return sQ; }
 };
+
+inline bool Sign::verify(const PublicKey& pub, const std::string& m) const
+{
+	G1 Hm;
+	HashAndMapToG1(Hm, m); // Hm = Hash(m)
+	Fp12 e1, e2;
+	BN::pairing(e1, getQ(), sHm); // e(Q, s Hm)
+	BN::pairing(e2, pub.sQ, Hm); // e(sQ, Hm)
+	return e1 == e2;
+}
 
 struct MasterPublicKey {
 	std::vector<G2> vecR;
@@ -228,6 +230,10 @@ std::istream& operator>>(std::istream& os, Sign& s)
 	return os >> s.id_ >> s.self_->sHm;
 }
 
+bool Sign::verify(const PublicKey& pub, const std::string& m) const
+{
+	return self_->verify(*pub.self_, m);
+}
 void Sign::recover(const std::vector<Sign>& signVec)
 {
 	G1 sHm;
@@ -326,11 +332,6 @@ std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
 std::istream& operator>>(std::istream& is, PublicKey& pub)
 {
 	return is >> pub.id_ >> pub.self_->sQ;
-}
-
-bool PublicKey::verify(const Sign& sign, const std::string& m) const
-{
-	return self_->verify(*sign.self_, m);
 }
 
 void PublicKey::recover(const std::vector<PublicKey>& pubVec)

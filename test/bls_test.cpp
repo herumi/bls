@@ -27,8 +27,8 @@ CYBOZU_TEST_AUTO(bls)
 		m += char('0' + i);
 		bls::Sign s;
 		prv.sign(s, m);
-		CYBOZU_TEST_ASSERT(pub.verify(s, m));
-		CYBOZU_TEST_ASSERT(!pub.verify(s, m + "a"));
+		CYBOZU_TEST_ASSERT(s.verify(pub, m));
+		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
 	}
 }
@@ -44,7 +44,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	prv0.sign(s0, m);
 	bls::PublicKey pub0;
 	prv0.getPublicKey(pub0);
-	CYBOZU_TEST_ASSERT(pub0.verify(s0, m));
+	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
 
 	std::vector<bls::PrivateKey> allPrvVec;
 	prv0.share(allPrvVec, n, k);
@@ -60,7 +60,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 		bls::PublicKey pub;
 		allPrvVec[i].getPublicKey(pub);
 		CYBOZU_TEST_ASSERT(pub != pub0);
-		CYBOZU_TEST_ASSERT(pub.verify(allSignVec[i], m));
+		CYBOZU_TEST_ASSERT(allSignVec[i].verify(pub, m));
 	}
 
 	/*
@@ -198,5 +198,5 @@ CYBOZU_TEST_AUTO(add)
 	bls::Sign s1, s2;
 	prv1.sign(s1, m);
 	prv2.sign(s2, m);
-	CYBOZU_TEST_ASSERT((pub1 + pub2).verify(s1 + s2, m));
+	CYBOZU_TEST_ASSERT((s1 + s2).verify(pub1 + pub2, m));
 }

@@ -66,7 +66,7 @@ int verify(const std::string& m, int id)
 	load(pub, pubFile, id);
 	bls::Sign s;
 	load(s, signFile, id);
-	if (pub.verify(s, m)) {
+	if (s.verify(pub, m)) {
 		puts("verify ok");
 		return 0;
 	} else {
