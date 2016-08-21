@@ -6,7 +6,7 @@
 typedef std::vector<int> IntVec;
 
 const std::string pubFile = "sample/publickey";
-const std::string prvFile = "sample/privatekey";
+const std::string secFile = "sample/privatekey";
 const std::string signFile = "sample/sign";
 
 std::string makeName(const std::string& name, int id)
@@ -38,12 +38,12 @@ void load(T& t, const std::string& file, int id = 0)
 
 int init()
 {
-	printf("make %s and %s files\n", prvFile.c_str(), pubFile.c_str());
-	bls::SecretKey prv;
-	prv.init();
-	save(prvFile, prv);
+	printf("make %s and %s files\n", secFile.c_str(), pubFile.c_str());
+	bls::SecretKey sec;
+	sec.init();
+	save(secFile, sec);
 	bls::PublicKey pub;
-	prv.getPublicKey(pub);
+	sec.getPublicKey(pub);
 	save(pubFile, pub);
 	return 0;
 }
@@ -51,10 +51,10 @@ int init()
 int sign(const std::string& m, int id)
 {
 	printf("sign message `%s` by id=%d\n", m.c_str(), id);
-	bls::SecretKey prv;
-	load(prv, prvFile, id);
+	bls::SecretKey sec;
+	load(sec, secFile, id);
 	bls::Sign s;
-	prv.sign(s, m);
+	sec.sign(s, m);
 	save(signFile, s, id);
 	return 0;
 }
@@ -78,19 +78,19 @@ int verify(const std::string& m, int id)
 int share(int n, int k)
 {
 	printf("%d-out-of-%d threshold sharing\n", k, n);
-	bls::SecretKey prv;
-	load(prv, prvFile);
+	bls::SecretKey sec;
+	load(sec, secFile);
 	bls::SecretKeyVec msk;
-	prv.getMasterSecretKey(msk, k);
-	std::vector<bls::SecretKey> prvVec(n);
+	sec.getMasterSecretKey(msk, k);
+	std::vector<bls::SecretKey> secVec(n);
 	for (int i = 0; i < n; i++) {
-		prvVec[i].set(msk, i + 1);
+		secVec[i].set(msk, i + 1);
 	}
 	for (int i = 0; i < n; i++) {
-		int id = prvVec[i].getId();
-		save(prvFile, prvVec[i], id);
+		int id = secVec[i].getId();
+		save(secFile, secVec[i], id);
 		bls::PublicKey pub;
-		prvVec[i].getPublicKey(pub);
+		secVec[i].getPublicKey(pub);
 		save(pubFile, pub, id);
 	}
 	return 0;

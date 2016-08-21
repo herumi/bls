@@ -357,14 +357,14 @@ bool SecretKey::operator==(const SecretKey& rhs) const
 	return id_ == rhs.id_ && self_->s == rhs.self_->s;
 }
 
-std::ostream& operator<<(std::ostream& os, const SecretKey& prv)
+std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
 {
-	return os << prv.id_ << ' ' << prv.self_->s;
+	return os << sec.id_ << ' ' << sec.self_->s;
 }
 
-std::istream& operator>>(std::istream& is, SecretKey& prv)
+std::istream& operator>>(std::istream& is, SecretKey& sec)
 {
-	return is >> prv.id_ >> prv.self_->s;
+	return is >> sec.id_ >> sec.self_->s;
 }
 
 void SecretKey::init()
@@ -408,10 +408,10 @@ void SecretKey::set(const MasterSecretKey& msk, int id)
 	id_ = id;
 }
 
-void SecretKey::recover(const std::vector<SecretKey>& prvVec)
+void SecretKey::recover(const std::vector<SecretKey>& secVec)
 {
 	Fr s;
-	LagrangeInterpolation(s, prvVec);
+	LagrangeInterpolation(s, secVec);
 	self_->s = s;
 	id_ = 0;
 }

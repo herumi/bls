@@ -16,17 +16,17 @@ void streamTest(const T& t)
 CYBOZU_TEST_AUTO(bls)
 {
 	bls::init();
-	bls::SecretKey prv;
-	prv.init();
-	streamTest(prv);
+	bls::SecretKey sec;
+	sec.init();
+	streamTest(sec);
 	bls::PublicKey pub;
-	prv.getPublicKey(pub);
+	sec.getPublicKey(pub);
 	streamTest(pub);
 	for (int i = 0; i < 5; i++) {
 		std::string m = "hello";
 		m += char('0' + i);
 		bls::Sign s;
-		prv.sign(s, m);
+		sec.sign(s, m);
 		CYBOZU_TEST_ASSERT(s.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
@@ -38,16 +38,16 @@ CYBOZU_TEST_AUTO(k_of_n)
 	const std::string m = "abc";
 	const int n = 5;
 	const int k = 3;
-	bls::SecretKey prv0;
-	prv0.init();
+	bls::SecretKey sec0;
+	sec0.init();
 	bls::Sign s0;
-	prv0.sign(s0, m);
+	sec0.sign(s0, m);
 	bls::PublicKey pub0;
-	prv0.getPublicKey(pub0);
+	sec0.getPublicKey(pub0);
 	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
 
 	bls::MasterSecretKey msk;
-	prv0.getMasterSecretKey(msk, k);
+	sec0.getMasterSecretKey(msk, k);
 
 	std::vector<bls::SecretKey> allPrvVec(n);
 	for (int i = 0; i < n; i++) {
@@ -61,7 +61,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 
 	std::vector<bls::Sign> allSignVec(n);
 	for (int i = 0; i < n; i++) {
-		CYBOZU_TEST_ASSERT(allPrvVec[i] != prv0);
+		CYBOZU_TEST_ASSERT(allPrvVec[i] != sec0);
 		allPrvVec[i].sign(allSignVec[i], m);
 		bls::PublicKey pub;
 		allPrvVec[i].getPublicKey(pub);
@@ -73,47 +73,47 @@ CYBOZU_TEST_AUTO(k_of_n)
 		3-out-of-n
 		can recover
 	*/
-	std::vector<bls::SecretKey> prvVec(3);
+	std::vector<bls::SecretKey> secVec(3);
 	for (int a = 0; a < n; a++) {
-		prvVec[0] = allPrvVec[a];
+		secVec[0] = allPrvVec[a];
 		for (int b = a + 1; b < n; b++) {
-			prvVec[1] = allPrvVec[b];
+			secVec[1] = allPrvVec[b];
 			for (int c = b + 1; c < n; c++) {
-				prvVec[2] = allPrvVec[c];
-				bls::SecretKey prv;
-				prv.recover(prvVec);
-				CYBOZU_TEST_EQUAL(prv, prv0);
+				secVec[2] = allPrvVec[c];
+				bls::SecretKey sec;
+				sec.recover(secVec);
+				CYBOZU_TEST_EQUAL(sec, sec0);
 			}
 		}
 	}
 	{
-		prvVec[0] = allPrvVec[0];
-		prvVec[1] = allPrvVec[1];
-		prvVec[2] = allPrvVec[0]; // same of prvVec[0]
-		bls::SecretKey prv;
-		CYBOZU_TEST_EXCEPTION_MESSAGE(prv.recover(prvVec), std::exception, "same id");
+		secVec[0] = allPrvVec[0];
+		secVec[1] = allPrvVec[1];
+		secVec[2] = allPrvVec[0]; // same of secVec[0]
+		bls::SecretKey sec;
+		CYBOZU_TEST_EXCEPTION_MESSAGE(sec.recover(secVec), std::exception, "same id");
 	}
 	{
 		/*
 			n-out-of-n
 			can recover
 		*/
-		bls::SecretKey prv;
-		prv.recover(allPrvVec);
-		CYBOZU_TEST_EQUAL(prv, prv0);
+		bls::SecretKey sec;
+		sec.recover(allPrvVec);
+		CYBOZU_TEST_EQUAL(sec, sec0);
 	}
 	/*
 		2-out-of-n
 		can't recover
 	*/
-	prvVec.resize(2);
+	secVec.resize(2);
 	for (int a = 0; a < n; a++) {
-		prvVec[0] = allPrvVec[a];
+		secVec[0] = allPrvVec[a];
 		for (int b = a + 1; b < n; b++) {
-			prvVec[1] = allPrvVec[b];
-			bls::SecretKey prv;
-			prv.recover(prvVec);
-			CYBOZU_TEST_ASSERT(prv != prv0);
+			secVec[1] = allPrvVec[b];
+			bls::SecretKey sec;
+			sec.recover(secVec);
+			CYBOZU_TEST_ASSERT(sec != sec0);
 		}
 	}
 	/*
@@ -173,12 +173,12 @@ CYBOZU_TEST_AUTO(MasterSecretKey)
 {
 	const int k = 3;
 	const int n = 6;
-	bls::SecretKey prv0;
-	prv0.init();
+	bls::SecretKey sec0;
+	sec0.init();
 	bls::PublicKey pub0;
-	prv0.getPublicKey(pub0);
+	sec0.getPublicKey(pub0);
 	bls::MasterSecretKey msk;
-	prv0.getMasterSecretKey(msk, k);
+	sec0.getMasterSecretKey(msk, k);
 
 	bls::MasterPublicKey mpk;
 	bls::getMasterPublicKey(mpk, msk);
@@ -186,12 +186,12 @@ CYBOZU_TEST_AUTO(MasterSecretKey)
 	const int idTbl[n] = {
 		3, 5, 193, 22, 15
 	};
-	bls::SecretKeyVec prvVec(n);
+	bls::SecretKeyVec secVec(n);
 	bls::PublicKeyVec pubVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = idTbl[i];
-		prvVec[i].set(msk, id);
-		prvVec[i].getPublicKey(pubVec[i]);
+		secVec[i].set(msk, id);
+		secVec[i].getPublicKey(pubVec[i]);
 		bls::PublicKey pub;
 		pub.set(mpk, id);
 		CYBOZU_TEST_EQUAL(pubVec[i], pub);
@@ -200,18 +200,18 @@ CYBOZU_TEST_AUTO(MasterSecretKey)
 
 CYBOZU_TEST_AUTO(add)
 {
-	bls::SecretKey prv1, prv2;
-	prv1.init();
-	prv2.init();
-	CYBOZU_TEST_ASSERT(prv1 != prv2);
+	bls::SecretKey sec1, sec2;
+	sec1.init();
+	sec2.init();
+	CYBOZU_TEST_ASSERT(sec1 != sec2);
 
 	bls::PublicKey pub1, pub2;
-	prv1.getPublicKey(pub1);
-	prv2.getPublicKey(pub2);
+	sec1.getPublicKey(pub1);
+	sec2.getPublicKey(pub2);
 
 	const std::string m = "doremi";
 	bls::Sign s1, s2;
-	prv1.sign(s1, m);
-	prv2.sign(s2, m);
+	sec1.sign(s1, m);
+	sec2.sign(s2, m);
 	CYBOZU_TEST_ASSERT((s1 + s2).verify(pub1 + pub2, m));
 }

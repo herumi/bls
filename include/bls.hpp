@@ -143,8 +143,8 @@ public:
 	bool operator==(const SecretKey& rhs) const;
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
-	friend std::ostream& operator<<(std::ostream& os, const SecretKey& prv);
-	friend std::istream& operator>>(std::istream& is, SecretKey& prv);
+	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
+	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
 	/*
 		make a private key for id = 0
 	*/
@@ -164,9 +164,9 @@ public:
 	*/
 	void set(const MasterSecretKey& msk, int id);
 	/*
-		recover secretKey from k prvVec
+		recover secretKey from k secVec
 	*/
-	void recover(const std::vector<SecretKey>& prvVec);
+	void recover(const std::vector<SecretKey>& secVec);
 	/*
 		add private key only if id_ == 0
 	*/
