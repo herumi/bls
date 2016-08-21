@@ -80,8 +80,12 @@ int share(int n, int k)
 	printf("%d-out-of-%d threshold sharing\n", k, n);
 	bls::PrivateKey prv;
 	load(prv, prvFile);
-	std::vector<bls::PrivateKey> prvVec;
-	prv.share(prvVec, n, k);
+	bls::PrivateKeyVec msk;
+	prv.getMasterPrivateKey(msk, k);
+	std::vector<bls::PrivateKey> prvVec(n);
+	for (int i = 0; i < n; i++) {
+		prvVec[i].set(msk, i + 1);
+	}
 	for (int i = 0; i < n; i++) {
 		int id = prvVec[i].getId();
 		save(prvFile, prvVec[i], id);
