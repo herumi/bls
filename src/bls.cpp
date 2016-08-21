@@ -247,7 +247,7 @@ bool Sign::verify(const PublicKey& pub) const
 	pub.getStr(str);
 	return verify(pub, str);
 }
-void Sign::recover(const std::vector<Sign>& signVec)
+void Sign::recover(const SignVec& signVec)
 {
 	G1 sHm;
 	LagrangeInterpolation(sHm, signVec);
@@ -307,14 +307,14 @@ void PublicKey::getStr(std::string& str) const
 	str = os.str();
 }
 
-void PublicKey::set(const MasterPublicKey& mpk, int id)
+void PublicKey::set(const PublicKeyVec& mpk, int id)
 {
 	Wrap<PublicKey, G2> w(mpk);
 	evalPoly(self_->sQ, Fr(id), w);
 	id_ = id;
 }
 
-void PublicKey::recover(const std::vector<PublicKey>& pubVec)
+void PublicKey::recover(const PublicKeyVec& pubVec)
 {
 	G2 sQ;
 	LagrangeInterpolation(sQ, pubVec);
@@ -391,7 +391,7 @@ void SecretKey::getPop(Sign& pop, const PublicKey& pub) const
 	sign(pop, m);
 }
 
-void SecretKey::getMasterSecretKey(MasterSecretKey& msk, int k) const
+void SecretKey::getMasterSecretKey(SecretKeyVec& msk, int k) const
 {
 	if (k <= 1) throw cybozu::Exception("bls:SecretKey:getMasterSecretKey:bad k") << k;
 	msk.resize(k);
@@ -401,14 +401,14 @@ void SecretKey::getMasterSecretKey(MasterSecretKey& msk, int k) const
 	}
 }
 
-void SecretKey::set(const MasterSecretKey& msk, int id)
+void SecretKey::set(const SecretKeyVec& msk, int id)
 {
 	Wrap<SecretKey, Fr> w(msk);
 	evalPoly(self_->s, id, w);
 	id_ = id;
 }
 
-void SecretKey::recover(const std::vector<SecretKey>& secVec)
+void SecretKey::recover(const SecretKeyVec& secVec)
 {
 	Fr s;
 	LagrangeInterpolation(s, secVec);
@@ -422,7 +422,7 @@ void SecretKey::add(const SecretKey& rhs)
 	self_->s += rhs.self_->s;
 }
 
-void getMasterPublicKey(MasterPublicKey& mpk, const MasterSecretKey& msk)
+void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk)
 {
 	mpk.resize(msk.size());
 	for (size_t i = 0; i < msk.size(); i++) {
@@ -430,7 +430,7 @@ void getMasterPublicKey(MasterPublicKey& mpk, const MasterSecretKey& msk)
 	}
 }
 
-void getPopVec(std::vector<Sign>& popVec, const MasterSecretKey& msk, const MasterPublicKey& mpk)
+void getPopVec(SignVec& popVec, const SecretKeyVec& msk, const PublicKeyVec& mpk)
 {
 	if (msk.size() != mpk.size()) throw cybozu::Exception("bls:getPopVec:bad size") << msk.size() << mpk.size();
 	const size_t n = msk.size();

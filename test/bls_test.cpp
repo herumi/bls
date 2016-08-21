@@ -46,10 +46,10 @@ CYBOZU_TEST_AUTO(k_of_n)
 	sec0.getPublicKey(pub0);
 	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
 
-	bls::MasterSecretKey msk;
+	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
-	std::vector<bls::SecretKey> allPrvVec(n);
+	bls::SecretKeyVec allPrvVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = i + 1;
 		allPrvVec[i].set(msk, id);
@@ -169,7 +169,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 }
 
-CYBOZU_TEST_AUTO(MasterSecretKey)
+CYBOZU_TEST_AUTO(pop)
 {
 	const int k = 3;
 	const int n = 6;
@@ -177,10 +177,10 @@ CYBOZU_TEST_AUTO(MasterSecretKey)
 	sec0.init();
 	bls::PublicKey pub0;
 	sec0.getPublicKey(pub0);
-	bls::MasterSecretKey msk;
+	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
-	bls::MasterPublicKey mpk;
+	bls::PublicKeyVec mpk;
 	bls::getMasterPublicKey(mpk, msk);
 
 	const int idTbl[n] = {

@@ -45,17 +45,6 @@ typedef std::vector<Sign> SignVec;
 typedef std::vector<PublicKey> PublicKeyVec;
 typedef std::vector<SecretKey> SecretKeyVec;
 
-/*
-	[s_0, s_1, ..., s_{k-1}]
-	s_0 is original private key
-*/
-typedef std::vector<SecretKey> MasterSecretKey;
-/*
-	[s_0 Q, ..., s_{k-1} Q]
-	Q is global fixed parameter
-*/
-typedef std::vector<PublicKey> MasterPublicKey;
-
 class Sign {
 	impl::Sign *self_;
 	int id_;
@@ -81,7 +70,7 @@ public:
 	/*
 		recover sign from k signVec
 	*/
-	void recover(const std::vector<Sign>& signVec);
+	void recover(const SignVec& signVec);
 	/*
 		add signature key only if id_ == 0
 	*/
@@ -114,11 +103,11 @@ public:
 	/*
 		set public for id from mpk
 	*/
-	void set(const MasterPublicKey& mpk, int id);
+	void set(const PublicKeyVec& mpk, int id);
 	/*
 		recover publicKey from k pubVec
 	*/
-	void recover(const std::vector<PublicKey>& pubVec);
+	void recover(const PublicKeyVec& pubVec);
 	/*
 		add public key only if id_ == 0
 	*/
@@ -158,15 +147,15 @@ public:
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
-	void getMasterSecretKey(MasterSecretKey& msk, int k) const;
+	void getMasterSecretKey(SecretKeyVec& msk, int k) const;
 	/*
 		set a private key for id > 0 from msk
 	*/
-	void set(const MasterSecretKey& msk, int id);
+	void set(const SecretKeyVec& msk, int id);
 	/*
 		recover secretKey from k secVec
 	*/
-	void recover(const std::vector<SecretKey>& secVec);
+	void recover(const SecretKeyVec& secVec);
 	/*
 		add private key only if id_ == 0
 	*/
@@ -176,12 +165,12 @@ public:
 /*
 	make master public key [s_0 Q, ..., s_{k-1} Q] from msk
 */
-void getMasterPublicKey(MasterPublicKey& mpk, const MasterSecretKey& msk);
+void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk);
 
 /*
 	make pop from msk and mpk
 */
-void getPopVec(std::vector<Sign>& popVec, const MasterSecretKey& msk, const MasterPublicKey& mpk);
+void getPopVec(SignVec& popVec, const SecretKeyVec& msk, const PublicKeyVec& mpk);
 
 inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
 inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }
