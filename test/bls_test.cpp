@@ -173,10 +173,15 @@ CYBOZU_TEST_AUTO(pop)
 {
 	const int k = 3;
 	const int n = 6;
+	const std::string m = "pop test";
 	bls::SecretKey sec0;
 	sec0.init();
 	bls::PublicKey pub0;
 	sec0.getPublicKey(pub0);
+	bls::Sign s0;
+	sec0.sign(s0, m);
+	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
+
 	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
@@ -194,6 +199,7 @@ CYBOZU_TEST_AUTO(pop)
 	};
 	bls::SecretKeyVec secVec(n);
 	bls::PublicKeyVec pubVec(n);
+	bls::SignVec sVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = idTbl[i];
 		secVec[i].set(msk, id);
@@ -205,7 +211,18 @@ CYBOZU_TEST_AUTO(pop)
 		bls::Sign pop;
 		secVec[i].getPop(pop, pubVec[i]);
 		CYBOZU_TEST_ASSERT(pop.verify(pubVec[i]));
+
+		secVec[i].sign(sVec[i], m);
+		CYBOZU_TEST_ASSERT(sVec[i].verify(pubVec[i], m));
 	}
+	secVec.resize(k);
+	sVec.resize(k);
+	bls::SecretKey sec;
+	sec.recover(secVec);
+	CYBOZU_TEST_EQUAL(sec, sec0);
+	bls::Sign s;
+	s.recover(sVec);
+	CYBOZU_TEST_EQUAL(s, s0);
 }
 
 CYBOZU_TEST_AUTO(add)
