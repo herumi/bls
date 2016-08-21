@@ -38,8 +38,6 @@ s in Fr: secret key
 sQ in G2; public key
 s H(m) in G1; signature of m
 verify ; e(sQ, H(m)) = e(Q, s H(m))
-``
-
 ```
 void bls::init();
 ```
