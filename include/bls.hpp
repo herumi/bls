@@ -14,8 +14,8 @@ namespace bls {
 
 namespace impl {
 
-struct PublicKey;
 struct SecretKey;
+struct PublicKey;
 struct Sign;
 
 } // bls::impl
@@ -25,7 +25,7 @@ struct Sign;
 	e : G2 x G1 -> Fp12
 	Q in G2 ; fixed global parameter
 	H : {str} -> G1
-	s : private key
+	s : secret key
 	sQ ; public key
 	s H(m) ; signature of m
 	verify ; e(sQ, H(m)) = e(Q, s H(m))
@@ -37,44 +37,61 @@ struct Sign;
 */
 void init();
 
-class Sign;
-class PublicKey;
 class SecretKey;
+class PublicKey;
+class Sign;
 
-typedef std::vector<Sign> SignVec;
-typedef std::vector<PublicKey> PublicKeyVec;
 typedef std::vector<SecretKey> SecretKeyVec;
+typedef std::vector<PublicKey> PublicKeyVec;
+typedef std::vector<Sign> SignVec;
 
-class Sign {
-	impl::Sign *self_;
-	int id_;
-	friend class PublicKey;
-	friend class SecretKey;
+/*
+	s ; secret key
+*/
+class SecretKey {
+	impl::SecretKey *self_;
+	int id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
+	template<class T, class G>
+	friend struct Wrap;
 public:
-	Sign();
-	~Sign();
-	Sign(const Sign& rhs);
-	Sign& operator=(const Sign& rhs);
-	bool operator==(const Sign& rhs) const;
-	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
+	SecretKey();
+	~SecretKey();
+	SecretKey(const SecretKey& rhs);
+	SecretKey& operator=(const SecretKey& rhs);
+	bool operator==(const SecretKey& rhs) const;
+	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
-	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
-	friend std::istream& operator>>(std::istream& is, Sign& s);
-	bool verify(const PublicKey& pub, const std::string& m) const;
+	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
+	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
 	/*
-		verify self(pop) with pub
+		make a secret key for id = 0
 	*/
-	bool verify(const PublicKey& pub) const;
+	void init();
+	void getPublicKey(PublicKey& pub) const;
+	void sign(Sign& sign, const std::string& m) const;
 	/*
-		recover sign from k signVec
+		make Pop(Proof of Possesion)
+		pop = prv.sign(pub)
 	*/
-	void recover(const SignVec& signVec);
+	void getPop(Sign& pop, const PublicKey& pub) const;
 	/*
-		add signature key only if id_ == 0
+		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
-	void add(const Sign& rhs);
+	void getMasterSecretKey(SecretKeyVec& msk, int k) const;
+	/*
+		set a secret key for id > 0 from msk
+	*/
+	void set(const SecretKeyVec& msk, int id);
+	/*
+		recover secretKey from k secVec
+	*/
+	void recover(const SecretKeyVec& secVec);
+	/*
+		add secret key only if id_ == 0
+	*/
+	void add(const SecretKey& rhs);
 };
 
 /*
@@ -115,52 +132,40 @@ public:
 };
 
 /*
-	s ; private key
+	s H(m) ; sign
 */
-class SecretKey {
-	impl::SecretKey *self_;
-	int id_; // master if id_ = 0, shared if id_ > 0
+class Sign {
+	impl::Sign *self_;
+	int id_;
+	friend class PublicKey;
+	friend class SecretKey;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
-	template<class T, class G>
-	friend struct Wrap;
 public:
-	SecretKey();
-	~SecretKey();
-	SecretKey(const SecretKey& rhs);
-	SecretKey& operator=(const SecretKey& rhs);
-	bool operator==(const SecretKey& rhs) const;
-	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
+	Sign();
+	~Sign();
+	Sign(const Sign& rhs);
+	Sign& operator=(const Sign& rhs);
+	bool operator==(const Sign& rhs) const;
+	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
-	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
-	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
+	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
+	friend std::istream& operator>>(std::istream& is, Sign& s);
+	bool verify(const PublicKey& pub, const std::string& m) const;
 	/*
-		make a private key for id = 0
+		verify self(pop) with pub
 	*/
-	void init();
-	void getPublicKey(PublicKey& pub) const;
-	void sign(Sign& sign, const std::string& m) const;
+	bool verify(const PublicKey& pub) const;
 	/*
-		make Pop(Proof of Possesion)
+		recover sign from k signVec
 	*/
-	void getPop(Sign& pop, const PublicKey& pub) const;
+	void recover(const SignVec& signVec);
 	/*
-		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
+		add signature key only if id_ == 0
 	*/
-	void getMasterSecretKey(SecretKeyVec& msk, int k) const;
-	/*
-		set a private key for id > 0 from msk
-	*/
-	void set(const SecretKeyVec& msk, int id);
-	/*
-		recover secretKey from k secVec
-	*/
-	void recover(const SecretKeyVec& secVec);
-	/*
-		add private key only if id_ == 0
-	*/
-	void add(const SecretKey& rhs);
+	void add(const Sign& rhs);
 };
+
 
 /*
 	make master public key [s_0 Q, ..., s_{k-1} Q] from msk

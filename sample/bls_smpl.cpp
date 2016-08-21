@@ -6,7 +6,7 @@
 typedef std::vector<int> IntVec;
 
 const std::string pubFile = "sample/publickey";
-const std::string secFile = "sample/privatekey";
+const std::string secFile = "sample/secretkey";
 const std::string signFile = "sample/sign";
 
 std::string makeName(const std::string& name, int id)
