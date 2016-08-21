@@ -46,8 +46,14 @@ CYBOZU_TEST_AUTO(k_of_n)
 	prv0.getPublicKey(pub0);
 	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
 
-	std::vector<bls::PrivateKey> allPrvVec;
-	prv0.share(allPrvVec, n, k);
+	bls::MasterPrivateKey msk;
+	prv0.getMasterPrivateKey(msk, k);
+
+	std::vector<bls::PrivateKey> allPrvVec(n);
+	for (int i = 0; i < n; i++) {
+		int id = i + 1;
+		allPrvVec[i].set(msk, id);
+	}
 	CYBOZU_TEST_EQUAL(allPrvVec.size(), n);
 	for (int i = 0; i < n; i++) {
 		CYBOZU_TEST_EQUAL(allPrvVec[i].getId(), i + 1);
@@ -163,24 +169,33 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 }
 
-CYBOZU_TEST_AUTO(MasterPublicKey)
+CYBOZU_TEST_AUTO(MasterPrivateKey)
 {
-	const int n = 6;
 	const int k = 3;
+	const int n = 6;
 	bls::PrivateKey prv0;
 	prv0.init();
 	bls::PublicKey pub0;
 	prv0.getPublicKey(pub0);
-	std::vector<bls::PrivateKey> prvVec;
+	bls::MasterPrivateKey msk;
+	prv0.getMasterPrivateKey(msk, k);
+
 	bls::MasterPublicKey mpk;
-	prv0.share(prvVec, n, k, &mpk);
-	CYBOZU_TEST_ASSERT(pub0.isValid(mpk));
-	for (size_t i = 0; i < prvVec.size(); i++) {
+	bls::getMasterPublicKey(mpk, msk);
+
+	const int idTbl[n] = {
+		3, 5, 193, 22, 15
+	};
+	bls::PrivateKeyVec prvVec(n);
+	bls::PublicKeyVec pubVec(n);
+	for (int i = 0; i < n; i++) {
+		int id = idTbl[i];
+		prvVec[i].set(msk, id);
+		prvVec[i].getPublicKey(pubVec[i]);
 		bls::PublicKey pub;
-		prvVec[i].getPublicKey(pub);
-		CYBOZU_TEST_ASSERT(pub.isValid(mpk));
+		pub.set(mpk, id);
+		CYBOZU_TEST_EQUAL(pubVec[i], pub);
 	}
-	streamTest(mpk);
 }
 
 CYBOZU_TEST_AUTO(add)

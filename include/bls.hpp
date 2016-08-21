@@ -17,7 +17,6 @@ namespace impl {
 struct PublicKey;
 struct PrivateKey;
 struct Sign;
-struct MasterPublicKey;
 
 } // bls::impl
 
@@ -32,11 +31,30 @@ struct MasterPublicKey;
 	verify ; e(sQ, H(m)) = e(Q, s H(m))
 */
 
+/*
+	initialize this library
+	call this once before using the other method
+*/
+void init();
+
 class Sign;
 class PublicKey;
 class PrivateKey;
 
-void init();
+typedef std::vector<Sign> SignVec;
+typedef std::vector<PublicKey> PublicKeyVec;
+typedef std::vector<PrivateKey> PrivateKeyVec;
+
+/*
+	[s_0, s_1, ..., s_{k-1}]
+	s_0 is original private key
+*/
+typedef std::vector<PrivateKey> MasterPrivateKey;
+/*
+	[s_0 Q, ..., s_{k-1} Q]
+	Q is global fixed parameter
+*/
+typedef std::vector<PublicKey> MasterPublicKey;
 
 class Sign {
 	impl::Sign *self_;
@@ -57,6 +75,10 @@ public:
 	friend std::istream& operator>>(std::istream& is, Sign& s);
 	bool verify(const PublicKey& pub, const std::string& m) const;
 	/*
+		verify self(pop) with pub
+	*/
+	bool verify(const PublicKey& pub) const;
+	/*
 		recover sign from k signVec
 	*/
 	void recover(const std::vector<Sign>& signVec);
@@ -64,28 +86,6 @@ public:
 		add signature key only if id_ == 0
 	*/
 	void add(const Sign& rhs);
-};
-
-/*
-	(Q, sQ, c_1 Q, ..., c_{k-1}Q)
-	s = c_0 ; private key
-	c_1, ..., c_{k-1} ; secret sharing
-	f(x) = c_0 + c_1 x + ... + c_{k-1} x^{k-1}
-	f(id) ; private key for user id(>0)
-*/
-class MasterPublicKey {
-	impl::MasterPublicKey *self_;
-	friend class PrivateKey;
-	friend class PublicKey;
-public:
-	MasterPublicKey();
-	~MasterPublicKey();
-	MasterPublicKey(const MasterPublicKey& rhs);
-	MasterPublicKey& operator=(const MasterPublicKey& rhs);
-	bool operator==(const MasterPublicKey& rhs) const;
-	bool operator!=(const MasterPublicKey& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const MasterPublicKey& mpk);
-	friend std::istream& operator>>(std::istream& is, MasterPublicKey& mpk);
 };
 
 /*
@@ -98,6 +98,8 @@ class PublicKey {
 	friend class Sign;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
+	template<class T, class G>
+	friend struct Wrap;
 public:
 	PublicKey();
 	~PublicKey();
@@ -108,14 +110,15 @@ public:
 	int getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
+	void getStr(std::string& str) const;
+	/*
+		set public for id from mpk
+	*/
+	void set(const MasterPublicKey& mpk, int id);
 	/*
 		recover publicKey from k pubVec
 	*/
 	void recover(const std::vector<PublicKey>& pubVec);
-	/*
-		validate self by MasterPublicKey
-	*/
-	bool isValid(const MasterPublicKey& mpk) const;
 	/*
 		add public key only if id_ == 0
 	*/
@@ -130,6 +133,8 @@ class PrivateKey {
 	int id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
+	template<class T, class G>
+	friend struct Wrap;
 public:
 	PrivateKey();
 	~PrivateKey();
@@ -140,14 +145,24 @@ public:
 	int getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const PrivateKey& prv);
 	friend std::istream& operator>>(std::istream& is, PrivateKey& prv);
+	/*
+		make a private key for id = 0
+	*/
 	void init();
 	void getPublicKey(PublicKey& pub) const;
 	void sign(Sign& sign, const std::string& m) const;
 	/*
-		k-out-of-n secret sharing of privateKey
-		set verifier if mpk is not 0
+		make Pop(Proof of Possesion)
 	*/
-	void share(std::vector<PrivateKey>& prvVec, int n, int k, MasterPublicKey *mpk = 0);
+	void getPop(Sign& pop, const PublicKey& pub) const;
+	/*
+		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
+	*/
+	void getMasterPrivateKey(MasterPrivateKey& msk, int k) const;
+	/*
+		set a private key for id > 0 from msk
+	*/
+	void set(const MasterPrivateKey& msk, int id);
 	/*
 		recover privateKey from k prvVec
 	*/
@@ -157,6 +172,16 @@ public:
 	*/
 	void add(const PrivateKey& rhs);
 };
+
+/*
+	make master public key [s_0 Q, ..., s_{k-1} Q] from msk
+*/
+void getMasterPublicKey(MasterPublicKey& mpk, const MasterPrivateKey& msk);
+
+/*
+	make pop from msk and mpk
+*/
+void getPopVec(std::vector<Sign>& popVec, const MasterPrivateKey& msk, const MasterPublicKey& mpk);
 
 inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
 inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }
