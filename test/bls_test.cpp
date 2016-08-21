@@ -182,6 +182,12 @@ CYBOZU_TEST_AUTO(pop)
 
 	bls::PublicKeyVec mpk;
 	bls::getMasterPublicKey(mpk, msk);
+	bls::SignVec  popVec;
+	bls::getPopVec(popVec, msk, mpk);
+
+	for (size_t i = 0; i < popVec.size(); i++) {
+		CYBOZU_TEST_ASSERT(popVec[i].verify(mpk[i]));
+	}
 
 	const int idTbl[n] = {
 		3, 5, 193, 22, 15
@@ -195,6 +201,10 @@ CYBOZU_TEST_AUTO(pop)
 		bls::PublicKey pub;
 		pub.set(mpk, id);
 		CYBOZU_TEST_EQUAL(pubVec[i], pub);
+
+		bls::Sign pop;
+		secVec[i].getPop(pop, pubVec[i]);
+		CYBOZU_TEST_ASSERT(pop.verify(pubVec[i]));
 	}
 }
 
