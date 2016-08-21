@@ -15,7 +15,7 @@ namespace bls {
 namespace impl {
 
 struct PublicKey;
-struct PrivateKey;
+struct SecretKey;
 struct Sign;
 
 } // bls::impl
@@ -39,17 +39,17 @@ void init();
 
 class Sign;
 class PublicKey;
-class PrivateKey;
+class SecretKey;
 
 typedef std::vector<Sign> SignVec;
 typedef std::vector<PublicKey> PublicKeyVec;
-typedef std::vector<PrivateKey> PrivateKeyVec;
+typedef std::vector<SecretKey> SecretKeyVec;
 
 /*
 	[s_0, s_1, ..., s_{k-1}]
 	s_0 is original private key
 */
-typedef std::vector<PrivateKey> MasterPrivateKey;
+typedef std::vector<SecretKey> MasterSecretKey;
 /*
 	[s_0 Q, ..., s_{k-1} Q]
 	Q is global fixed parameter
@@ -60,7 +60,7 @@ class Sign {
 	impl::Sign *self_;
 	int id_;
 	friend class PublicKey;
-	friend class PrivateKey;
+	friend class SecretKey;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
@@ -94,7 +94,7 @@ public:
 class PublicKey {
 	impl::PublicKey *self_;
 	int id_;
-	friend class PrivateKey;
+	friend class SecretKey;
 	friend class Sign;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
@@ -128,23 +128,23 @@ public:
 /*
 	s ; private key
 */
-class PrivateKey {
-	impl::PrivateKey *self_;
+class SecretKey {
+	impl::SecretKey *self_;
 	int id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 	template<class T, class G>
 	friend struct Wrap;
 public:
-	PrivateKey();
-	~PrivateKey();
-	PrivateKey(const PrivateKey& rhs);
-	PrivateKey& operator=(const PrivateKey& rhs);
-	bool operator==(const PrivateKey& rhs) const;
-	bool operator!=(const PrivateKey& rhs) const { return !(*this == rhs); }
+	SecretKey();
+	~SecretKey();
+	SecretKey(const SecretKey& rhs);
+	SecretKey& operator=(const SecretKey& rhs);
+	bool operator==(const SecretKey& rhs) const;
+	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	int getId() const { return id_; }
-	friend std::ostream& operator<<(std::ostream& os, const PrivateKey& prv);
-	friend std::istream& operator>>(std::istream& is, PrivateKey& prv);
+	friend std::ostream& operator<<(std::ostream& os, const SecretKey& prv);
+	friend std::istream& operator>>(std::istream& is, SecretKey& prv);
 	/*
 		make a private key for id = 0
 	*/
@@ -158,33 +158,33 @@ public:
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
-	void getMasterPrivateKey(MasterPrivateKey& msk, int k) const;
+	void getMasterSecretKey(MasterSecretKey& msk, int k) const;
 	/*
 		set a private key for id > 0 from msk
 	*/
-	void set(const MasterPrivateKey& msk, int id);
+	void set(const MasterSecretKey& msk, int id);
 	/*
-		recover privateKey from k prvVec
+		recover secretKey from k prvVec
 	*/
-	void recover(const std::vector<PrivateKey>& prvVec);
+	void recover(const std::vector<SecretKey>& prvVec);
 	/*
 		add private key only if id_ == 0
 	*/
-	void add(const PrivateKey& rhs);
+	void add(const SecretKey& rhs);
 };
 
 /*
 	make master public key [s_0 Q, ..., s_{k-1} Q] from msk
 */
-void getMasterPublicKey(MasterPublicKey& mpk, const MasterPrivateKey& msk);
+void getMasterPublicKey(MasterPublicKey& mpk, const MasterSecretKey& msk);
 
 /*
 	make pop from msk and mpk
 */
-void getPopVec(std::vector<Sign>& popVec, const MasterPrivateKey& msk, const MasterPublicKey& mpk);
+void getPopVec(std::vector<Sign>& popVec, const MasterSecretKey& msk, const MasterPublicKey& mpk);
 
 inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
 inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }
-inline PrivateKey operator+(const PrivateKey& a, const PrivateKey& b) { PrivateKey r(a); r.add(b); return r; }
+inline SecretKey operator+(const SecretKey& a, const SecretKey& b) { SecretKey r(a); r.add(b); return r; }
 
 } //bls

@@ -177,7 +177,7 @@ inline bool Sign::verify(const PublicKey& pub, const std::string& m) const
 	return e1 == e2;
 }
 
-struct PrivateKey {
+struct SecretKey {
 	Fr s;
 	const Fr& get() const { return s; }
 	void init()
@@ -328,72 +328,72 @@ void PublicKey::add(const PublicKey& rhs)
 	self_->sQ += rhs.self_->sQ;
 }
 
-PrivateKey::PrivateKey()
-	: self_(new impl::PrivateKey())
+SecretKey::SecretKey()
+	: self_(new impl::SecretKey())
 	, id_(0)
 {
 }
 
-PrivateKey::~PrivateKey()
+SecretKey::~SecretKey()
 {
 	delete self_;
 }
 
-PrivateKey::PrivateKey(const PrivateKey& rhs)
-	: self_(new impl::PrivateKey(*rhs.self_))
+SecretKey::SecretKey(const SecretKey& rhs)
+	: self_(new impl::SecretKey(*rhs.self_))
 	, id_(rhs.id_)
 {
 }
 
-PrivateKey& PrivateKey::operator=(const PrivateKey& rhs)
+SecretKey& SecretKey::operator=(const SecretKey& rhs)
 {
 	*self_ = *rhs.self_;
 	id_ = rhs.id_;
 	return *this;
 }
 
-bool PrivateKey::operator==(const PrivateKey& rhs) const
+bool SecretKey::operator==(const SecretKey& rhs) const
 {
 	return id_ == rhs.id_ && self_->s == rhs.self_->s;
 }
 
-std::ostream& operator<<(std::ostream& os, const PrivateKey& prv)
+std::ostream& operator<<(std::ostream& os, const SecretKey& prv)
 {
 	return os << prv.id_ << ' ' << prv.self_->s;
 }
 
-std::istream& operator>>(std::istream& is, PrivateKey& prv)
+std::istream& operator>>(std::istream& is, SecretKey& prv)
 {
 	return is >> prv.id_ >> prv.self_->s;
 }
 
-void PrivateKey::init()
+void SecretKey::init()
 {
 	self_->init();
 }
 
-void PrivateKey::getPublicKey(PublicKey& pub) const
+void SecretKey::getPublicKey(PublicKey& pub) const
 {
 	self_->getPublicKey(*pub.self_);
 	pub.id_ = id_;
 }
 
-void PrivateKey::sign(Sign& sign, const std::string& m) const
+void SecretKey::sign(Sign& sign, const std::string& m) const
 {
 	self_->sign(*sign.self_, m);
 	sign.id_ = id_;
 }
 
-void PrivateKey::getPop(Sign& pop, const PublicKey& pub) const
+void SecretKey::getPop(Sign& pop, const PublicKey& pub) const
 {
 	std::string m;
 	pub.getStr(m);
 	sign(pop, m);
 }
 
-void PrivateKey::getMasterPrivateKey(MasterPrivateKey& msk, int k) const
+void SecretKey::getMasterSecretKey(MasterSecretKey& msk, int k) const
 {
-	if (k <= 1) throw cybozu::Exception("bls:PrivateKey:getMasterPrivateKey:bad k") << k;
+	if (k <= 1) throw cybozu::Exception("bls:SecretKey:getMasterSecretKey:bad k") << k;
 	msk.resize(k);
 	msk[0] = *this;
 	for (int i = 1; i < k; i++) {
@@ -401,14 +401,14 @@ void PrivateKey::getMasterPrivateKey(MasterPrivateKey& msk, int k) const
 	}
 }
 
-void PrivateKey::set(const MasterPrivateKey& msk, int id)
+void SecretKey::set(const MasterSecretKey& msk, int id)
 {
-	Wrap<PrivateKey, Fr> w(msk);
+	Wrap<SecretKey, Fr> w(msk);
 	evalPoly(self_->s, id, w);
 	id_ = id;
 }
 
-void PrivateKey::recover(const std::vector<PrivateKey>& prvVec)
+void SecretKey::recover(const std::vector<SecretKey>& prvVec)
 {
 	Fr s;
 	LagrangeInterpolation(s, prvVec);
@@ -416,13 +416,13 @@ void PrivateKey::recover(const std::vector<PrivateKey>& prvVec)
 	id_ = 0;
 }
 
-void PrivateKey::add(const PrivateKey& rhs)
+void SecretKey::add(const SecretKey& rhs)
 {
-	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:PrivateKey:add:bad id") << id_ << rhs.id_;
+	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:SecretKey:add:bad id") << id_ << rhs.id_;
 	self_->s += rhs.self_->s;
 }
 
-void getMasterPublicKey(MasterPublicKey& mpk, const MasterPrivateKey& msk)
+void getMasterPublicKey(MasterPublicKey& mpk, const MasterSecretKey& msk)
 {
 	mpk.resize(msk.size());
 	for (size_t i = 0; i < msk.size(); i++) {
@@ -430,7 +430,7 @@ void getMasterPublicKey(MasterPublicKey& mpk, const MasterPrivateKey& msk)
 	}
 }
 
-void getPopVec(std::vector<Sign>& popVec, const MasterPrivateKey& msk, const MasterPublicKey& mpk)
+void getPopVec(std::vector<Sign>& popVec, const MasterSecretKey& msk, const MasterPublicKey& mpk)
 {
 	if (msk.size() != mpk.size()) throw cybozu::Exception("bls:getPopVec:bad size") << msk.size() << mpk.size();
 	const size_t n = msk.size();

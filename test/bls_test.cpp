@@ -16,7 +16,7 @@ void streamTest(const T& t)
 CYBOZU_TEST_AUTO(bls)
 {
 	bls::init();
-	bls::PrivateKey prv;
+	bls::SecretKey prv;
 	prv.init();
 	streamTest(prv);
 	bls::PublicKey pub;
@@ -38,7 +38,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	const std::string m = "abc";
 	const int n = 5;
 	const int k = 3;
-	bls::PrivateKey prv0;
+	bls::SecretKey prv0;
 	prv0.init();
 	bls::Sign s0;
 	prv0.sign(s0, m);
@@ -46,10 +46,10 @@ CYBOZU_TEST_AUTO(k_of_n)
 	prv0.getPublicKey(pub0);
 	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
 
-	bls::MasterPrivateKey msk;
-	prv0.getMasterPrivateKey(msk, k);
+	bls::MasterSecretKey msk;
+	prv0.getMasterSecretKey(msk, k);
 
-	std::vector<bls::PrivateKey> allPrvVec(n);
+	std::vector<bls::SecretKey> allPrvVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = i + 1;
 		allPrvVec[i].set(msk, id);
@@ -73,14 +73,14 @@ CYBOZU_TEST_AUTO(k_of_n)
 		3-out-of-n
 		can recover
 	*/
-	std::vector<bls::PrivateKey> prvVec(3);
+	std::vector<bls::SecretKey> prvVec(3);
 	for (int a = 0; a < n; a++) {
 		prvVec[0] = allPrvVec[a];
 		for (int b = a + 1; b < n; b++) {
 			prvVec[1] = allPrvVec[b];
 			for (int c = b + 1; c < n; c++) {
 				prvVec[2] = allPrvVec[c];
-				bls::PrivateKey prv;
+				bls::SecretKey prv;
 				prv.recover(prvVec);
 				CYBOZU_TEST_EQUAL(prv, prv0);
 			}
@@ -90,7 +90,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 		prvVec[0] = allPrvVec[0];
 		prvVec[1] = allPrvVec[1];
 		prvVec[2] = allPrvVec[0]; // same of prvVec[0]
-		bls::PrivateKey prv;
+		bls::SecretKey prv;
 		CYBOZU_TEST_EXCEPTION_MESSAGE(prv.recover(prvVec), std::exception, "same id");
 	}
 	{
@@ -98,7 +98,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 			n-out-of-n
 			can recover
 		*/
-		bls::PrivateKey prv;
+		bls::SecretKey prv;
 		prv.recover(allPrvVec);
 		CYBOZU_TEST_EQUAL(prv, prv0);
 	}
@@ -111,7 +111,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 		prvVec[0] = allPrvVec[a];
 		for (int b = a + 1; b < n; b++) {
 			prvVec[1] = allPrvVec[b];
-			bls::PrivateKey prv;
+			bls::SecretKey prv;
 			prv.recover(prvVec);
 			CYBOZU_TEST_ASSERT(prv != prv0);
 		}
@@ -169,16 +169,16 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 }
 
-CYBOZU_TEST_AUTO(MasterPrivateKey)
+CYBOZU_TEST_AUTO(MasterSecretKey)
 {
 	const int k = 3;
 	const int n = 6;
-	bls::PrivateKey prv0;
+	bls::SecretKey prv0;
 	prv0.init();
 	bls::PublicKey pub0;
 	prv0.getPublicKey(pub0);
-	bls::MasterPrivateKey msk;
-	prv0.getMasterPrivateKey(msk, k);
+	bls::MasterSecretKey msk;
+	prv0.getMasterSecretKey(msk, k);
 
 	bls::MasterPublicKey mpk;
 	bls::getMasterPublicKey(mpk, msk);
@@ -186,7 +186,7 @@ CYBOZU_TEST_AUTO(MasterPrivateKey)
 	const int idTbl[n] = {
 		3, 5, 193, 22, 15
 	};
-	bls::PrivateKeyVec prvVec(n);
+	bls::SecretKeyVec prvVec(n);
 	bls::PublicKeyVec pubVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = idTbl[i];
@@ -200,7 +200,7 @@ CYBOZU_TEST_AUTO(MasterPrivateKey)
 
 CYBOZU_TEST_AUTO(add)
 {
-	bls::PrivateKey prv1, prv2;
+	bls::SecretKey prv1, prv2;
 	prv1.init();
 	prv2.init();
 	CYBOZU_TEST_ASSERT(prv1 != prv2);

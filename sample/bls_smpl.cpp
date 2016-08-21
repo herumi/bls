@@ -39,7 +39,7 @@ void load(T& t, const std::string& file, int id = 0)
 int init()
 {
 	printf("make %s and %s files\n", prvFile.c_str(), pubFile.c_str());
-	bls::PrivateKey prv;
+	bls::SecretKey prv;
 	prv.init();
 	save(prvFile, prv);
 	bls::PublicKey pub;
@@ -51,7 +51,7 @@ int init()
 int sign(const std::string& m, int id)
 {
 	printf("sign message `%s` by id=%d\n", m.c_str(), id);
-	bls::PrivateKey prv;
+	bls::SecretKey prv;
 	load(prv, prvFile, id);
 	bls::Sign s;
 	prv.sign(s, m);
@@ -78,11 +78,11 @@ int verify(const std::string& m, int id)
 int share(int n, int k)
 {
 	printf("%d-out-of-%d threshold sharing\n", k, n);
-	bls::PrivateKey prv;
+	bls::SecretKey prv;
 	load(prv, prvFile);
-	bls::PrivateKeyVec msk;
-	prv.getMasterPrivateKey(msk, k);
-	std::vector<bls::PrivateKey> prvVec(n);
+	bls::SecretKeyVec msk;
+	prv.getMasterSecretKey(msk, k);
+	std::vector<bls::SecretKey> prvVec(n);
 	for (int i = 0; i < n; i++) {
 		prvVec[i].set(msk, i + 1);
 	}
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 	opt.appendOpt(&n, 10, "n", ": k-out-of-n threshold");
 	opt.appendOpt(&k, 3, "k", ": k-out-of-n threshold");
 	opt.appendOpt(&m, "", "m", ": message to be signed");
-	opt.appendOpt(&id, 0, "id", ": id of privateKey");
+	opt.appendOpt(&id, 0, "id", ": id of secretKey");
 	opt.appendVec(&ids, "ids", ": select k id in [0, n). this option should be last");
 	opt.appendHelp("h");
 	if (!opt.parse(argc, argv)) {
