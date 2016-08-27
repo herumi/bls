@@ -185,7 +185,7 @@ struct SecretKey {
 	const Fr& get() const { return s; }
 	void set(const uint64_t *p)
 	{
-		s.setArrayMask(p, keySize);
+		s.setArray(p, keySize);
 	}
 	void init()
 	{
@@ -249,7 +249,7 @@ bool Id::isZero() const
 
 void Id::set(const uint64_t *p)
 {
-	self_->v.setArrayMask(p, keySize);
+	self_->v.setArray(p, keySize);
 }
 
 Sign::Sign()

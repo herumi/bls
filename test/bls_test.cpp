@@ -49,13 +49,10 @@ CYBOZU_TEST_AUTO(id)
 	}
 	{
 		/*
-			truncate the value in [0, r)
+			exception if the value >= r
 		*/
-		const uint64_t id1[] = { uint64_t(-1), uint64_t(-1), uint64_t(-1), uint64_t(-1) };
-		id.set(id1);
-		std::ostringstream os;
-		os << std::hex << id;
-		CYBOZU_TEST_ASSERT(os.str() != "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+		const uint64_t id1[] = { 0, 0, 0, uint64_t(-1) };
+		CYBOZU_TEST_EXCEPTION(id.set(id1), std::exception);
 	}
 }
 
