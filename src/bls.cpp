@@ -180,9 +180,13 @@ inline bool Sign::verify(const PublicKey& pub, const std::string& m) const
 struct SecretKey {
 	Fr s;
 	const Fr& get() const { return s; }
-	void init()
+	void init(const uint64_t *p)
 	{
-		s.setRand(getRG());
+		if (p) {
+			s.setArray(p, keySize);
+		} else {
+			s.setRand(getRG());
+		}
 	}
 	void getPublicKey(PublicKey& pub) const
 	{
@@ -367,9 +371,9 @@ std::istream& operator>>(std::istream& is, SecretKey& sec)
 	return is >> sec.id_ >> sec.self_->s;
 }
 
-void SecretKey::init()
+void SecretKey::init(const uint64_t *p)
 {
-	self_->init();
+	self_->init(p);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const

@@ -41,6 +41,8 @@ class SecretKey;
 class PublicKey;
 class Sign;
 
+const size_t keySize = 32;
+
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
 typedef std::vector<Sign> SignVec;
@@ -67,8 +69,9 @@ public:
 	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
 	/*
 		make a secret key for id = 0
+		set p[keySize] if p != 0
 	*/
-	void init();
+	void init(const uint64_t *p = 0);
 	void getPublicKey(PublicKey& pub) const;
 	void sign(Sign& sign, const std::string& m) const;
 	/*
