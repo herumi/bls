@@ -61,6 +61,7 @@ class Id {
 	friend class SecretKey;
 public:
 	Id(unsigned int id = 0);
+	~Id();
 	Id(const Id& rhs);
 	Id& operator=(const Id& rhs);
 	bool operator==(const Id& rhs) const;

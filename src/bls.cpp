@@ -211,6 +211,11 @@ Id::Id(unsigned int id)
 	self_->v = id;
 }
 
+Id::~Id()
+{
+	delete self_;
+}
+
 Id::Id(const Id& rhs)
 	: self_(new impl::Id(*rhs.self_))
 {
