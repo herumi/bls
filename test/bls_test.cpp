@@ -13,6 +13,7 @@ void streamTest(const T& t)
 	iss >> t2;
 	CYBOZU_TEST_EQUAL(t, t2);
 }
+
 CYBOZU_TEST_AUTO(bls)
 {
 	bls::init();
@@ -30,6 +31,31 @@ CYBOZU_TEST_AUTO(bls)
 		CYBOZU_TEST_ASSERT(s.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
+	}
+}
+
+CYBOZU_TEST_AUTO(id)
+{
+	bls::Id id;
+	CYBOZU_TEST_ASSERT(id.isZero());
+	id = 5;
+	CYBOZU_TEST_EQUAL(id, 5);
+	{
+		const uint64_t id1[] = { 1, 2, 3, 4 };
+		id.set(id1);
+		std::ostringstream os;
+		os << std::hex << id;
+		CYBOZU_TEST_EQUAL(os.str(), "4000000000000000300000000000000020000000000000001");
+	}
+	{
+		/*
+			truncate the value in [0, r)
+		*/
+		const uint64_t id1[] = { uint64_t(-1), uint64_t(-1), uint64_t(-1), uint64_t(-1) };
+		id.set(id1);
+		std::ostringstream os;
+		os << std::hex << id;
+		CYBOZU_TEST_ASSERT(os.str() != "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 	}
 }
 

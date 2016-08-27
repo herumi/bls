@@ -9,15 +9,17 @@ const std::string pubFile = "sample/publickey";
 const std::string secFile = "sample/secretkey";
 const std::string signFile = "sample/sign";
 
-std::string makeName(const std::string& name, int id)
+std::string makeName(const std::string& name, const bls::Id& id)
 {
 	const std::string suf = ".txt";
-	if (id == 0) return name + suf;
-	return name + cybozu::itoa(id) + suf;
+	if (id.isZero()) return name + suf;
+	std::ostringstream os;
+	os << name << id << suf;
+	return os.str();
 }
 
 template<class T>
-void save(const std::string& file, const T& t, int id = 0)
+void save(const std::string& file, const T& t, const bls::Id& id = 0)
 {
 	const std::string name = makeName(file, id);
 	std::ofstream ofs(name.c_str(), std::ios::binary);
@@ -27,7 +29,7 @@ void save(const std::string& file, const T& t, int id = 0)
 }
 
 template<class T>
-void load(T& t, const std::string& file, int id = 0)
+void load(T& t, const std::string& file, const bls::Id& id = 0)
 {
 	const std::string name = makeName(file, id);
 	std::ifstream ifs(name.c_str(), std::ios::binary);
@@ -87,7 +89,7 @@ int share(int n, int k)
 		secVec[i].set(msk, i + 1);
 	}
 	for (int i = 0; i < n; i++) {
-		int id = secVec[i].getId();
+		const bls::Id& id = secVec[i].getId();
 		save(secFile, secVec[i], id);
 		bls::PublicKey pub;
 		secVec[i].getPublicKey(pub);

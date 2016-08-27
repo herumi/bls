@@ -17,6 +17,7 @@ namespace impl {
 struct SecretKey;
 struct PublicKey;
 struct Sign;
+struct Id;
 
 } // bls::impl
 
@@ -40,22 +41,46 @@ void init();
 class SecretKey;
 class PublicKey;
 class Sign;
+class Id;
+
 /*
 	value of secretKey and Id is less than
 r = 16798108731015832284940804142231733909759579603404752749028378864165570215949
 */
-const size_t keySize = 32;
+const size_t keySize = 4; // 256-bit size
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
 typedef std::vector<Sign> SignVec;
+
+class Id {
+	impl::Id *self_;
+	template<class G, class T>
+	friend void LagrangeInterpolation(G& r, const T& vec);
+	friend class PublicKey;
+	friend class SecretKey;
+public:
+	Id(unsigned int id = 0);
+	Id(const Id& rhs);
+	Id& operator=(const Id& rhs);
+	bool operator==(const Id& rhs) const;
+	bool operator!=(const Id& rhs) const { return !(*this == rhs); }
+	friend std::ostream& operator<<(std::ostream& os, const Id& id);
+	friend std::istream& operator>>(std::istream& is, Id& id);
+	bool isZero() const;
+	/*
+		set p[0, .., keySize) if p != 0
+		@note the value should be less than r or truncated in [0, r)
+	*/
+	void set(const uint64_t *p = 0);
+};
 
 /*
 	s ; secret key
 */
 class SecretKey {
 	impl::SecretKey *self_;
-	int id_; // master if id_ = 0, shared if id_ > 0
+	Id id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 	template<class T, class G>
@@ -67,15 +92,18 @@ public:
 	SecretKey& operator=(const SecretKey& rhs);
 	bool operator==(const SecretKey& rhs) const;
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
-	int getId() const { return id_; }
+	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
 	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
 	/*
-		make a secret key for id = 0
-		set p[keySize] if p != 0
-		@note the value should be less than r
+		initialize secretKey with random number and set id = 0
 	*/
-	void init(const uint64_t *p = 0);
+	void init();
+	/*
+		set secretKey with p[0, .., keySize) and set id = 0
+		@note the value should be less than r or truncated in [0, r)
+	*/
+	void set(const uint64_t *p);
 	void getPublicKey(PublicKey& pub) const;
 	void sign(Sign& sign, const std::string& m) const;
 	/*
@@ -90,7 +118,7 @@ public:
 	/*
 		set a secret key for id > 0 from msk
 	*/
-	void set(const SecretKeyVec& msk, int id);
+	void set(const SecretKeyVec& msk, const Id& id);
 	/*
 		recover secretKey from k secVec
 	*/
@@ -106,7 +134,7 @@ public:
 */
 class PublicKey {
 	impl::PublicKey *self_;
-	int id_;
+	Id id_;
 	friend class SecretKey;
 	friend class Sign;
 	template<class G, class T>
@@ -120,14 +148,14 @@ public:
 	PublicKey& operator=(const PublicKey& rhs);
 	bool operator==(const PublicKey& rhs) const;
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
-	int getId() const { return id_; }
+	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
 	void getStr(std::string& str) const;
 	/*
 		set public for id from mpk
 	*/
-	void set(const PublicKeyVec& mpk, int id);
+	void set(const PublicKeyVec& mpk, const Id& id);
 	/*
 		recover publicKey from k pubVec
 	*/
@@ -143,7 +171,7 @@ public:
 */
 class Sign {
 	impl::Sign *self_;
-	int id_;
+	Id id_;
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class G, class T>
@@ -155,7 +183,7 @@ public:
 	Sign& operator=(const Sign& rhs);
 	bool operator==(const Sign& rhs) const;
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
-	int getId() const { return id_; }
+	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
 	bool verify(const PublicKey& pub, const std::string& m) const;
@@ -172,7 +200,6 @@ public:
 	*/
 	void add(const Sign& rhs);
 };
-
 
 /*
 	make master public key [s_0 Q, ..., s_{k-1} Q] from msk

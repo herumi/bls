@@ -18,7 +18,6 @@ typedef BN::Fp6 Fp6;
 typedef BN::Fp12 Fp12;
 typedef BN::G1 G1;
 typedef BN::G2 G2;
-typedef std::vector<int> IntVec;
 
 struct FrTag;
 typedef mcl::FpT<FrTag, 256> Fr;
@@ -99,10 +98,10 @@ struct Polynomial {
 		}
 	}
 	// y = f(id)
-	void eval(Fr& y, int id) const
+	void eval(Fr& y, const Fr& id) const
 	{
-		if (id == 0) throw cybozu::Exception("bls:Polynomial:eval:id is zero");
-		evalPoly(y, Fr(id), c);
+		if (id.isZero()) throw cybozu::Exception("bls:Polynomial:eval:id is zero");
+		evalPoly(y, id, c);
 	}
 };
 
@@ -110,7 +109,7 @@ struct Polynomial {
 	delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
 	where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
 */
-static void calcDelta(FrVec& delta, const IntVec& S)
+static void calcDelta(FrVec& delta, const FrVec& S)
 {
 	const size_t k = S.size();
 	if (k < 2) throw cybozu::Exception("bls:calcDelta:bad size") << k;
@@ -123,8 +122,8 @@ static void calcDelta(FrVec& delta, const IntVec& S)
 		Fr b = S[i];
 		for (size_t j = 0; j < k; j++) {
 			if (j != i) {
-				int v = S[j] - S[i];
-				if (v == 0) throw cybozu::Exception("bls:calcDelta:S has same id") << i << j;
+				Fr v = S[j] - S[i];
+				if (v.isZero()) throw cybozu::Exception("bls:calcDelta:S has same id") << i << j;
 				b *= v;
 			}
 		}
@@ -135,9 +134,9 @@ static void calcDelta(FrVec& delta, const IntVec& S)
 template<class G, class T>
 void LagrangeInterpolation(G& r, const T& vec)
 {
-	IntVec S(vec.size());
+	FrVec S(vec.size());
 	for (size_t i = 0; i < vec.size(); i++) {
-		S[i] = vec[i].getId();
+		S[i] = vec[i].getId().self_->v;
 	}
 	FrVec delta;
 	calcDelta(delta, S);
@@ -151,6 +150,10 @@ void LagrangeInterpolation(G& r, const T& vec)
 }
 
 namespace impl {
+
+struct Id {
+	Fr v;
+};
 
 struct Sign {
 	G1 sHm; // s Hash(m)
@@ -180,13 +183,13 @@ inline bool Sign::verify(const PublicKey& pub, const std::string& m) const
 struct SecretKey {
 	Fr s;
 	const Fr& get() const { return s; }
-	void init(const uint64_t *p)
+	void set(const uint64_t *p)
 	{
-		if (p) {
-			s.setArrayMask(p, keySize);
-		} else {
-			s.setRand(getRG());
-		}
+		s.setArrayMask(p, keySize);
+	}
+	void init()
+	{
+		s.setRand(getRG());
 	}
 	void getPublicKey(PublicKey& pub) const
 	{
@@ -201,6 +204,48 @@ struct SecretKey {
 };
 
 } // mcl::bls::impl
+
+Id::Id(unsigned int id)
+	: self_(new impl::Id())
+{
+	self_->v = id;
+}
+
+Id::Id(const Id& rhs)
+	: self_(new impl::Id(*rhs.self_))
+{
+}
+
+Id& Id::operator=(const Id& rhs)
+{
+	*self_ = *rhs.self_;
+	return *this;
+}
+
+bool Id::operator==(const Id& rhs) const
+{
+	return self_->v == rhs.self_->v;
+}
+
+std::ostream& operator<<(std::ostream& os, const Id& id)
+{
+	return os << id.self_->v;
+}
+
+std::istream& operator>>(std::istream& is, Id& id)
+{
+	return is >> id.self_->v;
+}
+
+bool Id::isZero() const
+{
+	return self_->v.isZero();
+}
+
+void Id::set(const uint64_t *p)
+{
+	self_->v.setArrayMask(p, keySize);
+}
 
 Sign::Sign()
 	: self_(new impl::Sign())
@@ -261,7 +306,7 @@ void Sign::recover(const SignVec& signVec)
 
 void Sign::add(const Sign& rhs)
 {
-	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:Sign:add:bad id") << id_ << rhs.id_;
+	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:Sign:add:bad id") << id_ << rhs.id_;
 	self_->sHm += rhs.self_->sHm;
 }
 
@@ -311,10 +356,10 @@ void PublicKey::getStr(std::string& str) const
 	str = os.str();
 }
 
-void PublicKey::set(const PublicKeyVec& mpk, int id)
+void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 {
 	Wrap<PublicKey, G2> w(mpk);
-	evalPoly(self_->sQ, Fr(id), w);
+	evalPoly(self_->sQ,id.self_->v, w);
 	id_ = id;
 }
 
@@ -328,7 +373,7 @@ void PublicKey::recover(const PublicKeyVec& pubVec)
 
 void PublicKey::add(const PublicKey& rhs)
 {
-	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:PublicKey:add:bad id") << id_ << rhs.id_;
+	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:PublicKey:add:bad id") << id_ << rhs.id_;
 	self_->sQ += rhs.self_->sQ;
 }
 
@@ -371,9 +416,14 @@ std::istream& operator>>(std::istream& is, SecretKey& sec)
 	return is >> sec.id_ >> sec.self_->s;
 }
 
-void SecretKey::init(const uint64_t *p)
+void SecretKey::init()
 {
-	self_->init(p);
+	self_->init();
+}
+
+void SecretKey::set(const uint64_t *p)
+{
+	self_->set(p);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const
@@ -407,10 +457,10 @@ void SecretKey::getMasterSecretKey(SecretKeyVec& msk, int k) const
 	}
 }
 
-void SecretKey::set(const SecretKeyVec& msk, int id)
+void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 {
 	Wrap<SecretKey, Fr> w(msk);
-	evalPoly(self_->s, id, w);
+	evalPoly(self_->s, id.self_->v, w);
 	id_ = id;
 }
 
@@ -424,7 +474,7 @@ void SecretKey::recover(const SecretKeyVec& secVec)
 
 void SecretKey::add(const SecretKey& rhs)
 {
-	if (id_ != 0 || rhs.id_ != 0) throw cybozu::Exception("bls:SecretKey:add:bad id") << id_ << rhs.id_;
+	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:SecretKey:add:bad id") << id_ << rhs.id_;
 	self_->s += rhs.self_->s;
 }
 
