@@ -44,7 +44,7 @@ class Sign;
 class Id;
 
 /*
-	value of secretKey and Id is less than
+	value of secretKey and Id must be less than
 r = 16798108731015832284940804142231733909759579603404752749028378864165570215949
 */
 const size_t keySize = 4; // 256-bit size
@@ -71,7 +71,7 @@ public:
 	bool isZero() const;
 	/*
 		set p[0, .., keySize)
-		@note the value should be less than r or truncated in [0, r)
+		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
 };
@@ -102,7 +102,7 @@ public:
 	void init();
 	/*
 		set secretKey with p[0, .., keySize) and set id = 0
-		@note the value should be less than r or truncated in [0, r)
+		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
 	void getPublicKey(PublicKey& pub) const;
