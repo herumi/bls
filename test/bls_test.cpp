@@ -188,7 +188,7 @@ CYBOZU_TEST_AUTO(pop)
 	bls::PublicKeyVec mpk;
 	bls::getMasterPublicKey(mpk, msk);
 	bls::SignVec  popVec;
-	bls::getPopVec(popVec, msk, mpk);
+	bls::getPopVec(popVec, msk);
 
 	for (size_t i = 0; i < popVec.size(); i++) {
 		CYBOZU_TEST_ASSERT(popVec[i].verify(mpk[i]));
@@ -209,7 +209,7 @@ CYBOZU_TEST_AUTO(pop)
 		CYBOZU_TEST_EQUAL(pubVec[i], pub);
 
 		bls::Sign pop;
-		secVec[i].getPop(pop, pubVec[i]);
+		secVec[i].getPop(pop);
 		CYBOZU_TEST_ASSERT(pop.verify(pubVec[i]));
 
 		secVec[i].sign(sVec[i], m);

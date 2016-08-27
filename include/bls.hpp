@@ -40,7 +40,10 @@ void init();
 class SecretKey;
 class PublicKey;
 class Sign;
-
+/*
+	value of secretKey and Id is less than
+r = 16798108731015832284940804142231733909759579603404752749028378864165570215949
+*/
 const size_t keySize = 32;
 
 typedef std::vector<SecretKey> SecretKeyVec;
@@ -70,6 +73,7 @@ public:
 	/*
 		make a secret key for id = 0
 		set p[keySize] if p != 0
+		@note the value should be less than r
 	*/
 	void init(const uint64_t *p = 0);
 	void getPublicKey(PublicKey& pub) const;
@@ -78,7 +82,7 @@ public:
 		make Pop(Proof of Possesion)
 		pop = prv.sign(pub)
 	*/
-	void getPop(Sign& pop, const PublicKey& pub) const;
+	void getPop(Sign& pop) const;
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
@@ -173,12 +177,26 @@ public:
 /*
 	make master public key [s_0 Q, ..., s_{k-1} Q] from msk
 */
-void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk);
+inline void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk)
+{
+	const size_t n = msk.size();
+	mpk.resize(n);
+	for (size_t i = 0; i < n; i++) {
+		msk[i].getPublicKey(mpk[i]);
+	}
+}
 
 /*
 	make pop from msk and mpk
 */
-void getPopVec(SignVec& popVec, const SecretKeyVec& msk, const PublicKeyVec& mpk);
+inline void getPopVec(SignVec& popVec, const SecretKeyVec& msk)
+{
+	const size_t n = msk.size();
+	popVec.resize(n);
+	for (size_t i = 0; i < n; i++) {
+		msk[i].getPop(popVec[i]);
+	}
+}
 
 inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
 inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }

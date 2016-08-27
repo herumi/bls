@@ -183,7 +183,7 @@ struct SecretKey {
 	void init(const uint64_t *p)
 	{
 		if (p) {
-			s.setArray(p, keySize);
+			s.setArrayMask(p, keySize);
 		} else {
 			s.setRand(getRG());
 		}
@@ -388,8 +388,10 @@ void SecretKey::sign(Sign& sign, const std::string& m) const
 	sign.id_ = id_;
 }
 
-void SecretKey::getPop(Sign& pop, const PublicKey& pub) const
+void SecretKey::getPop(Sign& pop) const
 {
+	PublicKey pub;
+	getPublicKey(pub);
 	std::string m;
 	pub.getStr(m);
 	sign(pop, m);
@@ -426,24 +428,5 @@ void SecretKey::add(const SecretKey& rhs)
 	self_->s += rhs.self_->s;
 }
 
-void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk)
-{
-	mpk.resize(msk.size());
-	for (size_t i = 0; i < msk.size(); i++) {
-		msk[i].getPublicKey(mpk[i]);
-	}
-}
-
-void getPopVec(SignVec& popVec, const SecretKeyVec& msk, const PublicKeyVec& mpk)
-{
-	if (msk.size() != mpk.size()) throw cybozu::Exception("bls:getPopVec:bad size") << msk.size() << mpk.size();
-	const size_t n = msk.size();
-	popVec.resize(n);
-	std::string m;
-	for (size_t i = 0; i < n; i++) {
-		mpk[i].getStr(m);
-		msk[i].sign(popVec[i], m);
-	}
-}
 
 } // bls
