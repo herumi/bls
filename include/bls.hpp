@@ -69,10 +69,10 @@ public:
 	friend std::istream& operator>>(std::istream& is, Id& id);
 	bool isZero() const;
 	/*
-		set p[0, .., keySize) if p != 0
+		set p[0, .., keySize)
 		@note the value should be less than r or truncated in [0, r)
 	*/
-	void set(const uint64_t *p = 0);
+	void set(const uint64_t *p);
 };
 
 /*
