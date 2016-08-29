@@ -40,6 +40,7 @@ void init()
 	G1::setCompressedExpression();
 	G2::setCompressedExpression();
 	Fr::init(BN::param.r);
+	mcl::setIoMode(mcl::IoHeximal);
 }
 
 static const G2& getQ()
