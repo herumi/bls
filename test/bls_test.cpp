@@ -7,10 +7,10 @@ template<class T>
 void streamTest(const T& t)
 {
 	std::ostringstream oss;
-	oss << t;
+	oss << t.id << ' ' << t;
 	std::istringstream iss(oss.str());
 	T t2;
-	iss >> t2;
+	iss >> t2.id >> t2;
 	CYBOZU_TEST_EQUAL(t, t2);
 }
 
@@ -79,7 +79,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 	CYBOZU_TEST_EQUAL(allPrvVec.size(), n);
 	for (int i = 0; i < n; i++) {
-		CYBOZU_TEST_EQUAL(allPrvVec[i].getId(), i + 1);
+		CYBOZU_TEST_EQUAL(allPrvVec[i].id, i + 1);
 	}
 
 	std::vector<bls::Sign> allSignVec(n);

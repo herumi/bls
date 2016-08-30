@@ -81,19 +81,18 @@ public:
 */
 class SecretKey {
 	impl::SecretKey *self_;
-	Id id_; // master if id_ = 0, shared if id_ > 0
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 	template<class T, class G>
 	friend struct Wrap;
 public:
+	Id id; // master if id = 0, shared if id > 0
 	SecretKey();
 	~SecretKey();
 	SecretKey(const SecretKey& rhs);
 	SecretKey& operator=(const SecretKey& rhs);
 	bool operator==(const SecretKey& rhs) const;
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
-	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
 	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
 	/*
@@ -135,7 +134,6 @@ public:
 */
 class PublicKey {
 	impl::PublicKey *self_;
-	Id id_;
 	friend class SecretKey;
 	friend class Sign;
 	template<class G, class T>
@@ -143,13 +141,13 @@ class PublicKey {
 	template<class T, class G>
 	friend struct Wrap;
 public:
+	Id id;
 	PublicKey();
 	~PublicKey();
 	PublicKey(const PublicKey& rhs);
 	PublicKey& operator=(const PublicKey& rhs);
 	bool operator==(const PublicKey& rhs) const;
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
-	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
 	void getStr(std::string& str) const;
@@ -172,19 +170,18 @@ public:
 */
 class Sign {
 	impl::Sign *self_;
-	Id id_;
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class G, class T>
 	friend void LagrangeInterpolation(G& r, const T& vec);
 public:
+	Id id;
 	Sign();
 	~Sign();
 	Sign(const Sign& rhs);
 	Sign& operator=(const Sign& rhs);
 	bool operator==(const Sign& rhs) const;
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
-	const Id& getId() const { return id_; }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
 	bool verify(const PublicKey& pub, const std::string& m) const;

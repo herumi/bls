@@ -14,7 +14,7 @@ std::string makeName(const std::string& name, const bls::Id& id)
 	const std::string suf = ".txt";
 	if (id.isZero()) return name + suf;
 	std::ostringstream os;
-	os << name << id << suf;
+	os << name << '.' << id << suf;
 	return os.str();
 }
 
@@ -23,7 +23,7 @@ void save(const std::string& file, const T& t, const bls::Id& id = 0)
 {
 	const std::string name = makeName(file, id);
 	std::ofstream ofs(name.c_str(), std::ios::binary);
-	if (!(ofs << t)) {
+	if (!(ofs << std::hex << t)) {
 		throw cybozu::Exception("can't save") << name;
 	}
 }
@@ -33,9 +33,10 @@ void load(T& t, const std::string& file, const bls::Id& id = 0)
 {
 	const std::string name = makeName(file, id);
 	std::ifstream ifs(name.c_str(), std::ios::binary);
-	if (!(ifs >> t)) {
+	if (!(ifs >> std::hex >> t)) {
 		throw cybozu::Exception("can't load") << name;
 	}
+	t.id = id;
 }
 
 int init()
@@ -89,7 +90,7 @@ int share(int n, int k)
 		secVec[i].set(msk, i + 1);
 	}
 	for (int i = 0; i < n; i++) {
-		const bls::Id& id = secVec[i].getId();
+		const bls::Id& id = secVec[i].id;
 		save(secFile, secVec[i], id);
 		bls::PublicKey pub;
 		secVec[i].getPublicKey(pub);

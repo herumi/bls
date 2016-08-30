@@ -40,7 +40,7 @@ void init()
 	G1::setCompressedExpression();
 	G2::setCompressedExpression();
 	Fr::init(BN::param.r);
-	mcl::setIoMode(mcl::IoHeximal);
+//	mcl::setIoMode(mcl::IoHeximal);
 }
 
 static const G2& getQ()
@@ -137,7 +137,7 @@ void LagrangeInterpolation(G& r, const T& vec)
 {
 	FrVec S(vec.size());
 	for (size_t i = 0; i < vec.size(); i++) {
-		S[i] = vec[i].getId().self_->v;
+		S[i] = vec[i].id.self_->v;
 	}
 	FrVec delta;
 	calcDelta(delta, S);
@@ -255,7 +255,7 @@ void Id::set(const uint64_t *p)
 
 Sign::Sign()
 	: self_(new impl::Sign())
-	, id_(0)
+	, id(0)
 {
 }
 
@@ -266,30 +266,30 @@ Sign::~Sign()
 
 Sign::Sign(const Sign& rhs)
 	: self_(new impl::Sign(*rhs.self_))
-	, id_(rhs.id_)
+	, id(rhs.id)
 {
 }
 
 Sign& Sign::operator=(const Sign& rhs)
 {
 	*self_ = *rhs.self_;
-	id_ = rhs.id_;
+	id = rhs.id;
 	return *this;
 }
 
 bool Sign::operator==(const Sign& rhs) const
 {
-	return id_ == rhs.id_ && self_->sHm == rhs.self_->sHm;
+	return id == rhs.id && self_->sHm == rhs.self_->sHm;
 }
 
 std::ostream& operator<<(std::ostream& os, const Sign& s)
 {
-	return os << s.id_ << ' ' << s.self_->sHm;
+	return os << s.self_->sHm;
 }
 
 std::istream& operator>>(std::istream& os, Sign& s)
 {
-	return os >> s.id_ >> s.self_->sHm;
+	return os >> s.self_->sHm;
 }
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
@@ -307,18 +307,18 @@ void Sign::recover(const SignVec& signVec)
 	G1 sHm;
 	LagrangeInterpolation(sHm, signVec);
 	self_->sHm = sHm;
-	id_ = 0;
+	id = 0;
 }
 
 void Sign::add(const Sign& rhs)
 {
-	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:Sign:add:bad id") << id_ << rhs.id_;
+	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:Sign:add:bad id") << id << rhs.id;
 	self_->sHm += rhs.self_->sHm;
 }
 
 PublicKey::PublicKey()
 	: self_(new impl::PublicKey())
-	, id_(0)
+	, id(0)
 {
 }
 
@@ -329,30 +329,30 @@ PublicKey::~PublicKey()
 
 PublicKey::PublicKey(const PublicKey& rhs)
 	: self_(new impl::PublicKey(*rhs.self_))
-	, id_(rhs.id_)
+	, id(rhs.id)
 {
 }
 
 PublicKey& PublicKey::operator=(const PublicKey& rhs)
 {
 	*self_ = *rhs.self_;
-	id_ = rhs.id_;
+	id = rhs.id;
 	return *this;
 }
 
 bool PublicKey::operator==(const PublicKey& rhs) const
 {
-	return id_ == rhs.id_ && self_->sQ == rhs.self_->sQ;
+	return id == rhs.id && self_->sQ == rhs.self_->sQ;
 }
 
 std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
 {
-	return os << pub.id_ << ' ' << pub.self_->sQ;
+	return os << pub.self_->sQ;
 }
 
 std::istream& operator>>(std::istream& is, PublicKey& pub)
 {
-	return is >> pub.id_ >> pub.self_->sQ;
+	return is >> pub.self_->sQ;
 }
 
 void PublicKey::getStr(std::string& str) const
@@ -366,7 +366,7 @@ void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 {
 	Wrap<PublicKey, G2> w(mpk);
 	evalPoly(self_->sQ,id.self_->v, w);
-	id_ = id;
+	this->id = id;
 }
 
 void PublicKey::recover(const PublicKeyVec& pubVec)
@@ -374,18 +374,18 @@ void PublicKey::recover(const PublicKeyVec& pubVec)
 	G2 sQ;
 	LagrangeInterpolation(sQ, pubVec);
 	self_->sQ = sQ;
-	id_ = 0;
+	id = 0;
 }
 
 void PublicKey::add(const PublicKey& rhs)
 {
-	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:PublicKey:add:bad id") << id_ << rhs.id_;
+	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:PublicKey:add:bad id") << id << rhs.id;
 	self_->sQ += rhs.self_->sQ;
 }
 
 SecretKey::SecretKey()
 	: self_(new impl::SecretKey())
-	, id_(0)
+	, id(0)
 {
 }
 
@@ -396,30 +396,30 @@ SecretKey::~SecretKey()
 
 SecretKey::SecretKey(const SecretKey& rhs)
 	: self_(new impl::SecretKey(*rhs.self_))
-	, id_(rhs.id_)
+	, id(rhs.id)
 {
 }
 
 SecretKey& SecretKey::operator=(const SecretKey& rhs)
 {
 	*self_ = *rhs.self_;
-	id_ = rhs.id_;
+	id = rhs.id;
 	return *this;
 }
 
 bool SecretKey::operator==(const SecretKey& rhs) const
 {
-	return id_ == rhs.id_ && self_->s == rhs.self_->s;
+	return id == rhs.id && self_->s == rhs.self_->s;
 }
 
 std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
 {
-	return os << sec.id_ << ' ' << sec.self_->s;
+	return os << sec.self_->s;
 }
 
 std::istream& operator>>(std::istream& is, SecretKey& sec)
 {
-	return is >> sec.id_ >> sec.self_->s;
+	return is >> sec.self_->s;
 }
 
 void SecretKey::init()
@@ -435,13 +435,13 @@ void SecretKey::set(const uint64_t *p)
 void SecretKey::getPublicKey(PublicKey& pub) const
 {
 	self_->getPublicKey(*pub.self_);
-	pub.id_ = id_;
+	pub.id = id;
 }
 
 void SecretKey::sign(Sign& sign, const std::string& m) const
 {
 	self_->sign(*sign.self_, m);
-	sign.id_ = id_;
+	sign.id = id;
 }
 
 void SecretKey::getPop(Sign& pop) const
@@ -467,7 +467,7 @@ void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 {
 	Wrap<SecretKey, Fr> w(msk);
 	evalPoly(self_->s, id.self_->v, w);
-	id_ = id;
+	this->id = id;
 }
 
 void SecretKey::recover(const SecretKeyVec& secVec)
@@ -475,14 +475,13 @@ void SecretKey::recover(const SecretKeyVec& secVec)
 	Fr s;
 	LagrangeInterpolation(s, secVec);
 	self_->s = s;
-	id_ = 0;
+	id = 0;
 }
 
 void SecretKey::add(const SecretKey& rhs)
 {
-	if (!id_.isZero() || !rhs.id_.isZero()) throw cybozu::Exception("bls:SecretKey:add:bad id") << id_ << rhs.id_;
+	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:SecretKey:add:bad id") << id << rhs.id;
 	self_->s += rhs.self_->s;
 }
-
 
 } // bls
