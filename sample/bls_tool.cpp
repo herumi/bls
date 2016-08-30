@@ -24,11 +24,14 @@ void strip(std::string& str)
 
 void readLine(std::string& str)
 {
-	if (std::getline(std::cin, str)) {
+	str.clear();
+	// retry once if blank line exists
+	for (size_t i = 0; i < 2; i++) {
+		std::getline(std::cin, str);
 		strip(str);
-	} else {
-		throw std::runtime_error("can't readLine");
+		if (!str.empty()) return;
 	}
+	throw std::runtime_error("readLine:message is empty");
 }
 
 void init()
@@ -53,6 +56,7 @@ void sign()
 	read(sec);
 	std::string m;
 	readLine(m);
+	fprintf(stderr, "sign `%s`\n", m.c_str());
 	bls::Sign s;
 	sec.sign(s, m);
 	write(s);
@@ -66,8 +70,9 @@ void verify()
 	read(pub);
 	std::string m;
 	readLine(m);
+	fprintf(stderr, "verify `%s`\n", m.c_str());
 	bool b = s.verify(pub, m);
-	write(int(b));
+	write(b ? "1" : "0");
 }
 
 void share_pub()
