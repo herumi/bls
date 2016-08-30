@@ -52,6 +52,7 @@ const size_t keySize = 4; // 256-bit size
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
 typedef std::vector<Sign> SignVec;
+typedef std::vector<Id> IdVec;
 
 class Id {
 	impl::Id *self_;

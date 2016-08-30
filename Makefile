@@ -6,7 +6,7 @@ CFLAGS += -std=c++11
 
 SRC_SRC=bls.cpp
 TEST_SRC=bls_test.cpp
-SAMPLE_SRC=bls_smpl.cpp
+SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
 
 CFLAGS+=-I../mcl/include
 
