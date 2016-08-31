@@ -7,10 +7,10 @@ template<class T>
 void streamTest(const T& t)
 {
 	std::ostringstream oss;
-	oss << t.id << ' ' << t;
+	oss << t;
 	std::istringstream iss(oss.str());
 	T t2;
-	iss >> t2.id >> t2;
+	iss >> t2;
 	CYBOZU_TEST_EQUAL(t, t2);
 }
 
@@ -73,16 +73,14 @@ CYBOZU_TEST_AUTO(k_of_n)
 	sec0.getMasterSecretKey(msk, k);
 
 	bls::SecretKeyVec allPrvVec(n);
+	bls::IdVec allIdVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = i + 1;
 		allPrvVec[i].set(msk, id);
-	}
-	CYBOZU_TEST_EQUAL(allPrvVec.size(), n);
-	for (int i = 0; i < n; i++) {
-		CYBOZU_TEST_EQUAL(allPrvVec[i].id, i + 1);
+		allIdVec[i] = id;
 	}
 
-	std::vector<bls::Sign> allSignVec(n);
+	bls::SignVec allSignVec(n);
 	for (int i = 0; i < n; i++) {
 		CYBOZU_TEST_ASSERT(allPrvVec[i] != sec0);
 		allPrvVec[i].sign(allSignVec[i], m);
@@ -96,15 +94,19 @@ CYBOZU_TEST_AUTO(k_of_n)
 		3-out-of-n
 		can recover
 	*/
-	std::vector<bls::SecretKey> secVec(3);
+	bls::SecretKeyVec secVec(3);
+	bls::IdVec idVec(3);
 	for (int a = 0; a < n; a++) {
 		secVec[0] = allPrvVec[a];
+		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
 			secVec[1] = allPrvVec[b];
+			idVec[1] = allIdVec[b];
 			for (int c = b + 1; c < n; c++) {
 				secVec[2] = allPrvVec[c];
+				idVec[2] = allIdVec[c];
 				bls::SecretKey sec;
-				sec.recover(secVec);
+				sec.recover(secVec, idVec);
 				CYBOZU_TEST_EQUAL(sec, sec0);
 			}
 		}
@@ -113,8 +115,11 @@ CYBOZU_TEST_AUTO(k_of_n)
 		secVec[0] = allPrvVec[0];
 		secVec[1] = allPrvVec[1];
 		secVec[2] = allPrvVec[0]; // same of secVec[0]
+		idVec[0] = allIdVec[0];
+		idVec[1] = allIdVec[1];
+		idVec[2] = allIdVec[0];
 		bls::SecretKey sec;
-		CYBOZU_TEST_EXCEPTION_MESSAGE(sec.recover(secVec), std::exception, "same id");
+		CYBOZU_TEST_EXCEPTION_MESSAGE(sec.recover(secVec, idVec), std::exception, "same id");
 	}
 	{
 		/*
@@ -122,7 +127,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 			can recover
 		*/
 		bls::SecretKey sec;
-		sec.recover(allPrvVec);
+		sec.recover(allPrvVec, allIdVec);
 		CYBOZU_TEST_EQUAL(sec, sec0);
 	}
 	/*
@@ -130,12 +135,15 @@ CYBOZU_TEST_AUTO(k_of_n)
 		can't recover
 	*/
 	secVec.resize(2);
+	idVec.resize(2);
 	for (int a = 0; a < n; a++) {
 		secVec[0] = allPrvVec[a];
+		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
 			secVec[1] = allPrvVec[b];
+			idVec[1] = allIdVec[b];
 			bls::SecretKey sec;
-			sec.recover(secVec);
+			sec.recover(secVec, idVec);
 			CYBOZU_TEST_ASSERT(sec != sec0);
 		}
 	}
@@ -143,15 +151,19 @@ CYBOZU_TEST_AUTO(k_of_n)
 		3-out-of-n
 		can recover
 	*/
-	std::vector<bls::Sign> signVec(3);
+	bls::SignVec signVec(3);
+	idVec.resize(3);
 	for (int a = 0; a < n; a++) {
 		signVec[0] = allSignVec[a];
+		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
 			signVec[1] = allSignVec[b];
+			idVec[1] = allIdVec[b];
 			for (int c = b + 1; c < n; c++) {
 				signVec[2] = allSignVec[c];
+				idVec[2] = allIdVec[c];
 				bls::Sign s;
-				s.recover(signVec);
+				s.recover(signVec, idVec);
 				CYBOZU_TEST_EQUAL(s, s0);
 			}
 		}
@@ -162,7 +174,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 			can recover
 		*/
 		bls::Sign s;
-		s.recover(allSignVec);
+		s.recover(allSignVec, allIdVec);
 		CYBOZU_TEST_EQUAL(s, s0);
 	}
 	/*
@@ -170,24 +182,29 @@ CYBOZU_TEST_AUTO(k_of_n)
 		can't recover
 	*/
 	signVec.resize(2);
+	idVec.resize(2);
 	for (int a = 0; a < n; a++) {
 		signVec[0] = allSignVec[a];
+		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
 			signVec[1] = allSignVec[b];
+			idVec[1] = allIdVec[b];
 			bls::Sign s;
-			s.recover(signVec);
+			s.recover(signVec, idVec);
 			CYBOZU_TEST_ASSERT(s != s0);
 		}
 	}
 	// share and recover publicKey
 	{
-		std::vector<bls::PublicKey> pubVec(k);
+		bls::PublicKeyVec pubVec(k);
+		idVec.resize(k);
 		// select [0, k) publicKey
 		for (int i = 0; i < k; i++) {
 			allPrvVec[i].getPublicKey(pubVec[i]);
+			idVec[i] = allIdVec[i];
 		}
 		bls::PublicKey pub;
-		pub.recover(pubVec);
+		pub.recover(pubVec, idVec);
 		CYBOZU_TEST_EQUAL(pub, pub0);
 	}
 }
@@ -240,11 +257,15 @@ CYBOZU_TEST_AUTO(pop)
 	}
 	secVec.resize(k);
 	sVec.resize(k);
+	bls::IdVec idVec(k);
+	for (int i = 0; i < k; i++) {
+		idVec[i] = idTbl[i];
+	}
 	bls::SecretKey sec;
-	sec.recover(secVec);
+	sec.recover(secVec, idVec);
 	CYBOZU_TEST_EQUAL(sec, sec0);
 	bls::Sign s;
-	s.recover(sVec);
+	s.recover(sVec, idVec);
 	CYBOZU_TEST_EQUAL(s, s0);
 }
 

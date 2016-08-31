@@ -57,7 +57,7 @@ typedef std::vector<Id> IdVec;
 class Id {
 	impl::Id *self_;
 	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	friend class PublicKey;
 	friend class SecretKey;
 public:
@@ -83,11 +83,10 @@ public:
 class SecretKey {
 	impl::SecretKey *self_;
 	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	template<class T, class G>
 	friend struct Wrap;
 public:
-	Id id; // master if id = 0, shared if id > 0
 	SecretKey();
 	~SecretKey();
 	SecretKey(const SecretKey& rhs);
@@ -123,9 +122,9 @@ public:
 	/*
 		recover secretKey from k secVec
 	*/
-	void recover(const SecretKeyVec& secVec);
+	void recover(const SecretKeyVec& secVec, const IdVec& idVec);
 	/*
-		add secret key only if id_ == 0
+		add secret key
 	*/
 	void add(const SecretKey& rhs);
 };
@@ -138,11 +137,10 @@ class PublicKey {
 	friend class SecretKey;
 	friend class Sign;
 	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	template<class T, class G>
 	friend struct Wrap;
 public:
-	Id id;
 	PublicKey();
 	~PublicKey();
 	PublicKey(const PublicKey& rhs);
@@ -159,9 +157,9 @@ public:
 	/*
 		recover publicKey from k pubVec
 	*/
-	void recover(const PublicKeyVec& pubVec);
+	void recover(const PublicKeyVec& pubVec, const IdVec& idVec);
 	/*
-		add public key only if id_ == 0
+		add public key
 	*/
 	void add(const PublicKey& rhs);
 };
@@ -174,9 +172,8 @@ class Sign {
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec);
+	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 public:
-	Id id;
 	Sign();
 	~Sign();
 	Sign(const Sign& rhs);
@@ -193,9 +190,9 @@ public:
 	/*
 		recover sign from k signVec
 	*/
-	void recover(const SignVec& signVec);
+	void recover(const SignVec& signVec, const IdVec& idVec);
 	/*
-		add signature key only if id_ == 0
+		add signature
 	*/
 	void add(const Sign& rhs);
 };

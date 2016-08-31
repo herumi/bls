@@ -132,24 +132,6 @@ static void calcDelta(FrVec& delta, const FrVec& S)
 	}
 }
 
-template<class G, class T>
-void LagrangeInterpolation(G& r, const T& vec)
-{
-	FrVec S(vec.size());
-	for (size_t i = 0; i < vec.size(); i++) {
-		S[i] = vec[i].id.self_->v;
-	}
-	FrVec delta;
-	calcDelta(delta, S);
-
-	r.clear();
-	G t;
-	for (size_t i = 0; i < delta.size(); i++) {
-		G::mul(t, vec[i].self_->get(), delta[i]);
-		r += t;
-	}
-}
-
 namespace impl {
 
 struct Id {
@@ -206,6 +188,25 @@ struct SecretKey {
 
 } // mcl::bls::impl
 
+template<class G, class T>
+void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec)
+{
+	FrVec S(idVec.size());
+	for (size_t i = 0; i < vec.size(); i++) {
+		S[i] = idVec[i].self_->v;
+	}
+	FrVec delta;
+	calcDelta(delta, S);
+
+	r.clear();
+	G t;
+	for (size_t i = 0; i < delta.size(); i++) {
+		G::mul(t, vec[i].self_->get(), delta[i]);
+		r += t;
+	}
+}
+
+
 Id::Id(unsigned int id)
 	: self_(new impl::Id())
 {
@@ -255,7 +256,6 @@ void Id::set(const uint64_t *p)
 
 Sign::Sign()
 	: self_(new impl::Sign())
-	, id(0)
 {
 }
 
@@ -266,20 +266,18 @@ Sign::~Sign()
 
 Sign::Sign(const Sign& rhs)
 	: self_(new impl::Sign(*rhs.self_))
-	, id(rhs.id)
 {
 }
 
 Sign& Sign::operator=(const Sign& rhs)
 {
 	*self_ = *rhs.self_;
-	id = rhs.id;
 	return *this;
 }
 
 bool Sign::operator==(const Sign& rhs) const
 {
-	return id == rhs.id && self_->sHm == rhs.self_->sHm;
+	return self_->sHm == rhs.self_->sHm;
 }
 
 std::ostream& operator<<(std::ostream& os, const Sign& s)
@@ -302,23 +300,21 @@ bool Sign::verify(const PublicKey& pub) const
 	pub.getStr(str);
 	return verify(pub, str);
 }
-void Sign::recover(const SignVec& signVec)
+void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 {
+	if (signVec.size() != idVec.size()) throw cybozu::Exception("Sign:recover:bad size") << signVec.size() << idVec.size();
 	G1 sHm;
-	LagrangeInterpolation(sHm, signVec);
+	LagrangeInterpolation(sHm, signVec, idVec);
 	self_->sHm = sHm;
-	id = 0;
 }
 
 void Sign::add(const Sign& rhs)
 {
-	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:Sign:add:bad id") << id << rhs.id;
 	self_->sHm += rhs.self_->sHm;
 }
 
 PublicKey::PublicKey()
 	: self_(new impl::PublicKey())
-	, id(0)
 {
 }
 
@@ -329,20 +325,18 @@ PublicKey::~PublicKey()
 
 PublicKey::PublicKey(const PublicKey& rhs)
 	: self_(new impl::PublicKey(*rhs.self_))
-	, id(rhs.id)
 {
 }
 
 PublicKey& PublicKey::operator=(const PublicKey& rhs)
 {
 	*self_ = *rhs.self_;
-	id = rhs.id;
 	return *this;
 }
 
 bool PublicKey::operator==(const PublicKey& rhs) const
 {
-	return id == rhs.id && self_->sQ == rhs.self_->sQ;
+	return self_->sQ == rhs.self_->sQ;
 }
 
 std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
@@ -366,26 +360,23 @@ void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 {
 	Wrap<PublicKey, G2> w(mpk);
 	evalPoly(self_->sQ,id.self_->v, w);
-	this->id = id;
 }
 
-void PublicKey::recover(const PublicKeyVec& pubVec)
+void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 {
 	G2 sQ;
-	LagrangeInterpolation(sQ, pubVec);
+	if (pubVec.size() != idVec.size()) throw cybozu::Exception("PublicKey:recover:bad size") << pubVec.size() << idVec.size();
+	LagrangeInterpolation(sQ, pubVec, idVec);
 	self_->sQ = sQ;
-	id = 0;
 }
 
 void PublicKey::add(const PublicKey& rhs)
 {
-	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:PublicKey:add:bad id") << id << rhs.id;
 	self_->sQ += rhs.self_->sQ;
 }
 
 SecretKey::SecretKey()
 	: self_(new impl::SecretKey())
-	, id(0)
 {
 }
 
@@ -396,20 +387,18 @@ SecretKey::~SecretKey()
 
 SecretKey::SecretKey(const SecretKey& rhs)
 	: self_(new impl::SecretKey(*rhs.self_))
-	, id(rhs.id)
 {
 }
 
 SecretKey& SecretKey::operator=(const SecretKey& rhs)
 {
 	*self_ = *rhs.self_;
-	id = rhs.id;
 	return *this;
 }
 
 bool SecretKey::operator==(const SecretKey& rhs) const
 {
-	return id == rhs.id && self_->s == rhs.self_->s;
+	return self_->s == rhs.self_->s;
 }
 
 std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
@@ -435,13 +424,11 @@ void SecretKey::set(const uint64_t *p)
 void SecretKey::getPublicKey(PublicKey& pub) const
 {
 	self_->getPublicKey(*pub.self_);
-	pub.id = id;
 }
 
 void SecretKey::sign(Sign& sign, const std::string& m) const
 {
 	self_->sign(*sign.self_, m);
-	sign.id = id;
 }
 
 void SecretKey::getPop(Sign& pop) const
@@ -467,20 +454,18 @@ void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 {
 	Wrap<SecretKey, Fr> w(msk);
 	evalPoly(self_->s, id.self_->v, w);
-	this->id = id;
 }
 
-void SecretKey::recover(const SecretKeyVec& secVec)
+void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 {
 	Fr s;
-	LagrangeInterpolation(s, secVec);
+	if (secVec.size() != idVec.size()) throw cybozu::Exception("SecretKey:recover:bad size") << secVec.size() << idVec.size();
+	LagrangeInterpolation(s, secVec, idVec);
 	self_->s = s;
-	id = 0;
 }
 
 void SecretKey::add(const SecretKey& rhs)
 {
-	if (!id.isZero() || !rhs.id.isZero()) throw cybozu::Exception("bls:SecretKey:add:bad id") << id << rhs.id;
 	self_->s += rhs.self_->s;
 }
 
