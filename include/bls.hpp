@@ -44,10 +44,11 @@ class Sign;
 class Id;
 
 /*
-	value of secretKey and Id must be less than
-r = 16798108731015832284940804142231733909759579603404752749028378864165570215949
+	the value of secretKey and Id must be less than
+	r = 0x2523648240000001ba344d8000000007ff9f800000000010a10000000000000d
+	sizeof(uint64_t) * keySize = 32-byte
 */
-const size_t keySize = 4; // 256-bit size
+const size_t keySize = 4;
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
@@ -114,7 +115,7 @@ public:
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
-	void getMasterSecretKey(SecretKeyVec& msk, int k) const;
+	void getMasterSecretKey(SecretKeyVec& msk, size_t k) const;
 	/*
 		set a secret key for id > 0 from msk
 	*/
@@ -149,7 +150,6 @@ public:
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
-	void getStr(std::string& str) const;
 	/*
 		set public for id from mpk
 	*/

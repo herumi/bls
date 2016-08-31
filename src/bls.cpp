@@ -23,7 +23,6 @@ struct FrTag;
 typedef mcl::FpT<FrTag, 256> Fr;
 typedef std::vector<Fr> FrVec;
 
-
 #define PUT(x) std::cout << #x << "=" << x << std::endl;
 
 static cybozu::RandomGenerator& getRG()
@@ -57,6 +56,7 @@ static void mapToG1(G1& P, const Fp& t)
 	static mcl::bn::MapTo<Fp> mapTo;
 	mapTo.calcG1(P, t);
 }
+
 static void HashAndMapToG1(G1& P, const std::string& m)
 {
 	std::string digest = cybozu::crypto::Hash::digest(cybozu::crypto::Hash::N_SHA256, m);
@@ -106,98 +106,66 @@ struct Polynomial {
 	}
 };
 
-/*
-	delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
-	where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
-*/
-static void calcDelta(FrVec& delta, const FrVec& S)
-{
-	const size_t k = S.size();
-	if (k < 2) throw cybozu::Exception("bls:calcDelta:bad size") << k;
-	delta.resize(k);
-	Fr a = S[0];
-	for (size_t i = 1; i < k; i++) {
-		a *= S[i];
-	}
-	for (size_t i = 0; i < k; i++) {
-		Fr b = S[i];
-		for (size_t j = 0; j < k; j++) {
-			if (j != i) {
-				Fr v = S[j] - S[i];
-				if (v.isZero()) throw cybozu::Exception("bls:calcDelta:S has same id") << i << j;
-				b *= v;
-			}
-		}
-		delta[i] = a / b;
-	}
-}
-
 namespace impl {
 
 struct Id {
 	Fr v;
 };
 
+struct SecretKey {
+	Fr s;
+	const Fr& get() const { return s; }
+};
+
 struct Sign {
 	G1 sHm; // s Hash(m)
 	const G1& get() const { return sHm; }
-	bool verify(const PublicKey& pub, const std::string& m) const;
 };
 
 struct PublicKey {
 	G2 sQ;
-	void init(const Fr& s)
-	{
-		G2::mul(sQ, getQ(), s);
-	}
 	const G2& get() const { return sQ; }
-};
-
-inline bool Sign::verify(const PublicKey& pub, const std::string& m) const
-{
-	G1 Hm;
-	HashAndMapToG1(Hm, m); // Hm = Hash(m)
-	Fp12 e1, e2;
-	BN::pairing(e1, getQ(), sHm); // e(Q, s Hm)
-	BN::pairing(e2, pub.sQ, Hm); // e(sQ, Hm)
-	return e1 == e2;
-}
-
-struct SecretKey {
-	Fr s;
-	const Fr& get() const { return s; }
-	void set(const uint64_t *p)
+	void getStr(std::string& str) const
 	{
-		s.setArray(p, keySize);
-	}
-	void init()
-	{
-		s.setRand(getRG());
-	}
-	void getPublicKey(PublicKey& pub) const
-	{
-		pub.init(s);
-	}
-	void sign(Sign& sign, const std::string& m) const
-	{
-		G1 Hm;
-		HashAndMapToG1(Hm, m);
-		G1::mul(sign.sHm, Hm, s);
+		sQ.getStr(str, mcl::IoArrayRaw);
 	}
 };
 
 } // mcl::bls::impl
 
+/*
+	recover f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
+*/
 template<class G, class T>
-void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec)
+void LagrangeInterpolation(G& r, const T& vec, const IdVec& S)
 {
-	FrVec S(idVec.size());
-	for (size_t i = 0; i < vec.size(); i++) {
-		S[i] = idVec[i].self_->v;
+	/*
+		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
+		where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
+	*/
+	const size_t k = S.size();
+	if (vec.size() != k) throw cybozu::Exception("bls:LagrangeInterpolation:bad size") << vec.size() << k;
+	if (k < 2) throw cybozu::Exception("bls:LagrangeInterpolation:too small size") << k;
+	FrVec delta(k);
+	Fr a = S[0].self_->v;
+	for (size_t i = 1; i < k; i++) {
+		a *= S[i].self_->v;
 	}
-	FrVec delta;
-	calcDelta(delta, S);
+	for (size_t i = 0; i < k; i++) {
+		Fr b = S[i].self_->v;
+		for (size_t j = 0; j < k; j++) {
+			if (j != i) {
+				Fr v = S[j].self_->v - S[i].self_->v;
+				if (v.isZero()) throw cybozu::Exception("bls:LagrangeInterpolation:S has same id") << i << j;
+				b *= v;
+			}
+		}
+		delta[i] = a / b;
+	}
 
+	/*
+		f(0) = sum_i f(S[i]) delta_{i,S}(0)
+	*/
 	r.clear();
 	G t;
 	for (size_t i = 0; i < delta.size(); i++) {
@@ -205,7 +173,6 @@ void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec)
 		r += t;
 	}
 }
-
 
 Id::Id(unsigned int id)
 	: self_(new impl::Id())
@@ -292,20 +259,24 @@ std::istream& operator>>(std::istream& os, Sign& s)
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
 {
-	return self_->verify(*pub.self_, m);
+	G1 Hm;
+	HashAndMapToG1(Hm, m); // Hm = Hash(m)
+	Fp12 e1, e2;
+	BN::pairing(e1, getQ(), self_->sHm); // e(Q, s Hm)
+	BN::pairing(e2, pub.self_->sQ, Hm); // e(sQ, Hm)
+	return e1 == e2;
 }
+
 bool Sign::verify(const PublicKey& pub) const
 {
 	std::string str;
-	pub.getStr(str);
+	pub.self_->getStr(str);
 	return verify(pub, str);
 }
+
 void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 {
-	if (signVec.size() != idVec.size()) throw cybozu::Exception("Sign:recover:bad size") << signVec.size() << idVec.size();
-	G1 sHm;
-	LagrangeInterpolation(sHm, signVec, idVec);
-	self_->sHm = sHm;
+	LagrangeInterpolation(self_->sHm, signVec, idVec);
 }
 
 void Sign::add(const Sign& rhs)
@@ -349,13 +320,6 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 	return is >> pub.self_->sQ;
 }
 
-void PublicKey::getStr(std::string& str) const
-{
-	std::ostringstream os;
-	os << *this;
-	str = os.str();
-}
-
 void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 {
 	Wrap<PublicKey, G2> w(mpk);
@@ -364,10 +328,7 @@ void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 
 void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 {
-	G2 sQ;
-	if (pubVec.size() != idVec.size()) throw cybozu::Exception("PublicKey:recover:bad size") << pubVec.size() << idVec.size();
-	LagrangeInterpolation(sQ, pubVec, idVec);
-	self_->sQ = sQ;
+	LagrangeInterpolation(self_->sQ, pubVec, idVec);
 }
 
 void PublicKey::add(const PublicKey& rhs)
@@ -413,22 +374,24 @@ std::istream& operator>>(std::istream& is, SecretKey& sec)
 
 void SecretKey::init()
 {
-	self_->init();
+	self_->s.setRand(getRG());
 }
 
 void SecretKey::set(const uint64_t *p)
 {
-	self_->set(p);
+	self_->s.setArray(p, keySize);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const
 {
-	self_->getPublicKey(*pub.self_);
+	G2::mul(pub.self_->sQ, getQ(), self_->s);
 }
 
 void SecretKey::sign(Sign& sign, const std::string& m) const
 {
-	self_->sign(*sign.self_, m);
+	G1 Hm;
+	HashAndMapToG1(Hm, m);
+	G1::mul(sign.self_->sHm, Hm, self_->s);
 }
 
 void SecretKey::getPop(Sign& pop) const
@@ -436,16 +399,16 @@ void SecretKey::getPop(Sign& pop) const
 	PublicKey pub;
 	getPublicKey(pub);
 	std::string m;
-	pub.getStr(m);
+	pub.self_->getStr(m);
 	sign(pop, m);
 }
 
-void SecretKey::getMasterSecretKey(SecretKeyVec& msk, int k) const
+void SecretKey::getMasterSecretKey(SecretKeyVec& msk, size_t k) const
 {
 	if (k <= 1) throw cybozu::Exception("bls:SecretKey:getMasterSecretKey:bad k") << k;
 	msk.resize(k);
 	msk[0] = *this;
-	for (int i = 1; i < k; i++) {
+	for (size_t i = 1; i < k; i++) {
 		msk[i].init();
 	}
 }
@@ -458,10 +421,7 @@ void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 
 void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 {
-	Fr s;
-	if (secVec.size() != idVec.size()) throw cybozu::Exception("SecretKey:recover:bad size") << secVec.size() << idVec.size();
-	LagrangeInterpolation(s, secVec, idVec);
-	self_->s = s;
+	LagrangeInterpolation(self_->s, secVec, idVec);
 }
 
 void SecretKey::add(const SecretKey& rhs)

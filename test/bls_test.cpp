@@ -211,8 +211,8 @@ CYBOZU_TEST_AUTO(k_of_n)
 
 CYBOZU_TEST_AUTO(pop)
 {
-	const int k = 3;
-	const int n = 6;
+	const size_t k = 3;
+	const size_t n = 6;
 	const std::string m = "pop test";
 	bls::SecretKey sec0;
 	sec0.init();
@@ -240,7 +240,7 @@ CYBOZU_TEST_AUTO(pop)
 	bls::SecretKeyVec secVec(n);
 	bls::PublicKeyVec pubVec(n);
 	bls::SignVec sVec(n);
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		int id = idTbl[i];
 		secVec[i].set(msk, id);
 		secVec[i].getPublicKey(pubVec[i]);
@@ -258,7 +258,7 @@ CYBOZU_TEST_AUTO(pop)
 	secVec.resize(k);
 	sVec.resize(k);
 	bls::IdVec idVec(k);
-	for (int i = 0; i < k; i++) {
+	for (size_t i = 0; i < k; i++) {
 		idVec[i] = idTbl[i];
 	}
 	bls::SecretKey sec;
