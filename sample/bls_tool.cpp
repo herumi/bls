@@ -34,8 +34,11 @@ void readLine(std::string& str)
 	throw std::runtime_error("readLine:message is empty");
 }
 
+bool g_verbose = false;
+
 void init()
 {
+	if (g_verbose) fprintf(stderr, "init\n");
 	bls::SecretKey sec;
 	sec.init();
 	write(sec);
@@ -43,20 +46,25 @@ void init()
 
 void pubkey()
 {
+	if (g_verbose) fprintf(stderr, "pubkey\n");
 	bls::SecretKey sec;
 	read(sec);
+	if (g_verbose) std::cerr << "sec:" << sec << std::endl;
 	bls::PublicKey pub;
 	sec.getPublicKey(pub);
+	if (g_verbose) std::cerr << "pub:" << pub << std::endl;
 	write(pub);
 }
 
 void sign()
 {
+	if (g_verbose) fprintf(stderr, "sign\n");
 	bls::SecretKey sec;
 	read(sec);
+	if (g_verbose) std::cerr << "sec:" << sec << std::endl;
 	std::string m;
 	readLine(m);
-	fprintf(stderr, "sign `%s`\n", m.c_str());
+	if (g_verbose) fprintf(stderr, "message:`%s`\n", m.c_str());
 	bls::Sign s;
 	sec.sign(s, m);
 	write(s);
@@ -64,27 +72,33 @@ void sign()
 
 void verify()
 {
+	if (g_verbose) fprintf(stderr, "verify\n");
 	bls::Sign s;
 	read(s);
+	if (g_verbose) std::cerr << "sign:" << s << std::endl;
 	bls::PublicKey pub;
 	read(pub);
+	if (g_verbose) std::cerr << "pub:" << pub << std::endl;
 	std::string m;
 	readLine(m);
-	fprintf(stderr, "verify `%s`\n", m.c_str());
+	if (g_verbose) fprintf(stderr, "message:`%s`\n", m.c_str());
 	bool b = s.verify(pub, m);
 	write(b ? "1" : "0");
 }
 
 void share_pub()
 {
+	if (g_verbose) fprintf(stderr, "share_pub\n");
 	size_t k;
 	read(k);
+	if (g_verbose) fprintf(stderr, "k:%d\n", (int)k);
 	bls::PublicKeyVec mpk(k);
 	for (size_t i = 0; i < k; i++) {
 		read(mpk[i]);
 	}
 	bls::Id id;
 	read(id);
+	if (g_verbose) std::cerr << "id:" << id << std::endl;
 	bls::PublicKey pub;
 	pub.set(mpk, id);
 	write(pub);
@@ -92,8 +106,10 @@ void share_pub()
 
 void recover_sig()
 {
+	if (g_verbose) fprintf(stderr, "recover_sig\n");
 	size_t k;
 	read(k);
+	if (g_verbose) fprintf(stderr, "k:%d\n", (int)k);
 	bls::SecretKeyVec msk(k);
 	bls::IdVec idVec(k);
 	for (size_t i = 0; i < k; i++) {
@@ -107,11 +123,14 @@ void recover_sig()
 
 void aggregate_pub()
 {
+	if (g_verbose) fprintf(stderr, "aggregate_pub\n");
 	size_t n;
 	read(n);
 	if (n == 0) throw std::runtime_error("aggregate_pub:n is zero");
+	if (g_verbose) fprintf(stderr, "n:%d\n", (int)n);
 	bls::PublicKey pub;
 	read(pub);
+	if (g_verbose) std::cerr << "pub:" << pub << std::endl;
 	for (size_t i = 1; i < n; i++) {
 		bls::PublicKey rhs;
 		read(rhs);
@@ -122,11 +141,14 @@ void aggregate_pub()
 
 void aggregate_sig()
 {
+	if (g_verbose) fprintf(stderr, "aggregate_sig\n");
 	size_t n;
 	read(n);
 	if (n == 0) throw std::runtime_error("aggregate_sig:n is zero");
+	if (g_verbose) fprintf(stderr, "n:%d\n", (int)n);
 	bls::Sign s;
 	read(s);
+	if (g_verbose) std::cerr << "sign:" << s << std::endl;
 	for (size_t i = 1; i < n; i++) {
 		bls::Sign rhs;
 		read(rhs);
@@ -160,6 +182,7 @@ int main(int argc, char *argv[])
 	cybozu::Option opt;
 	
 	opt.appendParam(&mode, cmdCat.c_str());
+	opt.appendBoolOpt(&g_verbose, "v", ": verbose");
 	opt.appendHelp("h");
 	if (!opt.parse(argc, argv)) {
 		goto ERR_EXIT;
