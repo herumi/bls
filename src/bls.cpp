@@ -174,6 +174,14 @@ void LagrangeInterpolation(G& r, const T& vec, const IdVec& S)
 	}
 }
 
+template<class T>
+std::ostream& writeAsHex(std::ostream& os, const T& t)
+{
+	std::string str;
+	t.getStr(str, 16, true);
+	return os << str;
+}
+
 Id::Id(unsigned int id)
 	: self_(new impl::Id())
 {
@@ -203,7 +211,7 @@ bool Id::operator==(const Id& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const Id& id)
 {
-	return os << id.self_->v;
+	return writeAsHex(os, id.self_->v);
 }
 
 std::istream& operator>>(std::istream& is, Id& id)
@@ -249,7 +257,7 @@ bool Sign::operator==(const Sign& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const Sign& s)
 {
-	return os << s.self_->sHm;
+	return writeAsHex(os, s.self_->sHm);
 }
 
 std::istream& operator>>(std::istream& os, Sign& s)
@@ -312,7 +320,7 @@ bool PublicKey::operator==(const PublicKey& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
 {
-	return os << pub.self_->sQ;
+	return writeAsHex(os, pub.self_->sQ);
 }
 
 std::istream& operator>>(std::istream& is, PublicKey& pub)
@@ -364,7 +372,7 @@ bool SecretKey::operator==(const SecretKey& rhs) const
 
 std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
 {
-	return os << sec.self_->s;
+	return writeAsHex(os, sec.self_->s);
 }
 
 std::istream& operator>>(std::istream& is, SecretKey& sec)

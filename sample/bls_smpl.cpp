@@ -21,7 +21,7 @@ void save(const std::string& file, const T& t, const bls::Id& id = 0)
 {
 	const std::string name = makeName(file, id);
 	std::ofstream ofs(name.c_str(), std::ios::binary);
-	if (!(ofs << std::hex << std::showbase << t)) {
+	if (!(ofs << t)) {
 		throw cybozu::Exception("can't save") << name;
 	}
 }

@@ -95,12 +95,13 @@ void recover_sig()
 	size_t k;
 	read(k);
 	bls::SecretKeyVec msk(k);
+	bls::IdVec idVec(k);
 	for (size_t i = 0; i < k; i++) {
-		read(msk[i].id);
+		read(idVec[i]);
 		read(msk[i]);
 	}
 	bls::SecretKey sec;
-	sec.recover(msk);
+	sec.recover(msk, idVec);
 	write(sec);
 }
 
