@@ -3,8 +3,6 @@
 #include <cybozu/itoa.hpp>
 #include <fstream>
 
-typedef std::vector<int> IntVec;
-
 const std::string pubFile = "sample/publickey";
 const std::string secFile = "sample/secretkey";
 const std::string signFile = "sample/sign";
@@ -36,7 +34,6 @@ void load(T& t, const std::string& file, const bls::Id& id = 0)
 	if (!(ifs >> t)) {
 		throw cybozu::Exception("can't load") << name;
 	}
-	t.id = id;
 }
 
 int init()
@@ -78,40 +75,42 @@ int verify(const std::string& m, int id)
 	}
 }
 
-int share(int n, int k)
+int share(size_t n, size_t k)
 {
-	printf("%d-out-of-%d threshold sharing\n", k, n);
+	printf("%d-out-of-%d threshold sharing\n", (int)k, (int)n);
 	bls::SecretKey sec;
 	load(sec, secFile);
 	bls::SecretKeyVec msk;
 	sec.getMasterSecretKey(msk, k);
-	std::vector<bls::SecretKey> secVec(n);
-	for (int i = 0; i < n; i++) {
-		secVec[i].set(msk, i + 1);
+	bls::SecretKeyVec secVec(n);
+	bls::IdVec ids(n);
+	for (size_t i = 0; i < n; i++) {
+		int id = i + 1;
+		ids[i] = id;
+		secVec[i].set(msk, id);
 	}
-	for (int i = 0; i < n; i++) {
-		const bls::Id& id = secVec[i].id;
-		save(secFile, secVec[i], id);
+	for (size_t i = 0; i < n; i++) {
+		save(secFile, secVec[i], ids[i]);
 		bls::PublicKey pub;
 		secVec[i].getPublicKey(pub);
-		save(pubFile, pub, id);
+		save(pubFile, pub, ids[i]);
 	}
 	return 0;
 }
 
-int recover(const IntVec& ids)
+int recover(const bls::IdVec& ids)
 {
 	printf("recover from");
 	for (size_t i = 0; i < ids.size(); i++) {
-		printf(" %d", ids[i]);
+		std::cout << ' ' << ids[i];
 	}
 	printf("\n");
-	std::vector<bls::Sign> signVec(ids.size());
+	bls::SignVec signVec(ids.size());
 	for (size_t i = 0; i < signVec.size(); i++) {
 		load(signVec[i], signFile, ids[i]);
 	}
 	bls::Sign s;
-	s.recover(signVec);
+	s.recover(signVec, ids);
 	save(signFile, s);
 	return 0;
 }
@@ -119,12 +118,14 @@ int recover(const IntVec& ids)
 int main(int argc, char *argv[])
 	try
 {
+	bls::init();
+
 	std::string mode;
 	std::string m;
-	int n;
-	int k;
+	size_t n;
+	size_t k;
 	int id;
-	IntVec ids;
+	bls::IdVec ids;
 
 	cybozu::Option opt;
 	opt.appendParam(&mode, "init|sign|verify|share|recover");
@@ -137,8 +138,6 @@ int main(int argc, char *argv[])
 	if (!opt.parse(argc, argv)) {
 		goto ERR_EXIT;
 	}
-
-	bls::init();
 
 	if (mode == "init") {
 		return init();
