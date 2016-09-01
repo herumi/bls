@@ -44,8 +44,8 @@ CYBOZU_TEST_AUTO(id)
 		const uint64_t id1[] = { 1, 2, 3, 4 };
 		id.set(id1);
 		std::ostringstream os;
-		os << std::hex << id;
-		CYBOZU_TEST_EQUAL(os.str(), "4000000000000000300000000000000020000000000000001");
+		os << id;
+		CYBOZU_TEST_EQUAL(os.str(), "0x4000000000000000300000000000000020000000000000001");
 	}
 	{
 		/*
