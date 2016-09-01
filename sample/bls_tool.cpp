@@ -110,15 +110,15 @@ void recover_sig()
 	size_t k;
 	read(k);
 	if (g_verbose) fprintf(stderr, "k:%d\n", (int)k);
-	bls::SecretKeyVec msk(k);
+	bls::SignVec sVec(k);
 	bls::IdVec idVec(k);
 	for (size_t i = 0; i < k; i++) {
 		read(idVec[i]);
-		read(msk[i]);
+		read(sVec[i]);
 	}
-	bls::SecretKey sec;
-	sec.recover(msk, idVec);
-	write(sec);
+	bls::Sign s;
+	s.recover(sVec, idVec);
+	write(s);
 }
 
 void aggregate_pub()
