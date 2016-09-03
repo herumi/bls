@@ -22,16 +22,27 @@ void strip(std::string& str)
 	if (str[str.size() - 1] == '\n') str.resize(str.size() - 1);
 }
 
-void readLine(std::string& str)
+void readMessage(std::string& str)
 {
 	str.clear();
+#if 1
+	std::string line;
+	std::getline(std::cin, line); // remove first blank line
+	while (std::getline(std::cin, line)) {
+		if (!str.empty()) str += '\n';
+		str += line;
+	}
+	strip(str);
+	if (!str.empty()) return;
+#else
 	// retry once if blank line exists
 	for (size_t i = 0; i < 2; i++) {
 		std::getline(std::cin, str);
 		strip(str);
 		if (!str.empty()) return;
 	}
-	throw std::runtime_error("readLine:message is empty");
+#endif
+	throw std::runtime_error("readMessage:message is empty");
 }
 
 bool g_verbose = false;
@@ -63,7 +74,7 @@ void sign()
 	read(sec);
 	if (g_verbose) std::cerr << "sec:" << sec << std::endl;
 	std::string m;
-	readLine(m);
+	readMessage(m);
 	if (g_verbose) fprintf(stderr, "message:`%s`\n", m.c_str());
 	bls::Sign s;
 	sec.sign(s, m);
@@ -80,7 +91,7 @@ void verify()
 	read(pub);
 	if (g_verbose) std::cerr << "pub:" << pub << std::endl;
 	std::string m;
-	readLine(m);
+	readMessage(m);
 	if (g_verbose) fprintf(stderr, "message:`%s`\n", m.c_str());
 	bool b = s.verify(pub, m);
 	write(b ? "1" : "0");
