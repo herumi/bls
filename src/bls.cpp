@@ -178,7 +178,7 @@ template<class T>
 std::ostream& writeAsHex(std::ostream& os, const T& t)
 {
 	std::string str;
-	t.getStr(str, 16, true);
+	t.getStr(str, mcl::IoHexPrefix);
 	return os << str;
 }
 
