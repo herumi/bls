@@ -72,12 +72,21 @@ CYBOZU_TEST_AUTO(k_of_n)
 	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
+	std::vector<const bls::SecretKey*> pmsk(k);
+	for (size_t i = 0; i < k; i++) {
+		pmsk[i] = &msk[i];
+	}
+
 	bls::SecretKeyVec allPrvVec(n);
 	bls::IdVec allIdVec(n);
 	for (int i = 0; i < n; i++) {
 		int id = i + 1;
 		allPrvVec[i].set(msk, id);
 		allIdVec[i] = id;
+
+		bls::SecretKey p;
+		p.set(&pmsk[0], k, id);
+		CYBOZU_TEST_EQUAL(allPrvVec[i], p);
 	}
 
 	bls::SignVec allSignVec(n);

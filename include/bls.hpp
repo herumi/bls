@@ -88,6 +88,8 @@ class SecretKey {
 	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	template<class T, class G>
 	friend struct Wrap;
+	template<class T, class G>
+	friend struct WrapPointer;
 public:
 	SecretKey();
 	~SecretKey();
@@ -129,6 +131,13 @@ public:
 		add secret key
 	*/
 	void add(const SecretKey& rhs);
+
+	// the following methods are for C api
+	/*
+		the size of msk must be k
+	*/
+	void set(const SecretKey *const *msk, size_t k, const Id& id);
+	void recover(const SecretKey *const *secVec, const Id *const *idVec, size_t n);
 };
 
 /*
@@ -142,6 +151,8 @@ class PublicKey {
 	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	template<class T, class G>
 	friend struct Wrap;
+	template<class T, class G>
+	friend struct WrapPointer;
 public:
 	PublicKey();
 	~PublicKey();

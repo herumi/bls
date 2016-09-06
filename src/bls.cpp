@@ -87,6 +87,18 @@ struct Wrap {
 	size_t size() const { return pv->size(); }
 };
 
+template<class T, class G>
+struct WrapPointer {
+	const T *const *v;
+	size_t k;
+	WrapPointer(const T *const *v, size_t k) : v(v), k(k) {}
+	const G& operator[](size_t i) const
+	{
+		return v[i]->self_->get();
+	}
+	size_t size() const { return k; }
+};
+
 struct Polynomial {
 	FrVec c; // f[x] = sum_{i=0}^{k-1} c[i] x^i
 	void init(const Fr& s, int k)
@@ -424,6 +436,11 @@ void SecretKey::getMasterSecretKey(SecretKeyVec& msk, size_t k) const
 void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 {
 	Wrap<SecretKey, Fr> w(msk);
+	evalPoly(self_->s, id.self_->v, w);
+}
+void SecretKey::set(const SecretKey *const *msk, size_t k, const Id& id)
+{
+	WrapPointer<SecretKey, Fr> w(msk, k);
 	evalPoly(self_->s, id.self_->v, w);
 }
 
