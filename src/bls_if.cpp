@@ -129,6 +129,11 @@ void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey* const *secVec, c
 	((bls::SecretKey*)sec)->recover((const bls::SecretKey *const *)secVec, (const bls::Id *const *)idVec, n);
 }
 
+void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign)
+{
+	((const bls::SecretKey*)sec)->getPop(*(bls::Sign*)sign);
+}
+
 blsPublicKey *blsPublicKeyCreate()
 {
 	return createT<bls::PublicKey, blsPublicKey>();
@@ -198,5 +203,10 @@ void blsSignRecover(blsSign *sign, const blsSign *const *signVec, const blsId *c
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size)
 {
 	return ((const bls::Sign*)sign)->verify(*(const bls::PublicKey*)pub, std::string(m, size));
+}
+
+int blsSignVerifyPop(const blsSign *sign, const blsPublicKey *pub)
+{
+	return ((const bls::Sign*)sign)->verify(*(const bls::PublicKey*)pub);
 }
 

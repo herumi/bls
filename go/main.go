@@ -104,6 +104,15 @@ func testAdd() {
 	verifyTrue(sign1.Verify(pub1, m))
 }
 
+func testPop() {
+	fmt.Println("testPop")
+	sec := bls.NewSecretKey()
+	sec.Init()
+	pop := sec.GetPop()
+	verifyTrue(pop.VerifyPop(sec.GetPublicKey()))
+	sec.Init()
+	verifyTrue(!pop.VerifyPop(sec.GetPublicKey()))
+}
 func main() {
 	fmt.Println("init")
 	bls.Init()
@@ -145,4 +154,5 @@ func main() {
 	testRecoverSecretKey()
 	testAdd()
 	testSign()
+	testPop()
 }

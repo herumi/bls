@@ -166,6 +166,12 @@ func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
 	C.blsSecretKeyRecover(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(secVec)))
 }
 
+func (sec *SecretKey) GetPop() (sign *Sign) {
+	sign = NewSign()
+	C.blsSecretKeyGetPop(sec.self, sign.self)
+	return sign
+}
+
 type PublicKey struct {
 	self *C.blsPublicKey
 }
@@ -273,3 +279,6 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	return C.blsSignVerify(sign.self, pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))) == 1
 }
 
+func (sign *Sign) VerifyPop(pub *PublicKey) bool {
+	return C.blsSignVerifyPop(sign.self, pub.self) == 1;
+}

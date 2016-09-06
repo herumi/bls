@@ -50,6 +50,7 @@ void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
 void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
 void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* const *msk, size_t k, const blsId *id);
 void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey* const *secVec, const blsId *const *idVec, size_t n);
+void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign);
 
 blsPublicKey *blsPublicKeyCreate(void);
 void blsPublicKeyDestroy(blsPublicKey *pub);
@@ -69,6 +70,8 @@ void blsSignAdd(blsSign *sign, const blsSign *rhs);
 void blsSignRecover(blsSign *sign, const blsSign *const *signVec, const blsId *const *idVec, size_t n);
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size);
+
+int blsSignVerifyPop(const blsSign *sign, const blsPublicKey *pub);
 
 #ifdef __cplusplus
 }
