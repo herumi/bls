@@ -1,6 +1,8 @@
 #include "bls.hpp"
 #include "bls_if.h"
 #include <iostream>
+#include <sstream>
+#include <memory.h>
 
 void blsInit(void)
 {
@@ -24,6 +26,29 @@ void blsIdDestroy(blsId *id)
 void blsIdPut(const blsId *id)
 {
 	std::cout << *(const bls::Id*)id << std::endl;
+}
+
+int blsIdSetStr(blsId *id, const char *buf, size_t bufSize)
+	try
+{
+	std::istringstream iss(std::string(buf, bufSize));
+	iss >> *(bls::Id*)id;
+	return 0;
+} catch (std::exception& e) {
+	return 1;
+}
+
+size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize)
+	try
+{
+	std::ostringstream oss;
+	oss << *(const bls::Id*)id;
+	std::string s = oss.str();
+	if (s.size() > maxBufSize) return 0;
+	memcpy(buf, s.c_str(), s.size());
+	return s.size();
+} catch (std::exception& e) {
+	return 0;
 }
 
 void blsIdSet(blsId *id, const uint64_t *p)

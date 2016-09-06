@@ -7,7 +7,7 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 
-#include <stdint.h> // for uint64_t
+#include <stdint.h> // for uint64_t, uint8_t
 #include <stdlib.h> // for size_t
 
 #ifdef __cplusplus
@@ -24,6 +24,15 @@ void blsInit(void);
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);
 void blsIdPut(const blsId *id);
+
+// return 0 if success
+int blsIdSetStr(blsId *id, const char *buf, size_t bufSize);
+
+/*
+	return written size
+	otherwise 0
+*/
+size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize);
 
 void blsIdSet(blsId *id, const uint64_t *p);
 
