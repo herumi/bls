@@ -101,6 +101,10 @@ void blsSecretKeyInit(blsSecretKey *sec)
 {
 	((bls::SecretKey*)sec)->init();
 }
+void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs)
+{
+	((bls::SecretKey*)sec)->add(*(const bls::SecretKey*)rhs);
+}
 
 void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub)
 {
@@ -133,6 +137,10 @@ size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize)
 {
 	return getStrT<bls::PublicKey, blsPublicKey>(pub, buf, maxBufSize);
 }
+void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
+{
+	((bls::PublicKey*)pub)->add(*(const bls::PublicKey*)rhs);
+}
 
 blsSign *blsSignCreate()
 {
@@ -155,6 +163,10 @@ int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize)
 size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize)
 {
 	return getStrT<bls::Sign, blsSign>(sign, buf, maxBufSize);
+}
+void blsSignAdd(blsSign *sign, const blsSign *rhs)
+{
+	((bls::Sign*)sign)->add(*(const bls::Sign*)rhs);
 }
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size)

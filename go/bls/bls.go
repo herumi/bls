@@ -90,6 +90,10 @@ func (sec *SecretKey) Init() {
 	C.blsSecretKeyInit(sec.self)
 }
 
+func (sec *SecretKey) Add(rhs *SecretKey) {
+	C.blsSecretKeyAdd(sec.self, rhs.self);
+}
+
 type PublicKey struct {
 	self *C.blsPublicKey
 }
@@ -120,6 +124,10 @@ func (pub *PublicKey) SetStr(s string) {
 	if err > 0 {
 		fmt.Println("PublicKey:SetStr", err)
 	}
+}
+
+func (pub *PublicKey) Add(rhs *PublicKey) {
+	C.blsPublicKeyAdd(pub.self, rhs.self);
 }
 
 type Sign struct {
@@ -165,6 +173,10 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	buf := []byte(m)
 	C.blsSecretKeySign(sec.self, sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	return sign
+}
+
+func (sign *Sign) Add(rhs *Sign) {
+	C.blsSignAdd(sign.self, rhs.self);
 }
 
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {

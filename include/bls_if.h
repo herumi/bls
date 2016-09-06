@@ -42,6 +42,7 @@ void blsSecretKeyDestroy(blsSecretKey *sec);
 void blsSecretKeyPut(const blsSecretKey *sec);
 int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize);
 size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize);
+void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 
 void blsSecretKeyInit(blsSecretKey *sec);
 void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
@@ -52,12 +53,14 @@ void blsPublicKeyDestroy(blsPublicKey *pub);
 void blsPublicKeyPut(const blsPublicKey *pub);
 int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize);
 size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize);
+void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 
 blsSign *blsSignCreate(void);
 void blsSignDestroy(blsSign *sign);
 void blsSignPut(const blsSign *sign);
 int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize);
 size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize);
+void blsSignAdd(blsSign *sign, const blsSign *rhs);
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size);
 
