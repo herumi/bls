@@ -58,10 +58,15 @@ typedef std::vector<Id> IdVec;
 
 class Id {
 	impl::Id *self_;
-	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
 	friend class PublicKey;
 	friend class SecretKey;
+	friend class Sign;
+	template<class G, class V1, class V2>
+	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
+	template<class T, class G>
+	friend struct Wrap;
+	template<class T, class G>
+	friend struct WrapPointer;
 public:
 	Id(unsigned int id = 0);
 	~Id();
@@ -84,8 +89,8 @@ public:
 */
 class SecretKey {
 	impl::SecretKey *self_;
-	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
+	template<class G, class V1, class V2>
+	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
 	template<class T, class G>
 	friend struct Wrap;
 	template<class T, class G>
@@ -147,8 +152,8 @@ class PublicKey {
 	impl::PublicKey *self_;
 	friend class SecretKey;
 	friend class Sign;
-	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
+	template<class G, class V1, class V2>
+	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
 	template<class T, class G>
 	friend struct Wrap;
 	template<class T, class G>
@@ -174,6 +179,10 @@ public:
 		add public key
 	*/
 	void add(const PublicKey& rhs);
+
+	// the following methods are for C api
+	void set(const PublicKey *const *mpk, size_t k, const Id& id);
+	void recover(const PublicKey *const *pubVec, const Id *const *idVec, size_t n);
 };
 
 /*
@@ -183,8 +192,12 @@ class Sign {
 	impl::Sign *self_;
 	friend class PublicKey;
 	friend class SecretKey;
-	template<class G, class T>
-	friend void LagrangeInterpolation(G& r, const T& vec, const IdVec& idVec);
+	template<class G, class V1, class V2>
+	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
+	template<class T, class G>
+	friend struct Wrap;
+	template<class T, class G>
+	friend struct WrapPointer;
 public:
 	Sign();
 	~Sign();
@@ -207,6 +220,9 @@ public:
 		add signature
 	*/
 	void add(const Sign& rhs);
+
+	// the following methods are for C api
+	void recover(const Sign* const *signVec, const Id *const *idVec, size_t n);
 };
 
 /*

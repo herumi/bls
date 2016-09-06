@@ -122,6 +122,7 @@ namespace impl {
 
 struct Id {
 	Fr v;
+	const Fr& get() const { return v; }
 };
 
 struct SecretKey {
@@ -148,8 +149,8 @@ struct PublicKey {
 /*
 	recover f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
 */
-template<class G, class T>
-void LagrangeInterpolation(G& r, const T& vec, const IdVec& S)
+template<class G, class V1, class V2>
+void LagrangeInterpolation(G& r, const V1& vec, const V2& S)
 {
 	/*
 		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
@@ -159,15 +160,15 @@ void LagrangeInterpolation(G& r, const T& vec, const IdVec& S)
 	if (vec.size() != k) throw cybozu::Exception("bls:LagrangeInterpolation:bad size") << vec.size() << k;
 	if (k < 2) throw cybozu::Exception("bls:LagrangeInterpolation:too small size") << k;
 	FrVec delta(k);
-	Fr a = S[0].self_->v;
+	Fr a = S[0];
 	for (size_t i = 1; i < k; i++) {
-		a *= S[i].self_->v;
+		a *= S[i];
 	}
 	for (size_t i = 0; i < k; i++) {
-		Fr b = S[i].self_->v;
+		Fr b = S[i];
 		for (size_t j = 0; j < k; j++) {
 			if (j != i) {
-				Fr v = S[j].self_->v - S[i].self_->v;
+				Fr v = S[j] - S[i];
 				if (v.isZero()) throw cybozu::Exception("bls:LagrangeInterpolation:S has same id") << i << j;
 				b *= v;
 			}
@@ -181,7 +182,7 @@ void LagrangeInterpolation(G& r, const T& vec, const IdVec& S)
 	r.clear();
 	G t;
 	for (size_t i = 0; i < delta.size(); i++) {
-		G::mul(t, vec[i].self_->get(), delta[i]);
+		G::mul(t, vec[i], delta[i]);
 		r += t;
 	}
 }
@@ -296,7 +297,16 @@ bool Sign::verify(const PublicKey& pub) const
 
 void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 {
-	LagrangeInterpolation(self_->sHm, signVec, idVec);
+	Wrap<Sign, G1> signW(signVec);
+	Wrap<Id, Fr> idW(idVec);
+	LagrangeInterpolation(self_->sHm, signW, idW);
+}
+
+void Sign::recover(const Sign* const *signVec, const Id *const *idVec, size_t n)
+{
+	WrapPointer<Sign, G1> signW(signVec, n);
+	WrapPointer<Id, Fr> idW(idVec, n);
+	LagrangeInterpolation(self_->sHm, signW, idW);
 }
 
 void Sign::add(const Sign& rhs)
@@ -346,9 +356,23 @@ void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 	evalPoly(self_->sQ,id.self_->v, w);
 }
 
+void PublicKey::set(const PublicKey *const *mpk, size_t k, const Id& id)
+{
+	WrapPointer<PublicKey, G2> w(mpk, k);
+	evalPoly(self_->sQ,id.self_->v, w);
+}
+
 void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 {
-	LagrangeInterpolation(self_->sQ, pubVec, idVec);
+	Wrap<PublicKey, G2> pubW(pubVec);
+	Wrap<Id, Fr> idW(idVec);
+	LagrangeInterpolation(self_->sQ, pubW, idW);
+}
+void PublicKey::recover(const PublicKey *const *pubVec, const Id *const *idVec, size_t n)
+{
+	WrapPointer<PublicKey, G2> pubW(pubVec, n);
+	WrapPointer<Id, Fr> idW(idVec, n);
+	LagrangeInterpolation(self_->sQ, pubW, idW);
 }
 
 void PublicKey::add(const PublicKey& rhs)
@@ -446,7 +470,15 @@ void SecretKey::set(const SecretKey *const *msk, size_t k, const Id& id)
 
 void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 {
-	LagrangeInterpolation(self_->s, secVec, idVec);
+	Wrap<SecretKey, Fr> secW(secVec);
+	Wrap<Id, Fr> idW(idVec);
+	LagrangeInterpolation(self_->s, secW, idW);
+}
+void SecretKey::recover(const SecretKey *const *secVec, const Id *const *idVec, size_t n)
+{
+	WrapPointer<SecretKey, Fr> secW(secVec, n);
+	WrapPointer<Id, Fr> idW(idVec, n);
+	LagrangeInterpolation(self_->s, secW, idW);
 }
 
 void SecretKey::add(const SecretKey& rhs)
