@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <iosfwd>
+#include <stdint.h>
 
 namespace bls {
 
