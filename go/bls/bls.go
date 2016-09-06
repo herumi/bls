@@ -33,25 +33,26 @@ func (id *Id) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsIdGetStr(id.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
-		return "err"
+		panic("implementation err. size of buf is small")
 	}
 	return string(buf[:n])
 }
 
-func (id *Id) SetStr(s string) {
+func (id *Id) SetStr(s string) error {
 	buf := []byte(s)
 	err := C.blsIdSetStr(id.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("Id:SetStr", err)
+		return fmt.Errorf("bad string:%s", s)
 	}
+	return nil
 }
 
-func (id *Id) Set(v []uint64) {
+func (id *Id) Set(v []uint64) error {
 	if len(v) != 4 {
-		fmt.Println("Id:set bad size", len(v))
-		return
+		return fmt.Errorf("bad size", len(v))
 	}
 	C.blsIdSet(id.self, (*C.uint64_t)(unsafe.Pointer(&v[0])))
+	return nil
 }
 
 type SecretKey struct {
@@ -73,17 +74,18 @@ func (sec *SecretKey) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsSecretKeyGetStr(sec.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
-		return "err"
+		panic("implementation err. size of buf is small")
 	}
 	return string(buf[:n])
 }
 
-func (sec *SecretKey) SetStr(s string) {
+func (sec *SecretKey) SetStr(s string) error {
 	buf := []byte(s)
 	err := C.blsSecretKeySetStr(sec.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("SecretKey:SetStr", err)
+		return fmt.Errorf("bad string:%s", s)
 	}
+	return nil
 }
 
 func (sec *SecretKey) Init() {
@@ -166,17 +168,18 @@ func (pub *PublicKey) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsPublicKeyGetStr(pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
-		return "err"
+		panic("implementation err. size of buf is small")
 	}
 	return string(buf[:n])
 }
 
-func (pub *PublicKey) SetStr(s string) {
+func (pub *PublicKey) SetStr(s string) error {
 	buf := []byte(s)
 	err := C.blsPublicKeySetStr(pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("PublicKey:SetStr", err)
+		return fmt.Errorf("bad string:%s", s)
 	}
+	return nil
 }
 
 func (pub *PublicKey) Add(rhs *PublicKey) {
@@ -212,17 +215,18 @@ func (sign *Sign) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsSignGetStr(sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
-		return "err"
+		panic("implementation err. size of buf is small")
 	}
 	return string(buf[:n])
 }
 
-func (sign *Sign) SetStr(s string) {
+func (sign *Sign) SetStr(s string) error {
 	buf := []byte(s)
 	err := C.blsSignSetStr(sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("Sign:SetStr", err)
+		return fmt.Errorf("bad string:%s", s)
 	}
+	return nil
 }
 
 func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
