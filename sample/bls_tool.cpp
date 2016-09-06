@@ -25,7 +25,6 @@ void strip(std::string& str)
 void readMessage(std::string& str)
 {
 	str.clear();
-#if 1
 	std::string line;
 	std::getline(std::cin, line); // remove first blank line
 	while (std::getline(std::cin, line)) {
@@ -34,14 +33,6 @@ void readMessage(std::string& str)
 	}
 	strip(str);
 	if (!str.empty()) return;
-#else
-	// retry once if blank line exists
-	for (size_t i = 0; i < 2; i++) {
-		std::getline(std::cin, str);
-		strip(str);
-		if (!str.empty()) return;
-	}
-#endif
 	throw std::runtime_error("readMessage:message is empty");
 }
 
