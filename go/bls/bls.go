@@ -104,26 +104,47 @@ func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	return msk
 }
 
-func (sec *SecretKey) Set(msk []SecretKey, id Id) {
-	n := len(msk)
-	v := make([]*C.blsSecretKey, n)
+func makeSecretKeyPointerArray(v []SecretKey) (pv []*C.blsSecretKey) {
+	n := len(v)
+	pv = make([]*C.blsSecretKey, n)
 	for i := 0; i < n; i++ {
-		v[i] = msk[i].self
+		pv[i] = v[i].self
 	}
-	C.blsSecretKeySet(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(n), id.self)
+	return pv
+}
+func makePublicKeyPointerArray(v []PublicKey) (pv []*C.blsPublicKey) {
+	n := len(v)
+	pv = make([]*C.blsPublicKey, n)
+	for i := 0; i < n; i++ {
+		pv[i] = v[i].self
+	}
+	return pv
+}
+func makeSignPointerArray(v []Sign) (pv []*C.blsSign) {
+	n := len(v)
+	pv = make([]*C.blsSign, n)
+	for i := 0; i < n; i++ {
+		pv[i] = v[i].self
+	}
+	return pv
+}
+func makeIdPointerArray(v []Id) (pv []*C.blsId) {
+	n := len(v)
+	pv = make([]*C.blsId, n)
+	for i := 0; i < n; i++ {
+		pv[i] = v[i].self
+	}
+	return pv
+}
+func (sec *SecretKey) Set(msk []SecretKey, id Id) {
+	v := makeSecretKeyPointerArray(msk)
+	C.blsSecretKeySet(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.self)
 }
 
 func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
-	n := len(secVec)
-	sv := make([]*C.blsSecretKey, n)
-	for i := 0; i < n; i++ {
-		sv[i] = secVec[i].self
-	}
-	iv := make([]*C.blsId, n)
-	for i := 0; i < n; i++ {
-		iv[i] = idVec[i].self
-	}
-	C.blsSecretKeyRecover(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(n))
+	sv := makeSecretKeyPointerArray(secVec)
+	iv := makeIdPointerArray(idVec)
+	C.blsSecretKeyRecover(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(secVec)))
 }
 
 type PublicKey struct {
@@ -160,6 +181,16 @@ func (pub *PublicKey) SetStr(s string) {
 
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(pub.self, rhs.self);
+}
+func (sec *PublicKey) Set(msk []PublicKey, id Id) {
+	v := makePublicKeyPointerArray(msk)
+	C.blsPublicKeySet(sec.self, (**C.blsPublicKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.self)
+}
+
+func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []Id) {
+	sv := makePublicKeyPointerArray(pubVec)
+	iv := makeIdPointerArray(idVec)
+	C.blsPublicKeyRecover(pub.self, (**C.blsPublicKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(pubVec)))
 }
 
 type Sign struct {
@@ -209,6 +240,11 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 
 func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignAdd(sign.self, rhs.self);
+}
+func (sign *Sign) Recover(signVec []Sign, idVec []Id) {
+	sv := makeSignPointerArray(signVec)
+	iv := makeIdPointerArray(idVec)
+	C.blsSignRecover(sign.self, (**C.blsSign)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(signVec)))
 }
 
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {
