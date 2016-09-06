@@ -10,26 +10,26 @@ import "fmt"
 import "runtime"
 import "unsafe"
 
-func BlsInit() {
+func Init() {
 	C.blsInit()
 }
 
-type BlsId struct {
+type Id struct {
 	self *C.blsId
 }
 
-func destroyBlsId(p *BlsId) {
+func destroyBlsId(p *Id) {
 	C.blsIdDestroy(p.self)
 }
 
-func NewBlsId() *BlsId {
-	p := new(BlsId)
+func NewId() *Id {
+	p := new(Id)
 	p.self = C.blsIdCreate()
 	runtime.SetFinalizer(p, destroyBlsId)
 	return p
 }
 
-func (id *BlsId) String() string {
+func (id *Id) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsIdGetStr(id.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
@@ -38,38 +38,38 @@ func (id *BlsId) String() string {
 	return string(buf[:n])
 }
 
-func (id *BlsId) SetStr(s string) {
+func (id *Id) SetStr(s string) {
 	buf := []byte(s)
 	err := C.blsIdSetStr(id.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("BlsId:SetStr", err)
+		fmt.Println("Id:SetStr", err)
 	}
 }
 
-func (id *BlsId) Set(v []uint64) {
+func (id *Id) Set(v []uint64) {
 	if len(v) != 4 {
-		fmt.Println("BlsId:set bad size", len(v))
+		fmt.Println("Id:set bad size", len(v))
 		return
 	}
 	C.blsIdSet(id.self, (*C.uint64_t)(unsafe.Pointer(&v[0])))
 }
 
-type BlsSecretKey struct {
+type SecretKey struct {
 	self *C.blsSecretKey
 }
 
-func destroyBlsSecretKey(p *BlsSecretKey) {
+func destroyBlsSecretKey(p *SecretKey) {
 	C.blsSecretKeyDestroy(p.self)
 }
 
-func NewBlsSecretKey() *BlsSecretKey {
-	p := new(BlsSecretKey)
+func NewSecretKey() *SecretKey {
+	p := new(SecretKey)
 	p.self = C.blsSecretKeyCreate()
 	runtime.SetFinalizer(p, destroyBlsSecretKey)
 	return p
 }
 
-func (sec *BlsSecretKey) String() string {
+func (sec *SecretKey) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsSecretKeyGetStr(sec.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
@@ -78,34 +78,34 @@ func (sec *BlsSecretKey) String() string {
 	return string(buf[:n])
 }
 
-func (sec *BlsSecretKey) SetStr(s string) {
+func (sec *SecretKey) SetStr(s string) {
 	buf := []byte(s)
 	err := C.blsSecretKeySetStr(sec.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("BlsSecretKey:SetStr", err)
+		fmt.Println("SecretKey:SetStr", err)
 	}
 }
 
-func (sec *BlsSecretKey) Init() {
+func (sec *SecretKey) Init() {
 	C.blsSecretKeyInit(sec.self)
 }
 
-type BlsPublicKey struct {
+type PublicKey struct {
 	self *C.blsPublicKey
 }
 
-func destroyBlsPublicKey(p *BlsPublicKey) {
+func destroyBlsPublicKey(p *PublicKey) {
 	C.blsPublicKeyDestroy(p.self)
 }
 
-func NewBlsPublicKey() *BlsPublicKey {
-	p := new(BlsPublicKey)
+func NewPublicKey() *PublicKey {
+	p := new(PublicKey)
 	p.self = C.blsPublicKeyCreate()
 	runtime.SetFinalizer(p, destroyBlsPublicKey)
 	return p
 }
 
-func (pub *BlsPublicKey) String() string {
+func (pub *PublicKey) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsPublicKeyGetStr(pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
@@ -114,30 +114,30 @@ func (pub *BlsPublicKey) String() string {
 	return string(buf[:n])
 }
 
-func (pub *BlsPublicKey) SetStr(s string) {
+func (pub *PublicKey) SetStr(s string) {
 	buf := []byte(s)
 	err := C.blsPublicKeySetStr(pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("BlsPublicKey:SetStr", err)
+		fmt.Println("PublicKey:SetStr", err)
 	}
 }
 
-type BlsSign struct {
+type Sign struct {
 	self *C.blsSign
 }
 
-func destroyBlsSign(p *BlsSign) {
+func destroyBlsSign(p *Sign) {
 	C.blsSignDestroy(p.self)
 }
 
-func NewBlsSign() *BlsSign {
-	p := new(BlsSign)
+func NewSign() *Sign {
+	p := new(Sign)
 	p.self = C.blsSignCreate()
 	runtime.SetFinalizer(p, destroyBlsSign)
 	return p
 }
 
-func (sign *BlsSign) String() string {
+func (sign *Sign) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsSignGetStr(sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
@@ -146,28 +146,28 @@ func (sign *BlsSign) String() string {
 	return string(buf[:n])
 }
 
-func (sign *BlsSign) SetStr(s string) {
+func (sign *Sign) SetStr(s string) {
 	buf := []byte(s)
 	err := C.blsSignSetStr(sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
-		fmt.Println("BlsSign:SetStr", err)
+		fmt.Println("Sign:SetStr", err)
 	}
 }
 
-func (sec *BlsSecretKey) GetPublicKey() (pub *BlsPublicKey) {
-	pub = NewBlsPublicKey()
+func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
+	pub = NewPublicKey()
 	C.blsSecretKeyGetPublicKey(sec.self, pub.self)
 	return pub
 }
 
-func (sec *BlsSecretKey) Sign(m string) (sign *BlsSign) {
-	sign = NewBlsSign()
+func (sec *SecretKey) Sign(m string) (sign *Sign) {
+	sign = NewSign()
 	buf := []byte(m)
 	C.blsSecretKeySign(sec.self, sign.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	return sign
 }
 
-func (sign *BlsSign) Verify(pub *BlsPublicKey, m string) bool {
+func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
 	return C.blsSignVerify(sign.self, pub.self, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))) == 1
 }
