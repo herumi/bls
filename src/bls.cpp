@@ -10,6 +10,7 @@
 #include <cybozu/random_generator.hpp>
 #include <vector>
 #include <string>
+#include <bls.h>
 
 typedef mcl::FpT<mcl::FpTag, 256> Fp;
 typedef mcl::bn::BNT<Fp> BN;
@@ -22,6 +23,29 @@ typedef BN::G2 G2;
 struct FrTag;
 typedef mcl::FpT<FrTag, 256> Fr;
 typedef std::vector<Fr> FrVec;
+
+/* C functions */
+
+void mybls() {
+        Fp tmp;
+
+        bls::init();
+
+	G1 P;
+        G2 P2;
+	bls::SecretKey sec;
+	bls::PublicKey pub;
+	bls::Sign sign;
+
+        tmp.dump();
+
+	sec.init();
+	sec.getPublicKey(pub);
+	std::cout << sec << "\n";
+	std::cout << pub << "\n";
+}
+
+/* end C functions */
 
 #define PUT(x) std::cout << #x << "=" << x << std::endl;
 
