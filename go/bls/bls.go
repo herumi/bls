@@ -94,6 +94,38 @@ func (sec *SecretKey) Add(rhs *SecretKey) {
 	C.blsSecretKeyAdd(sec.self, rhs.self);
 }
 
+func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
+	msk = make([]SecretKey, k)
+	msk[0] = *sec
+	for i := 1; i < k; i++ {
+		msk[i] = *NewSecretKey()
+		msk[i].Init()
+	}
+	return msk
+}
+
+func (sec *SecretKey) Set(msk []SecretKey, id Id) {
+	n := len(msk)
+	v := make([]*C.blsSecretKey, n)
+	for i := 0; i < n; i++ {
+		v[i] = msk[i].self
+	}
+	C.blsSecretKeySet(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(n), id.self)
+}
+
+func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
+	n := len(secVec)
+	sv := make([]*C.blsSecretKey, n)
+	for i := 0; i < n; i++ {
+		sv[i] = secVec[i].self
+	}
+	iv := make([]*C.blsId, n)
+	for i := 0; i < n; i++ {
+		iv[i] = idVec[i].self
+	}
+	C.blsSecretKeyRecover(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(n))
+}
+
 type PublicKey struct {
 	self *C.blsPublicKey
 }

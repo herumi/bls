@@ -47,6 +47,8 @@ void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 void blsSecretKeyInit(blsSecretKey *sec);
 void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
 void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
+void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* const *msk, size_t k, const blsId *id);
+void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey* const *secVec, const blsId *const *idVec, size_t n);
 
 blsPublicKey *blsPublicKeyCreate(void);
 void blsPublicKeyDestroy(blsPublicKey *pub);
@@ -54,6 +56,8 @@ void blsPublicKeyPut(const blsPublicKey *pub);
 int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize);
 size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize);
 void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
+void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *const *mpk, size_t k, const blsId *id);
+void blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *const *pubVec, const blsId *const *idVec, size_t n);
 
 blsSign *blsSignCreate(void);
 void blsSignDestroy(blsSign *sign);
@@ -61,6 +65,7 @@ void blsSignPut(const blsSign *sign);
 int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize);
 size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize);
 void blsSignAdd(blsSign *sign, const blsSign *rhs);
+void blsSignRecover(blsSign *sign, const blsSign *const *signVec, const blsId *const *idVec, size_t n);
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size);
 
