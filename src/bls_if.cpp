@@ -87,6 +87,10 @@ void blsSecretKeyPut(const blsSecretKey *sec)
 {
 	std::cout << *(const bls::SecretKey*)sec << std::endl;
 }
+void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p)
+{
+	((bls::SecretKey*)sec)->set(p);
+}
 
 int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize)
 {

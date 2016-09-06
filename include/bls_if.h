@@ -40,6 +40,7 @@ void blsIdSet(blsId *id, const uint64_t *p);
 blsSecretKey* blsSecretKeyCreate(void);
 void blsSecretKeyDestroy(blsSecretKey *sec);
 void blsSecretKeyPut(const blsSecretKey *sec);
+void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p);
 int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize);
 size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize);
 void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);

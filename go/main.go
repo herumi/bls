@@ -115,6 +115,11 @@ func main() {
 		id2.SetStr(id.String())
 		fmt.Println("id2:", id2)
 	}
+	{
+		sec := bls.NewSecretKey()
+		sec.SetArray([]uint64{1, 2, 3, 4})
+		fmt.Println("sec=", sec)
+	}
 
 	fmt.Println("create secret key")
 	m := "this is a bls sample for go"

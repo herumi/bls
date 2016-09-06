@@ -88,6 +88,14 @@ func (sec *SecretKey) SetStr(s string) error {
 	return nil
 }
 
+func (sec *SecretKey) SetArray(v []uint64) error {
+	if len(v) != 4 {
+		return fmt.Errorf("bad size", len(v))
+	}
+	C.blsSecretKeySetArray(sec.self, (*C.uint64_t)(unsafe.Pointer(&v[0])))
+	return nil
+}
+
 func (sec *SecretKey) Init() {
 	C.blsSecretKeyInit(sec.self)
 }
