@@ -15,7 +15,6 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 
 ##################################################################
 BLS_LIB=$(LIB_DIR)/libbls.a
-all: $(BLS_LIB)
 
 LIB_OBJ=$(OBJ_DIR)/bls.o
 
@@ -31,6 +30,7 @@ $(MCL_LIB):
 ##################################################################
 
 BLS_IF_LIB=$(LIB_DIR)/libbls_if.a
+lib: $(BLS_LIB) $(BLS_IF_LIB)
 
 $(BLS_IF_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_if.o
 	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_if.o
@@ -60,8 +60,11 @@ test: $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt || echo "all unit tests are ok"
 
+run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
+	cd go && go run main.go
+
 clean:
-	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC)
+	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
