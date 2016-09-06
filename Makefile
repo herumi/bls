@@ -16,6 +16,7 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 ##################################################################
 BLS_LIB=$(LIB_DIR)/libbls.a
 all: $(BLS_LIB)
+	go build .
 
 LIB_OBJ=$(OBJ_DIR)/bls.o
 
