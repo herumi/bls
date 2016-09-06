@@ -106,6 +106,15 @@ func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	return msk
 }
 
+func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
+	n := len(msk)
+	mpk = make([]PublicKey, n)
+	for i := 0; i < n; i++ {
+		mpk[i] = *msk[i].GetPublicKey()
+	}
+	return mpk
+}
+
 func makeSecretKeyPointerArray(v []SecretKey) (pv []*C.blsSecretKey) {
 	n := len(v)
 	pv = make([]*C.blsSecretKey, n)

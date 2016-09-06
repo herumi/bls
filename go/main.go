@@ -3,6 +3,11 @@ package main
 import "fmt"
 import "./bls"
 
+func verifyTrue(b bool) {
+	if !b {
+		fmt.Println("ERR")
+	}
+}
 func testRecoverSecretKey() {
 	fmt.Println("testRecoverSecretKey")
 	k := 5
@@ -28,6 +33,56 @@ func testRecoverSecretKey() {
 	fmt.Println("sec2=", sec2)
 }
 
+func testSign() {
+	m := "testSign"
+	fmt.Println(m)
+
+	sec0 := bls.NewSecretKey()
+	sec0.Init()
+	pub0 := sec0.GetPublicKey()
+	s0 := sec0.Sign(m)
+	verifyTrue(s0.Verify(pub0, m))
+
+	k := 3
+	msk := sec0.GetMasterSecretKey(k)
+	mpk := bls.GetMasterPublicKey(msk)
+
+	idTbl := []uint64{ 3, 5, 193, 22, 15 }
+	n := len(idTbl)
+
+	secVec := make([]bls.SecretKey, n)
+	pubVec := make([]bls.PublicKey, n)
+	signVec := make([]bls.Sign, n)
+	idVec := make([]bls.Id, n)
+
+	for i := 0; i < n; i++ {
+		idVec[i] = *bls.NewId()
+		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0})
+		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
+
+		secVec[i] = *bls.NewSecretKey()
+		secVec[i].Set(msk, idVec[i])
+
+		pubVec[i] = *bls.NewPublicKey()
+		pubVec[i].Set(mpk, idVec[i])
+		fmt.Printf("pubVec[%d]=%s\n", i, pubVec[i].String())
+
+		verifyTrue(pubVec[i].String() == secVec[i].GetPublicKey().String())
+
+		signVec[i] = *secVec[i].Sign(m)
+		verifyTrue(signVec[i].Verify(&pubVec[i], m))
+	}
+	sec1 := bls.NewSecretKey()
+	sec1.Recover(secVec, idVec)
+	verifyTrue(sec0.String() == sec1.String())
+	pub1 := bls.NewPublicKey()
+	pub1.Recover(pubVec, idVec)
+	verifyTrue(pub0.String() == pub1.String())
+	s1 := bls.NewSign()
+	s1.Recover(signVec, idVec)
+	verifyTrue(s0.String() == s1.String())
+}
+
 func testAdd() {
 	fmt.Println("testAdd")
 	sec1 := bls.NewSecretKey()
@@ -46,7 +101,7 @@ func testAdd() {
 	sign1.Add(sign2)
 	fmt.Println("sign1 add:", sign1)
 	pub1.Add(pub2)
-	fmt.Println("add sign:", sign1.Verify(pub1, m))
+	verifyTrue(sign1.Verify(pub1, m))
 }
 
 func main() {
@@ -71,7 +126,7 @@ func main() {
 	fmt.Println("pub:", pub)
 	sign := sec.Sign(m)
 	fmt.Println("sign:", sign)
-	fmt.Println("verify:", sign.Verify(pub, m))
+	verifyTrue(sign.Verify(pub, m))
 
 	// How to make array of SecretKey
 	{
@@ -84,4 +139,5 @@ func main() {
 	}
 	testRecoverSecretKey()
 	testAdd()
+	testSign()
 }
