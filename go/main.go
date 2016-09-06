@@ -26,16 +26,13 @@ func main() {
 
 	sign := C.blsSignCreate()
 
-	msg := "Hello bls"
-	pmsg := C.CString(msg)
+	msg := []byte("Hello bls")
 	fmt.Println("sign message")
-	C.blsSecretKeySign(sec, sign, pmsg, C.size_t(len(msg)))
+	C.blsSecretKeySign(sec, sign, (*C.char)(unsafe.Pointer(&msg[0])), C.size_t(len(msg)))
 
 	C.blsSignPut(sign)
 
-	fmt.Println("verify:", C.blsSignVerify(sign, pub, pmsg, C.size_t(len(msg))))
-
-	C.free(unsafe.Pointer(pmsg))
+	fmt.Println("verify:", C.blsSignVerify(sign, pub, (*C.char)(unsafe.Pointer(&msg[0])), C.size_t(len(msg))))
 
 	C.blsPublicKeyDestroy(pub)
 	C.blsSecretKeyDestroy(sec)
