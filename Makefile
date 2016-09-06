@@ -4,8 +4,8 @@ OBJ_DIR=obj
 EXE_DIR=bin
 CFLAGS += -std=c++11
 
-SRC_SRC=bls.cpp
-TEST_SRC=bls_test.cpp
+SRC_SRC=bls.cpp bls_if.cpp
+TEST_SRC=bls_test.cpp bls_if_test.cpp
 SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
 
 CFLAGS+=-I../mcl/include
@@ -30,6 +30,11 @@ $(MCL_LIB):
 
 ##################################################################
 
+BLS_IF_LIB=$(LIB_DIR)/libbls_if.a
+
+$(BLS_IF_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_if.o
+	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_if.o
+
 VPATH=test sample src
 
 .SUFFIXES: .cpp .d .exe
@@ -41,6 +46,10 @@ $(OBJ_DIR)/%.o: %.cpp
 $(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS_LIB) $(MCL_LIB)
 	-$(MKDIR) $(@D)
 	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(LDFLAGS) -lmcl -L../mcl/lib
+
+$(EXE_DIR)/bls_if_test.exe: $(OBJ_DIR)/bls_if_test.o $(BLS_LIB) $(MCL_LIB) $(BLS_IF_LIB)
+	-$(MKDIR) $(@D)
+	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(BLS_IF_LIB) $(LDFLAGS) -lmcl -L../mcl/lib
 
 SAMPLE_EXE=$(addprefix $(EXE_DIR)/,$(SAMPLE_SRC:.cpp=.exe))
 sample: $(SAMPLE_EXE) $(BLS_LIB)
