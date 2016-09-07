@@ -155,7 +155,7 @@ func makeIdPointerArray(v []Id) (pv []*C.blsId) {
 	}
 	return pv
 }
-func (sec *SecretKey) Set(msk []SecretKey, id Id) {
+func (sec *SecretKey) Set(msk []SecretKey, id *Id) {
 	v := makeSecretKeyPointerArray(msk)
 	C.blsSecretKeySet(sec.self, (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.self)
 }
@@ -208,7 +208,7 @@ func (pub *PublicKey) SetStr(s string) error {
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(pub.self, rhs.self);
 }
-func (sec *PublicKey) Set(msk []PublicKey, id Id) {
+func (sec *PublicKey) Set(msk []PublicKey, id *Id) {
 	v := makePublicKeyPointerArray(msk)
 	C.blsPublicKeySet(sec.self, (**C.blsPublicKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.self)
 }

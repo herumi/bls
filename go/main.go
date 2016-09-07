@@ -25,7 +25,7 @@ func testRecoverSecretKey() {
 		idVec[i] = *bls.NewId()
 		idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
 		secVec[i] = *bls.NewSecretKey()
-		secVec[i].Set(msk, idVec[i])
+		secVec[i].Set(msk, &idVec[i])
 	}
 	// recover sec2 from secVec and idVec
 	sec2 := bls.NewSecretKey()
@@ -61,10 +61,10 @@ func testSign() {
 		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
 		secVec[i] = *bls.NewSecretKey()
-		secVec[i].Set(msk, idVec[i])
+		secVec[i].Set(msk, &idVec[i])
 
 		pubVec[i] = *bls.NewPublicKey()
-		pubVec[i].Set(mpk, idVec[i])
+		pubVec[i].Set(mpk, &idVec[i])
 		fmt.Printf("pubVec[%d]=%s\n", i, pubVec[i].String())
 
 		verifyTrue(pubVec[i].String() == secVec[i].GetPublicKey().String())
