@@ -57,6 +57,10 @@ void blsIdDestroy(blsId *id)
 {
 	delete (bls::Id*)id;
 }
+void blsIdCopy(blsId *dst, const blsId *src)
+{
+	*((bls::Id*)dst) = *((const bls::Id*)src);
+}
 
 int blsIdSetStr(blsId *id, const char *buf, size_t bufSize)
 {
@@ -81,6 +85,10 @@ blsSecretKey* blsSecretKeyCreate()
 void blsSecretKeyDestroy(blsSecretKey *sec)
 {
 	delete (bls::SecretKey*)sec;
+}
+void blsSecretKeyCopy(blsSecretKey *dst, const blsSecretKey *src)
+{
+	*((bls::SecretKey*)dst) = *((const bls::SecretKey*)src);
 }
 
 void blsSecretKeyPut(const blsSecretKey *sec)
@@ -143,6 +151,10 @@ void blsPublicKeyDestroy(blsPublicKey *pub)
 {
 	delete (bls::PublicKey*)pub;
 }
+void blsPublicKeyCopy(blsPublicKey *dst, const blsPublicKey *src)
+{
+	*((bls::PublicKey*)dst) = *((const bls::PublicKey*)src);
+}
 void blsPublicKeyPut(const blsPublicKey *pub)
 {
 	std::cout << *(const bls::PublicKey*)pub << std::endl;
@@ -177,6 +189,10 @@ blsSign *blsSignCreate()
 void blsSignDestroy(blsSign *sign)
 {
 	delete (bls::Sign*)sign;
+}
+void blsSignCopy(blsSign *dst, const blsSign *src)
+{
+	*((bls::Sign*)dst) = *((const bls::Sign*)src);
 }
 void blsSignPut(const blsSign *sign)
 {
