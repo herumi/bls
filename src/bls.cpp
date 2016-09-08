@@ -239,7 +239,7 @@ bool Id::isZero() const
 
 void Id::set(const uint64_t *p)
 {
-	self_->v.setArray(p, keySize);
+	self_->v.setArrayMask(p, keySize);
 }
 
 Sign::Sign()
@@ -423,7 +423,7 @@ void SecretKey::init()
 
 void SecretKey::set(const uint64_t *p)
 {
-	self_->s.setArray(p, keySize);
+	self_->s.setArrayMask(p, keySize);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const

@@ -49,11 +49,29 @@ CYBOZU_TEST_AUTO(id)
 	}
 	{
 		/*
-			exception if the value >= r
+			mask value to be less than r if the value >= r
 		*/
-		const uint64_t id1[] = { 0, 0, 0, uint64_t(-1) };
-		CYBOZU_TEST_EXCEPTION(id.set(id1), std::exception);
+		const uint64_t tbl1[] = { 0, 0, 0, uint64_t(-1) };
+		id.set(tbl1);
+		const uint64_t tbl2[] = { 0, 0, 0, uint64_t(-1) & ((uint64_t(1) << 63) - 1) };
+		bls::Id id2;
+		id2.set(tbl2);
+		CYBOZU_TEST_EQUAL(id, id2);
 	}
+}
+
+CYBOZU_TEST_AUTO(SecretKey_set)
+{
+	/*
+		mask value to be less than r if the value >= r
+	*/
+	bls::SecretKey sec1, sec2;
+	const uint64_t tbl1[] = { 0, 0, 0, uint64_t(-1) };
+	sec1.set(tbl1);
+	const uint64_t tbl2[] = { 0, 0, 0, uint64_t(-1) & ((uint64_t(1) << 63) - 1) };
+	bls::Id expected;
+	sec2.set(tbl2);
+	CYBOZU_TEST_EQUAL(sec1, sec2);
 }
 
 CYBOZU_TEST_AUTO(k_of_n)
