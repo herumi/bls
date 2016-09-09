@@ -1,5 +1,6 @@
 #include <bls.hpp>
 #include <cybozu/test.hpp>
+#include <cybozu/inttype.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -34,6 +35,33 @@ CYBOZU_TEST_AUTO(bls)
 	}
 }
 
+template<class T>
+void testSet()
+{
+	/*
+		mask value to be less than r if the value >= (1 << (192 + 62))
+	*/
+	const uint64_t fff = uint64_t(-1);
+	const uint64_t one = uint64_t(1);
+	const struct {
+		uint64_t in;
+		uint64_t expected;
+	} tbl[] = {
+		{ fff, (one << 61) - 1 }, // masked with (1 << 61) - 1
+		{ one << 62, 0 }, // masked
+		{ (one << 62) | (one << 61), (one << 61) }, // masked
+		{ (one << 61) - 1, (one << 61) - 1 }, // same
+	};
+	T t1, t2;
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {
+		uint64_t v1[] = { fff, fff, fff, tbl[i].in };
+		uint64_t v2[] = { fff, fff, fff, tbl[i].expected };
+		t1.set(v1);
+		t2.set(v2);
+		CYBOZU_TEST_EQUAL(t1, t2);
+	}
+}
+
 CYBOZU_TEST_AUTO(id)
 {
 	bls::Id id;
@@ -47,31 +75,12 @@ CYBOZU_TEST_AUTO(id)
 		os << id;
 		CYBOZU_TEST_EQUAL(os.str(), "0x4000000000000000300000000000000020000000000000001");
 	}
-	{
-		/*
-			mask value to be less than r if the value >= r
-		*/
-		const uint64_t tbl1[] = { 0, 0, 0, uint64_t(-1) };
-		id.set(tbl1);
-		const uint64_t tbl2[] = { 0, 0, 0, uint64_t(-1) & ((uint64_t(1) << 63) - 1) };
-		bls::Id id2;
-		id2.set(tbl2);
-		CYBOZU_TEST_EQUAL(id, id2);
-	}
+	testSet<bls::Id>();
 }
 
 CYBOZU_TEST_AUTO(SecretKey_set)
 {
-	/*
-		mask value to be less than r if the value >= r
-	*/
-	bls::SecretKey sec1, sec2;
-	const uint64_t tbl1[] = { 0, 0, 0, uint64_t(-1) };
-	sec1.set(tbl1);
-	const uint64_t tbl2[] = { 0, 0, 0, uint64_t(-1) & ((uint64_t(1) << 63) - 1) };
-	bls::Id expected;
-	sec2.set(tbl2);
-	CYBOZU_TEST_EQUAL(sec1, sec2);
+	testSet<bls::SecretKey>();
 }
 
 CYBOZU_TEST_AUTO(k_of_n)
