@@ -57,21 +57,15 @@ typedef std::vector<Sign> SignVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
-	impl::Id *self_;
+	uint64_t self_[4]; // 256-bit
 	friend class PublicKey;
 	friend class SecretKey;
-	friend class Sign;
-	template<class G, class V1, class V2>
-	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
-	template<class T, class G>
-	friend struct Wrap;
-	template<class T, class G>
-	friend struct WrapPointer;
+	template<class T, class G> friend struct Wrap;
+	template<class T, class G> friend struct WrapPointer;
+	impl::Id& getInner() { return *reinterpret_cast<impl::Id*>(self_); }
+	const impl::Id& getInner() const { return *reinterpret_cast<const impl::Id*>(self_); }
 public:
 	Id(unsigned int id = 0);
-	~Id();
-	Id(const Id& rhs);
-	Id& operator=(const Id& rhs);
 	bool operator==(const Id& rhs) const;
 	bool operator!=(const Id& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Id& id);
@@ -82,24 +76,20 @@ public:
 		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
+
 };
 
 /*
 	s ; secret key
 */
 class SecretKey {
-	impl::SecretKey *self_;
-	template<class G, class V1, class V2>
-	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
-	template<class T, class G>
-	friend struct Wrap;
-	template<class T, class G>
-	friend struct WrapPointer;
+	uint64_t self_[4]; // 256-bit
+	template<class T, class G> friend struct Wrap;
+	template<class T, class G> friend struct WrapPointer;
+	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(self_); }
+	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(self_); }
 public:
-	SecretKey();
-	~SecretKey();
-	SecretKey(const SecretKey& rhs);
-	SecretKey& operator=(const SecretKey& rhs);
+	SecretKey() : self_() {}
 	bool operator==(const SecretKey& rhs) const;
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
@@ -149,20 +139,15 @@ public:
 	sQ ; public key
 */
 class PublicKey {
-	impl::PublicKey *self_;
+	uint64_t self_[4 * 2 * 3]; // 256-bit x 2 x 3
 	friend class SecretKey;
 	friend class Sign;
-	template<class G, class V1, class V2>
-	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
-	template<class T, class G>
-	friend struct Wrap;
-	template<class T, class G>
-	friend struct WrapPointer;
+	template<class T, class G> friend struct Wrap;
+	template<class T, class G> friend struct WrapPointer;
+	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(self_); }
+	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(self_); }
 public:
-	PublicKey();
-	~PublicKey();
-	PublicKey(const PublicKey& rhs);
-	PublicKey& operator=(const PublicKey& rhs);
+	PublicKey() : self_() {}
 	bool operator==(const PublicKey& rhs) const;
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
@@ -189,20 +174,14 @@ public:
 	s H(m) ; sign
 */
 class Sign {
-	impl::Sign *self_;
-	friend class PublicKey;
+	uint64_t self_[4 * 3]; // 256-bit x 3
 	friend class SecretKey;
-	template<class G, class V1, class V2>
-	friend void LagrangeInterpolation(G& r, const V1& vec, const V2& S);
-	template<class T, class G>
-	friend struct Wrap;
-	template<class T, class G>
-	friend struct WrapPointer;
+	template<class T, class G> friend struct Wrap;
+	template<class T, class G> friend struct WrapPointer;
+	impl::Sign& getInner() { return *reinterpret_cast<impl::Sign*>(self_); }
+	const impl::Sign& getInner() const { return *reinterpret_cast<const impl::Sign*>(self_); }
 public:
-	Sign();
-	~Sign();
-	Sign(const Sign& rhs);
-	Sign& operator=(const Sign& rhs);
+	Sign() : self_() {}
 	bool operator==(const Sign& rhs) const;
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);

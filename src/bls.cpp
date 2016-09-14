@@ -33,15 +33,6 @@ static cybozu::RandomGenerator& getRG()
 
 namespace bls {
 
-void init()
-{
-	BN::init(mcl::bn::CurveFp254BNb);
-	G1::setCompressedExpression();
-	G2::setCompressedExpression();
-	Fr::init(BN::param.r);
-//	mcl::setIoMode(mcl::IoHeximal);
-}
-
 static const G2& getQ()
 {
 	static const G2 Q(
@@ -82,7 +73,7 @@ struct Wrap {
 	Wrap(const std::vector<T>& v) : pv(&v) {}
 	const G& operator[](size_t i) const
 	{
-		return (*pv)[i].self_->get();
+		return (*pv)[i].getInner().get();
 	}
 	size_t size() const { return pv->size(); }
 };
@@ -94,7 +85,7 @@ struct WrapPointer {
 	WrapPointer(const T *const *v, size_t k) : v(v), k(k) {}
 	const G& operator[](size_t i) const
 	{
-		return v[i]->self_->get();
+		return v[i]->getInner().get();
 	}
 	size_t size() const { return k; }
 };
@@ -195,87 +186,62 @@ std::ostream& writeAsHex(std::ostream& os, const T& t)
 	return os << str;
 }
 
+void init()
+{
+	BN::init(mcl::bn::CurveFp254BNb);
+	G1::setCompressedExpression();
+	G2::setCompressedExpression();
+	Fr::init(BN::param.r);
+//	mcl::setIoMode(mcl::IoHeximal);
+	assert(sizeof(Id) == sizeof(impl::Id));
+	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
+	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
+	assert(sizeof(Sign) == sizeof(impl::Sign));
+}
+
 Id::Id(unsigned int id)
-	: self_(new impl::Id())
 {
-	self_->v = id;
-}
-
-Id::~Id()
-{
-	delete self_;
-}
-
-Id::Id(const Id& rhs)
-	: self_(new impl::Id(*rhs.self_))
-{
-}
-
-Id& Id::operator=(const Id& rhs)
-{
-	*self_ = *rhs.self_;
-	return *this;
+	getInner().v = id;
 }
 
 bool Id::operator==(const Id& rhs) const
 {
-	return self_->v == rhs.self_->v;
+	return getInner().v == rhs.getInner().v;
 }
 
 std::ostream& operator<<(std::ostream& os, const Id& id)
 {
-	return writeAsHex(os, id.self_->v);
+	return writeAsHex(os, id.getInner().v);
 }
 
 std::istream& operator>>(std::istream& is, Id& id)
 {
-	return is >> id.self_->v;
+	return is >> id.getInner().v;
 }
 
 bool Id::isZero() const
 {
-	return self_->v.isZero();
+	return getInner().v.isZero();
 }
 
 void Id::set(const uint64_t *p)
 {
-	self_->v.setArrayMask(p, keySize);
-}
-
-Sign::Sign()
-	: self_(new impl::Sign())
-{
-}
-
-Sign::~Sign()
-{
-	delete self_;
-}
-
-Sign::Sign(const Sign& rhs)
-	: self_(new impl::Sign(*rhs.self_))
-{
-}
-
-Sign& Sign::operator=(const Sign& rhs)
-{
-	*self_ = *rhs.self_;
-	return *this;
+	getInner().v.setArrayMask(p, keySize);
 }
 
 bool Sign::operator==(const Sign& rhs) const
 {
-	return self_->sHm == rhs.self_->sHm;
+	return getInner().sHm == rhs.getInner().sHm;
 }
 
 std::ostream& operator<<(std::ostream& os, const Sign& s)
 {
-	return writeAsHex(os, s.self_->sHm);
+	return writeAsHex(os, s.getInner().sHm);
 }
 
 std::istream& operator>>(std::istream& os, Sign& s)
 {
-	return os >> s.self_->sHm;
+	return os >> s.getInner().sHm;
 }
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
@@ -283,15 +249,15 @@ bool Sign::verify(const PublicKey& pub, const std::string& m) const
 	G1 Hm;
 	HashAndMapToG1(Hm, m); // Hm = Hash(m)
 	Fp12 e1, e2;
-	BN::pairing(e1, getQ(), self_->sHm); // e(Q, s Hm)
-	BN::pairing(e2, pub.self_->sQ, Hm); // e(sQ, Hm)
+	BN::pairing(e1, getQ(), getInner().sHm); // e(Q, s Hm)
+	BN::pairing(e2, pub.getInner().sQ, Hm); // e(sQ, Hm)
 	return e1 == e2;
 }
 
 bool Sign::verify(const PublicKey& pub) const
 {
 	std::string str;
-	pub.self_->getStr(str);
+	pub.getInner().sQ.getStr(str);
 	return verify(pub, str);
 }
 
@@ -299,143 +265,101 @@ void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 {
 	Wrap<Sign, G1> signW(signVec);
 	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(self_->sHm, signW, idW);
+	LagrangeInterpolation(getInner().sHm, signW, idW);
 }
 
 void Sign::recover(const Sign* const *signVec, const Id *const *idVec, size_t n)
 {
 	WrapPointer<Sign, G1> signW(signVec, n);
 	WrapPointer<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(self_->sHm, signW, idW);
+	LagrangeInterpolation(getInner().sHm, signW, idW);
 }
 
 void Sign::add(const Sign& rhs)
 {
-	self_->sHm += rhs.self_->sHm;
-}
-
-PublicKey::PublicKey()
-	: self_(new impl::PublicKey())
-{
-}
-
-PublicKey::~PublicKey()
-{
-	delete self_;
-}
-
-PublicKey::PublicKey(const PublicKey& rhs)
-	: self_(new impl::PublicKey(*rhs.self_))
-{
-}
-
-PublicKey& PublicKey::operator=(const PublicKey& rhs)
-{
-	*self_ = *rhs.self_;
-	return *this;
+	getInner().sHm += rhs.getInner().sHm;
 }
 
 bool PublicKey::operator==(const PublicKey& rhs) const
 {
-	return self_->sQ == rhs.self_->sQ;
+	return getInner().sQ == rhs.getInner().sQ;
 }
 
 std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
 {
-	return writeAsHex(os, pub.self_->sQ);
+	return writeAsHex(os, pub.getInner().sQ);
 }
 
 std::istream& operator>>(std::istream& is, PublicKey& pub)
 {
-	return is >> pub.self_->sQ;
+	return is >> pub.getInner().sQ;
 }
 
 void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 {
 	Wrap<PublicKey, G2> w(mpk);
-	evalPoly(self_->sQ,id.self_->v, w);
+	evalPoly(getInner().sQ, id.getInner().v, w);
 }
 
 void PublicKey::set(const PublicKey *const *mpk, size_t k, const Id& id)
 {
 	WrapPointer<PublicKey, G2> w(mpk, k);
-	evalPoly(self_->sQ,id.self_->v, w);
+	evalPoly(getInner().sQ, id.getInner().v, w);
 }
 
 void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 {
 	Wrap<PublicKey, G2> pubW(pubVec);
 	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(self_->sQ, pubW, idW);
+	LagrangeInterpolation(getInner().sQ, pubW, idW);
 }
 void PublicKey::recover(const PublicKey *const *pubVec, const Id *const *idVec, size_t n)
 {
 	WrapPointer<PublicKey, G2> pubW(pubVec, n);
 	WrapPointer<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(self_->sQ, pubW, idW);
+	LagrangeInterpolation(getInner().sQ, pubW, idW);
 }
 
 void PublicKey::add(const PublicKey& rhs)
 {
-	self_->sQ += rhs.self_->sQ;
-}
-
-SecretKey::SecretKey()
-	: self_(new impl::SecretKey())
-{
-}
-
-SecretKey::~SecretKey()
-{
-	delete self_;
-}
-
-SecretKey::SecretKey(const SecretKey& rhs)
-	: self_(new impl::SecretKey(*rhs.self_))
-{
-}
-
-SecretKey& SecretKey::operator=(const SecretKey& rhs)
-{
-	*self_ = *rhs.self_;
-	return *this;
+	getInner().sQ += rhs.getInner().sQ;
 }
 
 bool SecretKey::operator==(const SecretKey& rhs) const
 {
-	return self_->s == rhs.self_->s;
+	return getInner().s == rhs.getInner().s;
 }
 
 std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
 {
-	return writeAsHex(os, sec.self_->s);
+	return writeAsHex(os, sec.getInner().s);
 }
 
 std::istream& operator>>(std::istream& is, SecretKey& sec)
 {
-	return is >> sec.self_->s;
+	return is >> sec.getInner().s;
 }
 
 void SecretKey::init()
 {
-	self_->s.setRand(getRG());
+	getInner().s.setRand(getRG());
 }
 
 void SecretKey::set(const uint64_t *p)
 {
-	self_->s.setArrayMask(p, keySize);
+	getInner().s.setArrayMask(p, keySize);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const
 {
-	G2::mul(pub.self_->sQ, getQ(), self_->s);
+	G2::mul(pub.getInner().sQ, getQ(), getInner().s);
 }
 
 void SecretKey::sign(Sign& sign, const std::string& m) const
 {
 	G1 Hm;
 	HashAndMapToG1(Hm, m);
-	G1::mul(sign.self_->sHm, Hm, self_->s);
+	G1::mul(sign.getInner().sHm, Hm, getInner().s);
 }
 
 void SecretKey::getPop(Sign& pop) const
@@ -443,7 +367,7 @@ void SecretKey::getPop(Sign& pop) const
 	PublicKey pub;
 	getPublicKey(pub);
 	std::string m;
-	pub.self_->getStr(m);
+	pub.getInner().sQ.getStr(m);
 	sign(pop, m);
 }
 
@@ -460,30 +384,30 @@ void SecretKey::getMasterSecretKey(SecretKeyVec& msk, size_t k) const
 void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 {
 	Wrap<SecretKey, Fr> w(msk);
-	evalPoly(self_->s, id.self_->v, w);
+	evalPoly(getInner().s, id.getInner().v, w);
 }
 void SecretKey::set(const SecretKey *const *msk, size_t k, const Id& id)
 {
 	WrapPointer<SecretKey, Fr> w(msk, k);
-	evalPoly(self_->s, id.self_->v, w);
+	evalPoly(getInner().s, id.getInner().v, w);
 }
 
 void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 {
 	Wrap<SecretKey, Fr> secW(secVec);
 	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(self_->s, secW, idW);
+	LagrangeInterpolation(getInner().s, secW, idW);
 }
 void SecretKey::recover(const SecretKey *const *secVec, const Id *const *idVec, size_t n)
 {
 	WrapPointer<SecretKey, Fr> secW(secVec, n);
 	WrapPointer<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(self_->s, secW, idW);
+	LagrangeInterpolation(getInner().s, secW, idW);
 }
 
 void SecretKey::add(const SecretKey& rhs)
 {
-	self_->s += rhs.self_->s;
+	getInner().s += rhs.getInner().s;
 }
 
 } // bls
