@@ -113,7 +113,7 @@ func (sec *SecretKey) Init() {
 }
 
 func (sec *SecretKey) Add(rhs *SecretKey) {
-	C.blsSecretKeyAdd(sec.self, rhs.self);
+	C.blsSecretKeyAdd(sec.self, rhs.self)
 }
 
 func (sec *SecretKey) GetMasterSecretKey(k int) (msk []*SecretKey) {
@@ -224,7 +224,7 @@ func (pub *PublicKey) SetStr(s string) error {
 }
 
 func (pub *PublicKey) Add(rhs *PublicKey) {
-	C.blsPublicKeyAdd(pub.self, rhs.self);
+	C.blsPublicKeyAdd(pub.self, rhs.self)
 }
 func (sec *PublicKey) Set(msk []*PublicKey, id *Id) {
 	v := makePublicKeyPointerArray(msk)
@@ -290,7 +290,7 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 }
 
 func (sign *Sign) Add(rhs *Sign) {
-	C.blsSignAdd(sign.self, rhs.self);
+	C.blsSignAdd(sign.self, rhs.self)
 }
 func (sign *Sign) Recover(signVec []*Sign, idVec []*Id) {
 	sv := makeSignPointerArray(signVec)
@@ -304,5 +304,5 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 }
 
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
-	return C.blsSignVerifyPop(sign.self, pub.self) == 1;
+	return C.blsSignVerifyPop(sign.self, pub.self) == 1
 }

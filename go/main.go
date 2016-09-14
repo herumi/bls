@@ -47,7 +47,7 @@ func testSign() {
 	msk := sec0.GetMasterSecretKey(k)
 	mpk := bls.GetMasterPublicKey(msk)
 
-	idTbl := []uint64{ 3, 5, 193, 22, 15 }
+	idTbl := []uint64{3, 5, 193, 22, 15}
 	n := len(idTbl)
 
 	secVec := make([]*bls.SecretKey, n)
