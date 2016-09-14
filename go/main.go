@@ -2,6 +2,8 @@ package main
 
 import "fmt"
 import "./bls"
+import "runtime"
+import "time"
 
 func verifyTrue(b bool) {
 	if !b {
@@ -10,7 +12,7 @@ func verifyTrue(b bool) {
 }
 func testRecoverSecretKey() {
 	fmt.Println("testRecoverSecretKey")
-	k := 1000
+	k := 3000
 	sec := bls.NewSecretKey()
 	sec.Init()
 	fmt.Println("sec =", sec)
@@ -155,4 +157,11 @@ func main() {
 	testAdd()
 	testSign()
 	testPop()
+
+	// put memory status
+	runtime.GC()
+	time.Sleep(2 * time.Second)
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	fmt.Println("mem=", mem)
 }
