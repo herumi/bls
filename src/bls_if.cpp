@@ -57,6 +57,10 @@ void blsIdDestroy(blsId *id)
 {
 	delete (bls::Id*)id;
 }
+void blsIdPut(const blsId *id)
+{
+	std::cout << *(const bls::Id*)id << std::endl;
+}
 void blsIdCopy(blsId *dst, const blsId *src)
 {
 	*((bls::Id*)dst) = *((const bls::Id*)src);

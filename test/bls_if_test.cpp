@@ -7,7 +7,6 @@ CYBOZU_TEST_AUTO(bls_if)
 	blsSecretKey *sec;
 	blsPublicKey *pub;
 	blsSign *sign;
-//	blsId *id;
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
@@ -29,4 +28,25 @@ CYBOZU_TEST_AUTO(bls_if)
 	blsSignDestroy(sign);
 	blsPublicKeyDestroy(pub);
 	blsSecretKeyDestroy(sec);
+}
+
+CYBOZU_TEST_AUTO(bls_if_use_stack)
+{
+	blsSecretKey sec;
+	blsPublicKey pub;
+	blsSign sign;
+	const char *msg = "this is a pen";
+	const size_t msgSize = strlen(msg);
+
+	blsInit();
+	blsSecretKeyInit(&sec);
+	blsSecretKeyPut(&sec);
+
+	blsSecretKeyGetPublicKey(&sec, &pub);
+	blsPublicKeyPut(&pub);
+
+	blsSecretKeySign(&sec, &sign, msg, msgSize);
+	blsSignPut(&sign);
+
+	printf("verify %d\n", blsSignVerify(&sign, &pub, msg, msgSize));
 }

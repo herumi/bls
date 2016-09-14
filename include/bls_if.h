@@ -14,15 +14,27 @@
 extern "C" {
 #endif
 
-typedef struct blsSecretKey blsSecretKey;
-typedef struct blsPublicKey blsPublicKey;
-typedef struct blsSign blsSign;
-typedef struct blsId blsId;
+typedef struct {
+	uint64_t buf[4];
+} blsId;
+
+typedef struct {
+	uint64_t buf[4];
+} blsSecretKey;
+
+typedef struct {
+	uint64_t buf[4 * 2 * 3];
+} blsPublicKey;
+
+typedef struct {
+	uint64_t buf[4 * 3];
+} blsSign;
 
 void blsInit(void);
 
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);
+void blsIdPut(const blsId *id);
 void blsIdCopy(blsId *dst, const blsId *src);
 
 // return 0 if success
