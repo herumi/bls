@@ -111,6 +111,16 @@ bool Sign::verify(const PublicKey& pub) const;
 
 Verify a public key by pop.
 
+# Go
+```
+make run_go
+```
+Go 1.6 forbits passing a Go pointer to C, then
+```
+make run_uncheck_go
+```
+I'll fix the issue later.
+
 # License
 
 modified new BSD License

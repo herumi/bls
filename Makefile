@@ -63,6 +63,9 @@ test: $(TEST_EXE)
 run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
 	cd go && go run main.go
 
+run_uncheck_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
+	cd go && env GODEBUG=cgocheck=0 go run main.go
+
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)
 
