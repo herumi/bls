@@ -61,10 +61,8 @@ test: $(TEST_EXE)
 	@grep -v "ng=0, exception=0" result.txt || echo "all unit tests are ok"
 
 run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
+#	cd go && env GODEBUG=cgocheck=0 go run main.go
 	cd go && go run main.go
-
-run_uncheck_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
-	cd go && env GODEBUG=cgocheck=0 go run main.go
 
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)

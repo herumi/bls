@@ -68,29 +68,6 @@ void evalPoly(G& y, const T& x, const Vec& c)
 }
 
 template<class T, class G>
-struct Wrap {
-	const std::vector<T> *pv;
-	Wrap(const std::vector<T>& v) : pv(&v) {}
-	const G& operator[](size_t i) const
-	{
-		return (*pv)[i].getInner().get();
-	}
-	size_t size() const { return pv->size(); }
-};
-
-template<class T, class G>
-struct WrapPointer {
-	const T *const *v;
-	size_t k;
-	WrapPointer(const T *const *v, size_t k) : v(v), k(k) {}
-	const G& operator[](size_t i) const
-	{
-		return v[i]->getInner().get();
-	}
-	size_t size() const { return k; }
-};
-
-template<class T, class G>
 struct WrapArray {
 	const T *v;
 	size_t k;
@@ -275,9 +252,8 @@ bool Sign::verify(const PublicKey& pub) const
 
 void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 {
-	Wrap<Sign, G1> signW(signVec);
-	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(getInner().sHm, signW, idW);
+	if (signVec.size() != idVec.size()) throw cybozu::Exception("Sign:recover:bad size") << signVec.size() << idVec.size();
+	recover(signVec.data(), idVec.data(), signVec.size());
 }
 
 void Sign::recover(const Sign* signVec, const Id *idVec, size_t n)
@@ -307,12 +283,6 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 	return is >> pub.getInner().sQ;
 }
 
-void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
-{
-	Wrap<PublicKey, G2> w(mpk);
-	evalPoly(getInner().sQ, id.getInner().v, w);
-}
-
 void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
 	WrapArray<PublicKey, G2> w(mpk, k);
@@ -321,9 +291,8 @@ void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 
 void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 {
-	Wrap<PublicKey, G2> pubW(pubVec);
-	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(getInner().sQ, pubW, idW);
+	if (pubVec.size() != idVec.size()) throw cybozu::Exception("PublicKey:recover:bad size") << pubVec.size() << idVec.size();
+	recover(pubVec.data(), idVec.data(), pubVec.size());
 }
 void PublicKey::recover(const PublicKey *pubVec, const Id *idVec, size_t n)
 {
@@ -393,11 +362,6 @@ void SecretKey::getMasterSecretKey(SecretKeyVec& msk, size_t k) const
 	}
 }
 
-void SecretKey::set(const SecretKeyVec& msk, const Id& id)
-{
-	Wrap<SecretKey, Fr> w(msk);
-	evalPoly(getInner().s, id.getInner().v, w);
-}
 void SecretKey::set(const SecretKey *msk, size_t k, const Id& id)
 {
 	WrapArray<SecretKey, Fr> w(msk, k);
@@ -406,9 +370,8 @@ void SecretKey::set(const SecretKey *msk, size_t k, const Id& id)
 
 void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 {
-	Wrap<SecretKey, Fr> secW(secVec);
-	Wrap<Id, Fr> idW(idVec);
-	LagrangeInterpolation(getInner().s, secW, idW);
+	if (secVec.size() != idVec.size()) throw cybozu::Exception("SecretKey:recover:bad size") << secVec.size() << idVec.size();
+	recover(secVec.data(), idVec.data(), secVec.size());
 }
 void SecretKey::recover(const SecretKey *secVec, const Id *idVec, size_t n)
 {

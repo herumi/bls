@@ -60,8 +60,6 @@ class Id {
 	uint64_t self_[4]; // 256-bit
 	friend class PublicKey;
 	friend class SecretKey;
-	template<class T, class G> friend struct Wrap;
-	template<class T, class G> friend struct WrapPointer;
 	template<class T, class G> friend struct WrapArray;
 	impl::Id& getInner() { return *reinterpret_cast<impl::Id*>(self_); }
 	const impl::Id& getInner() const { return *reinterpret_cast<const impl::Id*>(self_); }
@@ -85,8 +83,6 @@ public:
 */
 class SecretKey {
 	uint64_t self_[4]; // 256-bit
-	template<class T, class G> friend struct Wrap;
-	template<class T, class G> friend struct WrapPointer;
 	template<class T, class G> friend struct WrapArray;
 	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(self_); }
 	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(self_); }
@@ -119,7 +115,10 @@ public:
 	/*
 		set a secret key for id > 0 from msk
 	*/
-	void set(const SecretKeyVec& msk, const Id& id);
+	void set(const SecretKeyVec& msk, const Id& id)
+	{
+		set(msk.data(), msk.size(), id);
+	}
 	/*
 		recover secretKey from k secVec
 	*/
@@ -144,8 +143,6 @@ class PublicKey {
 	uint64_t self_[4 * 2 * 3]; // 256-bit x 2 x 3
 	friend class SecretKey;
 	friend class Sign;
-	template<class T, class G> friend struct Wrap;
-	template<class T, class G> friend struct WrapPointer;
 	template<class T, class G> friend struct WrapArray;
 	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(self_); }
 	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(self_); }
@@ -158,7 +155,10 @@ public:
 	/*
 		set public for id from mpk
 	*/
-	void set(const PublicKeyVec& mpk, const Id& id);
+	void set(const PublicKeyVec& mpk, const Id& id)
+	{
+		set(mpk.data(), mpk.size(), id);
+	}
 	/*
 		recover publicKey from k pubVec
 	*/
@@ -179,8 +179,6 @@ public:
 class Sign {
 	uint64_t self_[4 * 3]; // 256-bit x 3
 	friend class SecretKey;
-	template<class T, class G> friend struct Wrap;
-	template<class T, class G> friend struct WrapPointer;
 	template<class T, class G> friend struct WrapArray;
 	impl::Sign& getInner() { return *reinterpret_cast<impl::Sign*>(self_); }
 	const impl::Sign& getInner() const { return *reinterpret_cast<const impl::Sign*>(self_); }
