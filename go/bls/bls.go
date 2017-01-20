@@ -140,14 +140,11 @@ func makeIdPointerArray(v []Id) (pv []*C.blsId) {
 	return pv
 }
 func (sec *SecretKey) Set(msk []SecretKey, id *Id) {
-	v := makeSecretKeyPointerArray(msk)
-	C.blsSecretKeySet(sec.getPointer(), (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.getPointer())
+	C.blsSecretKeySet(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
 }
 
 func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
-	sv := makeSecretKeyPointerArray(secVec)
-	iv := makeIdPointerArray(idVec)
-	C.blsSecretKeyRecover(sec.getPointer(), (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(secVec)))
+	C.blsSecretKeyRecover(sec.getPointer(), secVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(secVec)))
 }
 
 func (sec *SecretKey) GetPop() (sign *Sign) {
@@ -186,14 +183,11 @@ func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(pub.getPointer(), rhs.getPointer())
 }
 func (pub *PublicKey) Set(msk []PublicKey, id *Id) {
-	v := makePublicKeyPointerArray(msk)
-	C.blsPublicKeySet(pub.getPointer(), (**C.blsPublicKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.getPointer())
+	C.blsPublicKeySet(pub.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
 }
 
 func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []Id) {
-	sv := makePublicKeyPointerArray(pubVec)
-	iv := makeIdPointerArray(idVec)
-	C.blsPublicKeyRecover(pub.getPointer(), (**C.blsPublicKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(pubVec)))
+	C.blsPublicKeyRecover(pub.getPointer(), pubVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(pubVec)))
 }
 
 type Sign struct {
@@ -239,9 +233,7 @@ func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignAdd(sign.getPointer(), rhs.getPointer())
 }
 func (sign *Sign) Recover(signVec []Sign, idVec []Id) {
-	sv := makeSignPointerArray(signVec)
-	iv := makeIdPointerArray(idVec)
-	C.blsSignRecover(sign.getPointer(), (**C.blsSign)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(signVec)))
+	C.blsSignRecover(sign.getPointer(), signVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(signVec)))
 }
 
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {

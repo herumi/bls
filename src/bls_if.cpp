@@ -131,14 +131,14 @@ void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, siz
 	((const bls::SecretKey*)sec)->sign(*(bls::Sign*)sign, std::string(m, size));
 }
 
-void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* const *msk, size_t k, const blsId *id)
+void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id)
 {
-	((bls::SecretKey*)sec)->set((const bls::SecretKey *const *)msk, k, *(const bls::Id*)id);
+	((bls::SecretKey*)sec)->set((const bls::SecretKey *)msk, k, *(const bls::Id*)id);
 }
 
-void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey* const *secVec, const blsId *const *idVec, size_t n)
+void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n)
 {
-	((bls::SecretKey*)sec)->recover((const bls::SecretKey *const *)secVec, (const bls::Id *const *)idVec, n);
+	((bls::SecretKey*)sec)->recover((const bls::SecretKey *)secVec, (const bls::Id *)idVec, n);
 }
 
 void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign)
@@ -176,13 +176,13 @@ void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
 {
 	((bls::PublicKey*)pub)->add(*(const bls::PublicKey*)rhs);
 }
-void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *const *mpk, size_t k, const blsId *id)
+void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id)
 {
-	((bls::PublicKey*)pub)->set((const bls::PublicKey* const *)mpk, k, *(const bls::Id*)id);
+	((bls::PublicKey*)pub)->set((const bls::PublicKey*)mpk, k, *(const bls::Id*)id);
 }
-void blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *const *pubVec, const blsId *const *idVec, size_t n)
+void blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n)
 {
-	((bls::PublicKey*)pub)->recover((const bls::PublicKey* const *)pubVec, (const bls::Id* const *)idVec, n);
+	((bls::PublicKey*)pub)->recover((const bls::PublicKey*)pubVec, (const bls::Id*)idVec, n);
 }
 
 blsSign *blsSignCreate()
@@ -215,9 +215,9 @@ void blsSignAdd(blsSign *sign, const blsSign *rhs)
 {
 	((bls::Sign*)sign)->add(*(const bls::Sign*)rhs);
 }
-void blsSignRecover(blsSign *sign, const blsSign *const *signVec, const blsId *const *idVec, size_t n)
+void blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n)
 {
-	((bls::Sign*)sign)->recover((const bls::Sign* const *)signVec, (const bls::Id* const *)idVec, n);
+	((bls::Sign*)sign)->recover((const bls::Sign*)signVec, (const bls::Id*)idVec, n);
 }
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size)

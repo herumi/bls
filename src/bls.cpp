@@ -90,6 +90,18 @@ struct WrapPointer {
 	size_t size() const { return k; }
 };
 
+template<class T, class G>
+struct WrapArray {
+	const T *v;
+	size_t k;
+	WrapArray(const T *v, size_t k) : v(v), k(k) {}
+	const G& operator[](size_t i) const
+	{
+		return v[i].getInner().get();
+	}
+	size_t size() const { return k; }
+};
+
 struct Polynomial {
 	FrVec c; // f[x] = sum_{i=0}^{k-1} c[i] x^i
 	void init(const Fr& s, int k)
@@ -268,10 +280,10 @@ void Sign::recover(const SignVec& signVec, const IdVec& idVec)
 	LagrangeInterpolation(getInner().sHm, signW, idW);
 }
 
-void Sign::recover(const Sign* const *signVec, const Id *const *idVec, size_t n)
+void Sign::recover(const Sign* signVec, const Id *idVec, size_t n)
 {
-	WrapPointer<Sign, G1> signW(signVec, n);
-	WrapPointer<Id, Fr> idW(idVec, n);
+	WrapArray<Sign, G1> signW(signVec, n);
+	WrapArray<Id, Fr> idW(idVec, n);
 	LagrangeInterpolation(getInner().sHm, signW, idW);
 }
 
@@ -301,9 +313,9 @@ void PublicKey::set(const PublicKeyVec& mpk, const Id& id)
 	evalPoly(getInner().sQ, id.getInner().v, w);
 }
 
-void PublicKey::set(const PublicKey *const *mpk, size_t k, const Id& id)
+void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
-	WrapPointer<PublicKey, G2> w(mpk, k);
+	WrapArray<PublicKey, G2> w(mpk, k);
 	evalPoly(getInner().sQ, id.getInner().v, w);
 }
 
@@ -313,10 +325,10 @@ void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 	Wrap<Id, Fr> idW(idVec);
 	LagrangeInterpolation(getInner().sQ, pubW, idW);
 }
-void PublicKey::recover(const PublicKey *const *pubVec, const Id *const *idVec, size_t n)
+void PublicKey::recover(const PublicKey *pubVec, const Id *idVec, size_t n)
 {
-	WrapPointer<PublicKey, G2> pubW(pubVec, n);
-	WrapPointer<Id, Fr> idW(idVec, n);
+	WrapArray<PublicKey, G2> pubW(pubVec, n);
+	WrapArray<Id, Fr> idW(idVec, n);
 	LagrangeInterpolation(getInner().sQ, pubW, idW);
 }
 
@@ -386,9 +398,9 @@ void SecretKey::set(const SecretKeyVec& msk, const Id& id)
 	Wrap<SecretKey, Fr> w(msk);
 	evalPoly(getInner().s, id.getInner().v, w);
 }
-void SecretKey::set(const SecretKey *const *msk, size_t k, const Id& id)
+void SecretKey::set(const SecretKey *msk, size_t k, const Id& id)
 {
-	WrapPointer<SecretKey, Fr> w(msk, k);
+	WrapArray<SecretKey, Fr> w(msk, k);
 	evalPoly(getInner().s, id.getInner().v, w);
 }
 
@@ -398,10 +410,10 @@ void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 	Wrap<Id, Fr> idW(idVec);
 	LagrangeInterpolation(getInner().s, secW, idW);
 }
-void SecretKey::recover(const SecretKey *const *secVec, const Id *const *idVec, size_t n)
+void SecretKey::recover(const SecretKey *secVec, const Id *idVec, size_t n)
 {
-	WrapPointer<SecretKey, Fr> secW(secVec, n);
-	WrapPointer<Id, Fr> idW(idVec, n);
+	WrapArray<SecretKey, Fr> secW(secVec, n);
+	WrapArray<Id, Fr> idW(idVec, n);
 	LagrangeInterpolation(getInner().s, secW, idW);
 }
 
