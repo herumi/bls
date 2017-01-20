@@ -13,7 +13,7 @@ func verifyTrue(b bool) {
 func testRecoverSecretKey() {
 	fmt.Println("testRecoverSecretKey")
 	k := 3000
-	sec := bls.NewSecretKey()
+	var sec bls.SecretKey
 	sec.Init()
 	fmt.Println("sec =", sec)
 
@@ -21,16 +21,14 @@ func testRecoverSecretKey() {
 	msk := sec.GetMasterSecretKey(k)
 
 	n := k
-	secVec := make([]*bls.SecretKey, n)
-	idVec := make([]*bls.Id, n)
+	secVec := make([]bls.SecretKey, n)
+	idVec := make([]bls.Id, n)
 	for i := 0; i < n; i++ {
-		idVec[i] = bls.NewId()
 		idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
-		secVec[i] = bls.NewSecretKey()
-		secVec[i].Set(msk, idVec[i])
+		secVec[i].Set(msk, &idVec[i])
 	}
 	// recover sec2 from secVec and idVec
-	sec2 := bls.NewSecretKey()
+	var sec2 bls.SecretKey
 	sec2.Recover(secVec, idVec)
 	fmt.Println("sec2=", sec2)
 }
@@ -39,7 +37,7 @@ func testSign() {
 	m := "testSign"
 	fmt.Println(m)
 
-	sec0 := bls.NewSecretKey()
+	var sec0 bls.SecretKey
 	sec0.Init()
 	pub0 := sec0.GetPublicKey()
 	s0 := sec0.Sign(m)
@@ -52,43 +50,40 @@ func testSign() {
 	idTbl := []uint64{3, 5, 193, 22, 15}
 	n := len(idTbl)
 
-	secVec := make([]*bls.SecretKey, n)
-	pubVec := make([]*bls.PublicKey, n)
-	signVec := make([]*bls.Sign, n)
-	idVec := make([]*bls.Id, n)
+	secVec := make([]bls.SecretKey, n)
+	pubVec := make([]bls.PublicKey, n)
+	signVec := make([]bls.Sign, n)
+	idVec := make([]bls.Id, n)
 
 	for i := 0; i < n; i++ {
-		idVec[i] = bls.NewId()
 		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0})
 		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
-		secVec[i] = bls.NewSecretKey()
-		secVec[i].Set(msk, idVec[i])
+		secVec[i].Set(msk, &idVec[i])
 
-		pubVec[i] = bls.NewPublicKey()
-		pubVec[i].Set(mpk, idVec[i])
+		pubVec[i].Set(mpk, &idVec[i])
 		fmt.Printf("pubVec[%d]=%s\n", i, pubVec[i].String())
 
 		verifyTrue(pubVec[i].String() == secVec[i].GetPublicKey().String())
 
-		signVec[i] = secVec[i].Sign(m)
-		verifyTrue(signVec[i].Verify(pubVec[i], m))
+		signVec[i] = *secVec[i].Sign(m)
+		verifyTrue(signVec[i].Verify(&pubVec[i], m))
 	}
-	sec1 := bls.NewSecretKey()
+	var sec1 bls.SecretKey
 	sec1.Recover(secVec, idVec)
 	verifyTrue(sec0.String() == sec1.String())
-	pub1 := bls.NewPublicKey()
+	var pub1 bls.PublicKey
 	pub1.Recover(pubVec, idVec)
 	verifyTrue(pub0.String() == pub1.String())
-	s1 := bls.NewSign()
+	var s1 bls.Sign
 	s1.Recover(signVec, idVec)
 	verifyTrue(s0.String() == s1.String())
 }
 
 func testAdd() {
 	fmt.Println("testAdd")
-	sec1 := bls.NewSecretKey()
-	sec2 := bls.NewSecretKey()
+	var sec1 bls.SecretKey
+	var sec2 bls.SecretKey
 	sec1.Init()
 	sec2.Init()
 
@@ -108,7 +103,7 @@ func testAdd() {
 
 func testPop() {
 	fmt.Println("testPop")
-	sec := bls.NewSecretKey()
+	var sec bls.SecretKey
 	sec.Init()
 	pop := sec.GetPop()
 	verifyTrue(pop.VerifyPop(sec.GetPublicKey()))
@@ -119,22 +114,22 @@ func main() {
 	fmt.Println("init")
 	bls.Init()
 	{
-		id := bls.NewId()
+		var id bls.Id
 		id.Set([]uint64{4, 3, 2, 1})
 		fmt.Println("id :", id)
-		id2 := bls.NewId()
+		var id2 bls.Id
 		id2.SetStr(id.String())
 		fmt.Println("id2:", id2)
 	}
 	{
-		sec := bls.NewSecretKey()
+		var sec bls.SecretKey
 		sec.SetArray([]uint64{1, 2, 3, 4})
 		fmt.Println("sec=", sec)
 	}
 
 	fmt.Println("create secret key")
 	m := "this is a bls sample for go"
-	sec := bls.NewSecretKey()
+	var sec bls.SecretKey
 	sec.Init()
 	fmt.Println("sec:", sec)
 	fmt.Println("create public key")
@@ -148,7 +143,6 @@ func main() {
 	{
 		sec := make([]bls.SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
-			sec[i] = *bls.NewSecretKey()
 			sec[i].Init()
 			fmt.Println("sec=", sec[i].String())
 		}

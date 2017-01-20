@@ -21,16 +21,6 @@ func (id *Id) getPointer() (p *C.blsId) {
 	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
 }
 
-func NewId() *Id {
-	return new(Id)
-}
-
-func (id *Id) Clone() (r *Id) {
-	r = new(Id)
-	*r = *id
-	return r
-}
-
 func (id *Id) String() string {
 	buf := make([]byte, 1024)
 	n := C.blsIdGetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
@@ -63,16 +53,6 @@ type SecretKey struct {
 
 func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(&sec.v[0]))
-}
-
-func NewSecretKey() *SecretKey {
-	return new(SecretKey)
-}
-
-func (sec *SecretKey) Clone() (r *SecretKey) {
-	r = new(SecretKey)
-	*r = *sec
-	return r
 }
 
 func (sec *SecretKey) String() string {
@@ -109,26 +89,25 @@ func (sec *SecretKey) Add(rhs *SecretKey) {
 	C.blsSecretKeyAdd(sec.getPointer(), rhs.getPointer())
 }
 
-func (sec *SecretKey) GetMasterSecretKey(k int) (msk []*SecretKey) {
-	msk = make([]*SecretKey, k)
-	msk[0] = sec.Clone()
+func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
+	msk = make([]SecretKey, k)
+	msk[0] = *sec
 	for i := 1; i < k; i++ {
-		msk[i] = new(SecretKey)
 		msk[i].Init()
 	}
 	return msk
 }
 
-func GetMasterPublicKey(msk []*SecretKey) (mpk []*PublicKey) {
+func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	n := len(msk)
-	mpk = make([]*PublicKey, n)
+	mpk = make([]PublicKey, n)
 	for i := 0; i < n; i++ {
-		mpk[i] = msk[i].GetPublicKey()
+		mpk[i] = *msk[i].GetPublicKey()
 	}
 	return mpk
 }
 
-func makeSecretKeyPointerArray(v []*SecretKey) (pv []*C.blsSecretKey) {
+func makeSecretKeyPointerArray(v []SecretKey) (pv []*C.blsSecretKey) {
 	n := len(v)
 	pv = make([]*C.blsSecretKey, n)
 	for i := 0; i < n; i++ {
@@ -136,7 +115,7 @@ func makeSecretKeyPointerArray(v []*SecretKey) (pv []*C.blsSecretKey) {
 	}
 	return pv
 }
-func makePublicKeyPointerArray(v []*PublicKey) (pv []*C.blsPublicKey) {
+func makePublicKeyPointerArray(v []PublicKey) (pv []*C.blsPublicKey) {
 	n := len(v)
 	pv = make([]*C.blsPublicKey, n)
 	for i := 0; i < n; i++ {
@@ -144,7 +123,7 @@ func makePublicKeyPointerArray(v []*PublicKey) (pv []*C.blsPublicKey) {
 	}
 	return pv
 }
-func makeSignPointerArray(v []*Sign) (pv []*C.blsSign) {
+func makeSignPointerArray(v []Sign) (pv []*C.blsSign) {
 	n := len(v)
 	pv = make([]*C.blsSign, n)
 	for i := 0; i < n; i++ {
@@ -152,7 +131,7 @@ func makeSignPointerArray(v []*Sign) (pv []*C.blsSign) {
 	}
 	return pv
 }
-func makeIdPointerArray(v []*Id) (pv []*C.blsId) {
+func makeIdPointerArray(v []Id) (pv []*C.blsId) {
 	n := len(v)
 	pv = make([]*C.blsId, n)
 	for i := 0; i < n; i++ {
@@ -160,19 +139,19 @@ func makeIdPointerArray(v []*Id) (pv []*C.blsId) {
 	}
 	return pv
 }
-func (sec *SecretKey) Set(msk []*SecretKey, id *Id) {
+func (sec *SecretKey) Set(msk []SecretKey, id *Id) {
 	v := makeSecretKeyPointerArray(msk)
 	C.blsSecretKeySet(sec.getPointer(), (**C.blsSecretKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.getPointer())
 }
 
-func (sec *SecretKey) Recover(secVec []*SecretKey, idVec []*Id) {
+func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
 	sv := makeSecretKeyPointerArray(secVec)
 	iv := makeIdPointerArray(idVec)
 	C.blsSecretKeyRecover(sec.getPointer(), (**C.blsSecretKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(secVec)))
 }
 
 func (sec *SecretKey) GetPop() (sign *Sign) {
-	sign = NewSign()
+	sign = new(Sign)
 	C.blsSecretKeyGetPop(sec.getPointer(), sign.getPointer())
 	return sign
 }
@@ -183,16 +162,6 @@ type PublicKey struct {
 
 func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
-}
-
-func NewPublicKey() *PublicKey {
-	return new(PublicKey)
-}
-
-func (pub *PublicKey) Clone() (r *PublicKey) {
-	r = new(PublicKey)
-	*r = *pub
-	return r
 }
 
 func (pub *PublicKey) String() string {
@@ -216,12 +185,12 @@ func (pub *PublicKey) SetStr(s string) error {
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(pub.getPointer(), rhs.getPointer())
 }
-func (pub *PublicKey) Set(msk []*PublicKey, id *Id) {
+func (pub *PublicKey) Set(msk []PublicKey, id *Id) {
 	v := makePublicKeyPointerArray(msk)
 	C.blsPublicKeySet(pub.getPointer(), (**C.blsPublicKey)(unsafe.Pointer(&v[0])), C.size_t(len(msk)), id.getPointer())
 }
 
-func (pub *PublicKey) Recover(pubVec []*PublicKey, idVec []*Id) {
+func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []Id) {
 	sv := makePublicKeyPointerArray(pubVec)
 	iv := makeIdPointerArray(idVec)
 	C.blsPublicKeyRecover(pub.getPointer(), (**C.blsPublicKey)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(pubVec)))
@@ -233,16 +202,6 @@ type Sign struct {
 
 func (sign *Sign) getPointer() (p *C.blsSign) {
 	return (*C.blsSign)(unsafe.Pointer(&sign.v[0]))
-}
-
-func NewSign() *Sign {
-	return new(Sign)
-}
-
-func (sign *Sign) Clone() (r *Sign) {
-	r = new(Sign)
-	*r = *sign
-	return r
 }
 
 func (sign *Sign) String() string {
@@ -264,13 +223,13 @@ func (sign *Sign) SetStr(s string) error {
 }
 
 func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
-	pub = NewPublicKey()
+	pub = new(PublicKey)
 	C.blsSecretKeyGetPublicKey(sec.getPointer(), pub.getPointer())
 	return pub
 }
 
 func (sec *SecretKey) Sign(m string) (sign *Sign) {
-	sign = NewSign()
+	sign = new(Sign)
 	buf := []byte(m)
 	C.blsSecretKeySign(sec.getPointer(), sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	return sign
@@ -279,7 +238,7 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignAdd(sign.getPointer(), rhs.getPointer())
 }
-func (sign *Sign) Recover(signVec []*Sign, idVec []*Id) {
+func (sign *Sign) Recover(signVec []Sign, idVec []Id) {
 	sv := makeSignPointerArray(signVec)
 	iv := makeIdPointerArray(idVec)
 	C.blsSignRecover(sign.getPointer(), (**C.blsSign)(unsafe.Pointer(&sv[0])), (**C.blsId)(unsafe.Pointer(&iv[0])), C.size_t(len(signVec)))
