@@ -5,22 +5,13 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 #include <bls.hpp>
-#include <mcl/bn.hpp>
+#include <mcl/bn256.hpp>
 #include <cybozu/crypto.hpp>
 #include <cybozu/random_generator.hpp>
 #include <vector>
 #include <string>
 
-typedef mcl::FpT<mcl::FpTag, 256> Fp;
-typedef mcl::bn::BNT<Fp> BN;
-typedef BN::Fp2 Fp2;
-typedef BN::Fp6 Fp6;
-typedef BN::Fp12 Fp12;
-typedef BN::G1 G1;
-typedef BN::G2 G2;
-
-struct FrTag;
-typedef mcl::FpT<FrTag, 256> Fr;
+using namespace mcl::bn256;
 typedef std::vector<Fr> FrVec;
 
 #define PUT(x) std::cout << #x << "=" << x << std::endl;
