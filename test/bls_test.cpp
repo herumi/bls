@@ -99,11 +99,6 @@ CYBOZU_TEST_AUTO(k_of_n)
 	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
-	std::vector<const bls::SecretKey*> pmsk(k);
-	for (size_t i = 0; i < k; i++) {
-		pmsk[i] = &msk[i];
-	}
-
 	bls::SecretKeyVec allPrvVec(n);
 	bls::IdVec allIdVec(n);
 	for (int i = 0; i < n; i++) {
@@ -112,7 +107,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 		allIdVec[i] = id;
 
 		bls::SecretKey p;
-		p.set(&pmsk[0], k, id);
+		p.set(msk.data(), k, id);
 		CYBOZU_TEST_EQUAL(allPrvVec[i], p);
 	}
 
@@ -132,28 +127,20 @@ CYBOZU_TEST_AUTO(k_of_n)
 	*/
 	bls::SecretKeyVec secVec(3);
 	bls::IdVec idVec(3);
-	std::vector<const bls::SecretKey*> psec(secVec.size());
-	std::vector<const bls::Id*> pid(idVec.size());
 	for (int a = 0; a < n; a++) {
 		secVec[0] = allPrvVec[a];
 		idVec[0] = allIdVec[a];
-		psec[0] = &secVec[0];
-		pid[0] = &idVec[0];
 		for (int b = a + 1; b < n; b++) {
 			secVec[1] = allPrvVec[b];
 			idVec[1] = allIdVec[b];
-			psec[1] = &secVec[1];
-			pid[1] = &idVec[1];
 			for (int c = b + 1; c < n; c++) {
 				secVec[2] = allPrvVec[c];
 				idVec[2] = allIdVec[c];
-				psec[2] = &secVec[2];
-				pid[2] = &idVec[2];
 				bls::SecretKey sec;
 				sec.recover(secVec, idVec);
 				CYBOZU_TEST_EQUAL(sec, sec0);
 				bls::SecretKey sec2;
-				sec2.recover(&psec[0], &pid[0], psec.size());
+				sec2.recover(secVec.data(), idVec.data(), secVec.size());
 				CYBOZU_TEST_EQUAL(sec, sec2);
 			}
 		}
@@ -245,20 +232,16 @@ CYBOZU_TEST_AUTO(k_of_n)
 	{
 		bls::PublicKeyVec pubVec(k);
 		idVec.resize(k);
-		std::vector<const bls::PublicKey*> ppub(k);
-		std::vector<const bls::Id*> pid(k);
 		// select [0, k) publicKey
 		for (int i = 0; i < k; i++) {
 			allPrvVec[i].getPublicKey(pubVec[i]);
 			idVec[i] = allIdVec[i];
-			ppub[i] = &pubVec[i];
-			pid[i] = &idVec[i];
 		}
 		bls::PublicKey pub;
 		pub.recover(pubVec, idVec);
 		CYBOZU_TEST_EQUAL(pub, pub0);
 		bls::PublicKey pub2;
-		pub2.recover(&ppub[0], &pid[0], ppub.size());
+		pub2.recover(pubVec.data(), idVec.data(), pubVec.size());
 		CYBOZU_TEST_EQUAL(pub, pub2);
 	}
 }
@@ -321,16 +304,8 @@ CYBOZU_TEST_AUTO(pop)
 	bls::Sign s;
 	s.recover(sVec, idVec);
 	CYBOZU_TEST_EQUAL(s, s0);
-	std::vector<const bls::Sign*> ps(sVec.size());
-	for (size_t i = 0; i < ps.size(); i++) {
-		ps[i] = &sVec[i];
-	}
-	std::vector<const bls::Id*> pid(idVec.size());
-	for (size_t i = 0; i < pid.size(); i++) {
-		pid[i] = &idVec[i];
-	}
 	bls::Sign s2;
-	s2.recover(&ps[0], &pid[0], ps.size());
+	s2.recover(sVec.data(), idVec.data(), sVec.size());
 	CYBOZU_TEST_EQUAL(s, s2);
 }
 
