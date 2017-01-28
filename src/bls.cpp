@@ -35,8 +35,7 @@ static const G2& getQ()
 
 static void mapToG1(G1& P, const Fp& t)
 {
-	static mcl::bn::MapTo<Fp> mapTo;
-	mapTo.calcG1(P, t);
+	BN::param.mapTo.calcG1(P, t);
 }
 
 static void HashAndMapToG1(G1& P, const std::string& m)
