@@ -39,7 +39,7 @@ size_t getStrT(const Outer *p, char *buf, size_t maxBufSize)
 	}
 	memcpy(buf, s.c_str(), s.size());
 	return s.size();
-} catch (std::exception& e) {
+} catch (std::exception&) {
 	return 0;
 }
 

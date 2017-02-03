@@ -11,6 +11,10 @@
 #include <iosfwd>
 #include <stdint.h>
 
+#ifdef _MSC_VER
+	#pragma comment(lib, "bls.lib")
+#endif
+
 namespace bls {
 
 namespace impl {

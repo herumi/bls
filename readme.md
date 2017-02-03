@@ -25,6 +25,16 @@ To make sample programs, run
 make sample_test
 ```
 
+# Build and test for Windows
+```
+cd mcl
+mklib
+cd ..\bls
+mklib
+mk test\bls_test.cpp
+bls_test.exe
+```
+
 # API
 
 ## Basic API

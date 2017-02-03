@@ -10,6 +10,10 @@
 #include <stdint.h> // for uint64_t, uint8_t
 #include <stdlib.h> // for size_t
 
+#ifdef _MSC_VER
+	#pragma comment(lib, "bls_if.lib")
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
