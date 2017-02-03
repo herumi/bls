@@ -14,7 +14,7 @@ git clone git://github.com/herumi/mcl.git
 git clone git://github.com/herumi/bls.git
 ```
 
-# Build and test
+# Build and test for Linux
 To make lib/libbls.a and test, run
 ```
 cd bls
@@ -125,11 +125,6 @@ Verify a public key by pop.
 ```
 make run_go
 ```
-Go 1.6 forbits passing a Go pointer to C, then
-```
-make run_uncheck_go
-```
-I'll fix the issue later.
 
 # License
 
