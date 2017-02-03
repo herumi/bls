@@ -12,6 +12,7 @@ git clone git://github.com/herumi/xbyak.git
 git clone git://github.com/herumi/cybozulib.git
 git clone git://github.com/herumi/mcl.git
 git clone git://github.com/herumi/bls.git
+git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # Build and test for Linux
