@@ -22,16 +22,13 @@ static cybozu::RandomGenerator& getRG()
 	return rg;
 }
 
+const std::vector<Fp6> *g_pQcoeff;
+const G2 *g_pQ;
+
 namespace bls {
 
-static const G2& getQ()
-{
-	static const G2 Q(
-		Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
-		Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
-	);
-	return Q;
-}
+static const G2& getQ() { return *g_pQ; }
+static const std::vector<Fp6>& getQcoeff() { return *g_pQcoeff; }
 
 static void mapToG1(G1& P, const Fp& t)
 {
@@ -176,6 +173,15 @@ void init()
 	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
 	assert(sizeof(Sign) == sizeof(impl::Sign));
+	static const G2 Q(
+		Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
+		Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
+	);
+	static std::vector<Fp6> Qcoeff;
+
+	BN::precomputeG2(Qcoeff, Q);
+	g_pQ = &Q;
+	g_pQcoeff = &Qcoeff;
 }
 
 Id::Id(unsigned int id)
@@ -227,10 +233,26 @@ bool Sign::verify(const PublicKey& pub, const std::string& m) const
 {
 	G1 Hm;
 	HashAndMapToG1(Hm, m); // Hm = Hash(m)
+#if 1
+	/*
+		e(P1, Q1) == e(P2, Q2)
+		<=> finalExp(ML(P1, Q1)) == finalExp(ML(P2, Q2))
+		<=> finalExp(ML(P1, Q1) / ML(P2, Q2)) == 1
+		<=> finalExp(ML(P1, Q1) * ML(-P2, Q2)) == 1
+		2.1Mclk => 1.5Mclk
+	*/
+	Fp12 e;
+	std::vector<Fp6> Q2coeff;
+	BN::precomputeG2(Q2coeff, pub.getInner().sQ);
+	BN::precomputedMillerLoop2(e, getInner().sHm, getQcoeff(), -Hm, Q2coeff);
+	BN::finalExp(e, e);
+	return e.isOne();
+#else
 	Fp12 e1, e2;
 	BN::pairing(e1, getInner().sHm, getQ()); // e(s Hm, Q)
 	BN::pairing(e2, Hm, pub.getInner().sQ); // e(Hm, sQ)
 	return e1 == e2;
+#endif
 }
 
 bool Sign::verify(const PublicKey& pub) const

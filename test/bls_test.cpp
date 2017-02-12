@@ -3,6 +3,7 @@
 #include <cybozu/inttype.hpp>
 #include <iostream>
 #include <sstream>
+#include <cybozu/benchmark.hpp>
 
 template<class T>
 void streamTest(const T& t)
@@ -32,6 +33,8 @@ CYBOZU_TEST_AUTO(bls)
 		CYBOZU_TEST_ASSERT(s.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
+		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
+		CYBOZU_BENCH_C("verify", 100, s.verify, pub, "abc");
 	}
 }
 
