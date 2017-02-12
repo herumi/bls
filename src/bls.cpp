@@ -228,8 +228,8 @@ bool Sign::verify(const PublicKey& pub, const std::string& m) const
 	G1 Hm;
 	HashAndMapToG1(Hm, m); // Hm = Hash(m)
 	Fp12 e1, e2;
-	BN::pairing(e1, getQ(), getInner().sHm); // e(Q, s Hm)
-	BN::pairing(e2, pub.getInner().sQ, Hm); // e(sQ, Hm)
+	BN::pairing(e1, getInner().sHm, getQ()); // e(s Hm, Q)
+	BN::pairing(e2, Hm, pub.getInner().sQ); // e(Hm, sQ)
 	return e1 == e2;
 }
 
