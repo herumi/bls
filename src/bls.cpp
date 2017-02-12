@@ -37,9 +37,8 @@ static void mapToG1(G1& P, const Fp& t)
 
 static void HashAndMapToG1(G1& P, const std::string& m)
 {
-	std::string digest = cybozu::crypto::Hash::digest(cybozu::crypto::Hash::N_SHA256, m);
 	Fp t;
-	t.setArrayMask(digest.c_str(), digest.size());
+	t.setMsg(m);
 	mapToG1(P, t);
 }
 
