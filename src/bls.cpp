@@ -30,16 +30,11 @@ namespace bls {
 static const G2& getQ() { return *g_pQ; }
 static const std::vector<Fp6>& getQcoeff() { return *g_pQcoeff; }
 
-static void mapToG1(G1& P, const Fp& t)
-{
-	BN::param.mapTo.calcG1(P, t);
-}
-
 static void HashAndMapToG1(G1& P, const std::string& m)
 {
 	Fp t;
 	t.setMsg(m);
-	mapToG1(P, t);
+	BN::mapToG1(P, t);
 }
 
 template<class T, class G, class Vec>
