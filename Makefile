@@ -45,11 +45,11 @@ $(OBJ_DIR)/%.o: %.cpp
 
 $(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS_LIB) $(MCL_LIB)
 	-$(MKDIR) $(@D)
-	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(LDFLAGS) -lmcl -L../mcl/lib
+	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 $(EXE_DIR)/bls_if_test.exe: $(OBJ_DIR)/bls_if_test.o $(BLS_LIB) $(MCL_LIB) $(BLS_IF_LIB)
 	-$(MKDIR) $(@D)
-	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(BLS_IF_LIB) $(LDFLAGS) -lmcl -L../mcl/lib
+	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(BLS_IF_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 SAMPLE_EXE=$(addprefix $(EXE_DIR)/,$(SAMPLE_SRC:.cpp=.exe))
 sample: $(SAMPLE_EXE) $(BLS_LIB)
