@@ -206,6 +206,13 @@ CYBOZU_TEST_AUTO(k_of_n)
 		}
 	}
 	{
+		signVec[0] = allSignVec[1]; idVec[0] = allIdVec[1];
+		signVec[1] = allSignVec[4]; idVec[1] = allIdVec[4];
+		signVec[2] = allSignVec[3]; idVec[2] = allIdVec[3];
+		bls::Sign s;
+		CYBOZU_BENCH_C("s.recover", 100, s.recover, signVec, idVec);
+	}
+	{
 		/*
 			n-out-of-n
 			can recover
