@@ -27,6 +27,8 @@ MCL_LIB=../mcl/lib/libmcl.a
 $(MCL_LIB):
 	$(MAKE) -C ../mcl
 
+.PHONY: $(MCL_LIB)
+
 ##################################################################
 
 BLS_IF_LIB=$(LIB_DIR)/libbls_if.a
