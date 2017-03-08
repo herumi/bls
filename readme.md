@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/herumi/bls.png)](https://travis-ci.org/herumi/bls)
+
 # BLS threshold signature
 
 An implementation of BLS threshold signature
