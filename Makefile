@@ -60,7 +60,7 @@ TEST_EXE=$(addprefix $(EXE_DIR)/,$(TEST_SRC:.cpp=.exe))
 test: $(TEST_EXE)
 	@echo test $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
-	@grep -v "ng=0, exception=0" result.txt || echo "all unit tests are ok"
+	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
 run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
 #	cd go && env GODEBUG=cgocheck=0 go run main.go
