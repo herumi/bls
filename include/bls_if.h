@@ -6,6 +6,9 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
+#ifndef BLS_MAX_OP_UNIT_SIZE
+	#error "define BLS_MAX_OP_UNIT_SIZE 4(or 6)"
+#endif
 
 #include <stdint.h> // for uint64_t, uint8_t
 #include <stdlib.h> // for size_t
@@ -25,22 +28,22 @@ enum {
 };
 
 typedef struct {
-	uint64_t buf[6];
+	uint64_t buf[BLS_MAX_OP_UNIT_SIZE];
 } blsId;
 
 typedef struct {
-	uint64_t buf[6];
+	uint64_t buf[BLS_MAX_OP_UNIT_SIZE];
 } blsSecretKey;
 
 typedef struct {
-	uint64_t buf[6 * 2 * 3];
+	uint64_t buf[BLS_MAX_OP_UNIT_SIZE * 2 * 3];
 } blsPublicKey;
 
 typedef struct {
-	uint64_t buf[6 * 3];
+	uint64_t buf[BLS_MAX_OP_UNIT_SIZE * 3];
 } blsSign;
 
-void blsInit(int curve);
+void blsInit(int curve, int maxUnitSize);
 
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);

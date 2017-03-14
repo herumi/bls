@@ -18,10 +18,11 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # Build and test for Linux
+Specifiy UNIT=4 or 6 always to make.
 To make lib/libbls.a and test, run
 ```
 cd bls
-make test
+make test UNIT=4
 ```
 To make sample programs, run
 ```

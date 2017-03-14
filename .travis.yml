@@ -12,8 +12,8 @@ script:
   - git clone https://github.com/herumi/mcl.git
   - git clone https://github.com/herumi/bls.git
   - cd bls
-  - make test DEBUG=1
+  - make UNIT=4 test
+  - make UNIT=4 run_go
   - make clean
-  - make
-  - make run_go
- 
+  - make UNIT=6 test
+  - make UNIT=6 run_go

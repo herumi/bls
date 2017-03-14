@@ -2,6 +2,8 @@ package blscgo
 
 /*
 #cgo CFLAGS:-I../../include
+#cgo bn256 CFLAGS:-DBLS_MAX_OP_UNIT_SIZE=4
+#cgo bn384 CFLAGS:-DBLS_MAX_OP_UNIT_SIZE=6
 #cgo LDFLAGS:-lbls -lbls_if -lmcl -lgmp -lgmpxx -L../lib -L../../lib -L../../../mcl/lib -L../../mcl/lib  -lstdc++ -lcrypto
 #include "bls_if.h"
 */
@@ -15,12 +17,12 @@ const CurveFp382_2 = 2
 
 // Init --
 func Init(curve int) {
-	C.blsInit(C.int(curve))
+	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 }
 
 // ID --
 type ID struct {
-	v [6]C.uint64_t
+	v [C.BLS_MAX_OP_UNIT_SIZE]C.uint64_t
 }
 
 // getPointer --
@@ -63,7 +65,7 @@ func (id *ID) Set(v []uint64) error {
 
 // SecretKey --
 type SecretKey struct {
-	v [6]C.uint64_t
+	v [C.BLS_MAX_OP_UNIT_SIZE]C.uint64_t
 }
 
 // getPointer --
@@ -153,7 +155,7 @@ func (sec *SecretKey) GetPop() (sign *Sign) {
 
 // PublicKey --
 type PublicKey struct {
-	v [6 * 2 * 3]C.uint64_t
+	v [C.BLS_MAX_OP_UNIT_SIZE * 2 * 3]C.uint64_t
 }
 
 // getPointer --
@@ -201,7 +203,7 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) {
 
 // Sign  --
 type Sign struct {
-	v [6 * 3]C.uint64_t
+	v [C.BLS_MAX_OP_UNIT_SIZE * 3]C.uint64_t
 }
 
 // getPointer --

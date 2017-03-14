@@ -9,6 +9,14 @@ TEST_SRC=bls_test.cpp bls_if_test.cpp
 SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
 
 CFLAGS+=-I../mcl/include
+ifeq ($(UNIT),4)
+  CFLAGS+=-DBLS_MAX_OP_UNIT_SIZE=4
+  GO_TAG=bn256
+endif
+ifeq ($(UNIT),6)
+  CFLAGS+=-DBLS_MAX_OP_UNIT_SIZE=6
+  GO_TAG=bn384
+endif
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
 	python bls_smpl.py
@@ -63,12 +71,10 @@ test: $(TEST_EXE)
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
 run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
-#	cd go && env GODEBUG=cgocheck=0 go run main.go
-	cd go && go run main.go
+	cd go && go run -tags $(GO_TAG) main.go
 
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)
-	$(MAKE) -C ../mcl clean
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
