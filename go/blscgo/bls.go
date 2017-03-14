@@ -1,4 +1,4 @@
-package bls
+package blscgo
 
 /*
 #cgo CFLAGS:-I../../include
@@ -9,20 +9,26 @@ import "C"
 import "fmt"
 import "unsafe"
 
+// Init --
 func Init() {
 	C.blsInit()
 }
 
-type Id struct {
+// ID --
+type ID struct {
 	v [4]C.uint64_t
 }
 
-func (id *Id) getPointer() (p *C.blsId) {
+// getPointer --
+func (id *ID) getPointer() (p *C.blsId) {
+	// #nosec
 	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
 }
 
-func (id *Id) String() string {
+// String --
+func (id *ID) String() string {
 	buf := make([]byte, 1024)
+	// #nosec
 	n := C.blsIdGetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -30,8 +36,10 @@ func (id *Id) String() string {
 	return string(buf[:n])
 }
 
-func (id *Id) SetStr(s string) error {
+// SetStr --
+func (id *ID) SetStr(s string) error {
 	buf := []byte(s)
+	// #nosec
 	err := C.blsIdSetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
@@ -39,24 +47,31 @@ func (id *Id) SetStr(s string) error {
 	return nil
 }
 
-func (id *Id) Set(v []uint64) error {
+// Set --
+func (id *ID) Set(v []uint64) error {
 	if len(v) != 4 {
-		return fmt.Errorf("bad size", len(v))
+		return fmt.Errorf("bad size (%d), expected size 4", len(v))
 	}
+	// #nosec
 	C.blsIdSet(id.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
 	return nil
 }
 
+// SecretKey --
 type SecretKey struct {
 	v [4]C.uint64_t
 }
 
+// getPointer --
 func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
+	// #nosec
 	return (*C.blsSecretKey)(unsafe.Pointer(&sec.v[0]))
 }
 
+// String --
 func (sec *SecretKey) String() string {
 	buf := make([]byte, 1024)
+	// #nosec
 	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -64,8 +79,10 @@ func (sec *SecretKey) String() string {
 	return string(buf[:n])
 }
 
+// SetStr -- The string passed in is a number and can be either hex or decimal
 func (sec *SecretKey) SetStr(s string) error {
 	buf := []byte(s)
+	// #nosec
 	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
@@ -73,22 +90,27 @@ func (sec *SecretKey) SetStr(s string) error {
 	return nil
 }
 
+// SetArray --
 func (sec *SecretKey) SetArray(v []uint64) error {
 	if len(v) != 4 {
-		return fmt.Errorf("bad size", len(v))
+		return fmt.Errorf("bad size (%d), expected size 4", len(v))
 	}
+	// #nosec
 	C.blsSecretKeySetArray(sec.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
 	return nil
 }
 
+// Init --
 func (sec *SecretKey) Init() {
 	C.blsSecretKeyInit(sec.getPointer())
 }
 
+// Add --
 func (sec *SecretKey) Add(rhs *SecretKey) {
 	C.blsSecretKeyAdd(sec.getPointer(), rhs.getPointer())
 }
 
+// GetMasterSecretKey --
 func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	msk = make([]SecretKey, k)
 	msk[0] = *sec
@@ -98,6 +120,7 @@ func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	return msk
 }
 
+// GetMasterPublicKey --
 func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	n := len(msk)
 	mpk = make([]PublicKey, n)
@@ -107,62 +130,38 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	return mpk
 }
 
-func makeSecretKeyPointerArray(v []SecretKey) (pv []*C.blsSecretKey) {
-	n := len(v)
-	pv = make([]*C.blsSecretKey, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makePublicKeyPointerArray(v []PublicKey) (pv []*C.blsPublicKey) {
-	n := len(v)
-	pv = make([]*C.blsPublicKey, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makeSignPointerArray(v []Sign) (pv []*C.blsSign) {
-	n := len(v)
-	pv = make([]*C.blsSign, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makeIdPointerArray(v []Id) (pv []*C.blsId) {
-	n := len(v)
-	pv = make([]*C.blsId, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func (sec *SecretKey) Set(msk []SecretKey, id *Id) {
+// Set --
+func (sec *SecretKey) Set(msk []SecretKey, id *ID) {
 	C.blsSecretKeySet(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
 }
 
-func (sec *SecretKey) Recover(secVec []SecretKey, idVec []Id) {
+// Recover --
+func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) {
 	C.blsSecretKeyRecover(sec.getPointer(), secVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(secVec)))
 }
 
+// GetPop --
 func (sec *SecretKey) GetPop() (sign *Sign) {
 	sign = new(Sign)
 	C.blsSecretKeyGetPop(sec.getPointer(), sign.getPointer())
 	return sign
 }
 
+// PublicKey --
 type PublicKey struct {
 	v [4 * 2 * 3]C.uint64_t
 }
 
+// getPointer --
 func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
+	// #nosec
 	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
 }
 
+// String --
 func (pub *PublicKey) String() string {
 	buf := make([]byte, 1024)
+	// #nosec
 	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -170,8 +169,10 @@ func (pub *PublicKey) String() string {
 	return string(buf[:n])
 }
 
+// SetStr --
 func (pub *PublicKey) SetStr(s string) error {
 	buf := []byte(s)
+	// #nosec
 	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
@@ -179,27 +180,36 @@ func (pub *PublicKey) SetStr(s string) error {
 	return nil
 }
 
+// Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(pub.getPointer(), rhs.getPointer())
 }
-func (pub *PublicKey) Set(msk []PublicKey, id *Id) {
-	C.blsPublicKeySet(pub.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
+
+// Set --
+func (pub *PublicKey) Set(mpk []PublicKey, id *ID) {
+	C.blsPublicKeySet(pub.getPointer(), mpk[0].getPointer(), C.size_t(len(mpk)), id.getPointer())
 }
 
-func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []Id) {
+// Recover --
+func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) {
 	C.blsPublicKeyRecover(pub.getPointer(), pubVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(pubVec)))
 }
 
+// Sign  --
 type Sign struct {
 	v [4 * 3]C.uint64_t
 }
 
+// getPointer --
 func (sign *Sign) getPointer() (p *C.blsSign) {
+	// #nosec
 	return (*C.blsSign)(unsafe.Pointer(&sign.v[0]))
 }
 
+// String --
 func (sign *Sign) String() string {
 	buf := make([]byte, 1024)
+	// #nosec
 	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -207,8 +217,10 @@ func (sign *Sign) String() string {
 	return string(buf[:n])
 }
 
+// SetStr --
 func (sign *Sign) SetStr(s string) error {
 	buf := []byte(s)
+	// #nosec
 	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
@@ -216,31 +228,40 @@ func (sign *Sign) SetStr(s string) error {
 	return nil
 }
 
+// GetPublicKey --
 func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 	pub = new(PublicKey)
 	C.blsSecretKeyGetPublicKey(sec.getPointer(), pub.getPointer())
 	return pub
 }
 
+// Sign --
 func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	sign = new(Sign)
 	buf := []byte(m)
+	// #nosec
 	C.blsSecretKeySign(sec.getPointer(), sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	return sign
 }
 
+// Add --
 func (sign *Sign) Add(rhs *Sign) {
 	C.blsSignAdd(sign.getPointer(), rhs.getPointer())
 }
-func (sign *Sign) Recover(signVec []Sign, idVec []Id) {
+
+// Recover --
+func (sign *Sign) Recover(signVec []Sign, idVec []ID) {
 	C.blsSignRecover(sign.getPointer(), signVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(signVec)))
 }
 
+// Verify --
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
+	// #nosec
 	return C.blsSignVerify(sign.getPointer(), pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))) == 1
 }
 
+// VerifyPop --
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
 	return C.blsSignVerifyPop(sign.getPointer(), pub.getPointer()) == 1
 }
