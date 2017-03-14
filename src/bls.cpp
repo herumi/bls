@@ -206,6 +206,10 @@ void init(int curve, int maxUnitSize)
 	g_pQ = &Q;
 	g_pQcoeff = &Qcoeff;
 }
+size_t getOpUnitSize()
+{
+	return sizeof(Fp) / sizeof(uint64_t);
+}
 
 Id::Id(unsigned int id)
 {

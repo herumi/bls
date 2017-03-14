@@ -18,7 +18,8 @@ void streamTest(const T& t)
 
 CYBOZU_TEST_AUTO(bls)
 {
-	bls::init();
+	bls::init(bls::CurveFp254BNb);
+	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
 	bls::SecretKey sec;
 	sec.init();
 	streamTest(sec);

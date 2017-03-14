@@ -47,6 +47,10 @@ void blsInit(int curve, int maxUnitSize)
 {
 	bls::init(curve, maxUnitSize);
 }
+size_t blsGetOpUnitSize()
+{
+	return bls::getOpUnitSize();
+}
 
 blsId *blsIdCreate()
 {

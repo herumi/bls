@@ -44,6 +44,7 @@ typedef struct {
 } blsSign;
 
 void blsInit(int curve, int maxUnitSize);
+size_t blsGetOpUnitSize(void);
 
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);

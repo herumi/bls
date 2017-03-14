@@ -53,6 +53,7 @@ struct Id;
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
 */
 void init(int curve = CurveFp254BNb, int maxUnitSize = BLS_MAX_OP_UNIT_SIZE);
+size_t getOpUnitSize();
 
 class SecretKey;
 class PublicKey;
