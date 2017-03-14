@@ -10,7 +10,7 @@ CYBOZU_TEST_AUTO(bls_if)
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
-	blsInit();
+	blsInit(BlsCurveFp254BNb);
 	sec = blsSecretKeyCreate();
 	blsSecretKeyInit(sec);
 	blsSecretKeyPut(sec);
@@ -38,7 +38,7 @@ CYBOZU_TEST_AUTO(bls_if_use_stack)
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
-	blsInit();
+	blsInit(BlsCurveFp254BNb);
 	blsSecretKeyInit(&sec);
 	blsSecretKeyPut(&sec);
 

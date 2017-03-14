@@ -5,13 +5,13 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 #include <bls.hpp>
-#include <mcl/bn256.hpp>
+#include <mcl/bn384.hpp>
 #include <cybozu/crypto.hpp>
 #include <cybozu/random_generator.hpp>
 #include <vector>
 #include <string>
 
-using namespace mcl::bn256;
+using namespace mcl::bn384;
 typedef std::vector<Fr> FrVec;
 
 #define PUT(x) std::cout << #x << "=" << x << std::endl;
@@ -156,9 +156,23 @@ std::ostream& writeAsHex(std::ostream& os, const T& t)
 	return os << str;
 }
 
-void init()
+void init(int curve)
 {
-	BN::init(mcl::bn::CurveFp254BNb);
+	mcl::bn::CurveParam cp;
+	switch (curve) {
+	case bls::CurveFp254BNb:
+		cp = mcl::bn::CurveFp254BNb;
+		break;
+	case bls::CurveFp382_1:
+		cp = mcl::bn::CurveFp382_1;
+		break;
+	case bls::CurveFp382_2:
+		cp = mcl::bn::CurveFp382_2;
+		break;
+	default:
+		throw cybozu::Exception("bls:init:bad curve") << curve;
+	}
+	BN::init(cp);
 	G1::setCompressedExpression();
 	G2::setCompressedExpression();
 	Fr::init(BN::param.r);
@@ -167,10 +181,15 @@ void init()
 	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
 	assert(sizeof(Sign) == sizeof(impl::Sign));
-	static const G2 Q(
-		Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
-		Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
-	);
+	static G2 Q;
+	if (curve == bls::CurveFp254BNb) {
+		Q.set(
+			Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
+			Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
+		);
+	} else {
+		BN::mapToG2(Q, 1);
+	}
 	static std::vector<Fp6> Qcoeff;
 
 	BN::precomputeG2(Qcoeff, Q);

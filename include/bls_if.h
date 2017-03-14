@@ -18,23 +18,29 @@
 extern "C" {
 #endif
 
+enum {
+	BlsCurveFp254BNb = 0,
+	BlsCurveFp382_1 = 1,
+	BlsCurveFp382_2 = 2
+};
+
 typedef struct {
-	uint64_t buf[4];
+	uint64_t buf[6];
 } blsId;
 
 typedef struct {
-	uint64_t buf[4];
+	uint64_t buf[6];
 } blsSecretKey;
 
 typedef struct {
-	uint64_t buf[4 * 2 * 3];
+	uint64_t buf[6 * 2 * 3];
 } blsPublicKey;
 
 typedef struct {
-	uint64_t buf[4 * 3];
+	uint64_t buf[6 * 3];
 } blsSign;
 
-void blsInit(void);
+void blsInit(int curve);
 
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);
@@ -50,7 +56,8 @@ int blsIdSetStr(blsId *id, const char *buf, size_t bufSize);
 */
 size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize);
 /*
-	access p[0], p[1], p[2], p[3]
+	access p[0], ..., p[3] if 256-bit curve
+	access p[0], ..., p[5] if 384-bit curve
 */
 void blsIdSet(blsId *id, const uint64_t *p);
 

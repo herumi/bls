@@ -17,6 +17,12 @@
 
 namespace bls {
 
+enum {
+	CurveFp254BNb = 0,
+	CurveFp382_1 = 1,
+	CurveFp382_2 = 2
+};
+
 namespace impl {
 
 struct SecretKey;
@@ -41,7 +47,7 @@ struct Id;
 	initialize this library
 	call this once before using the other method
 */
-void init();
+void init(int curve = CurveFp254BNb);
 
 class SecretKey;
 class PublicKey;
@@ -61,7 +67,7 @@ typedef std::vector<Sign> SignVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
-	uint64_t self_[4]; // 256-bit
+	uint64_t self_[6]; // 384-bit
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
@@ -86,7 +92,7 @@ public:
 	s ; secret key
 */
 class SecretKey {
-	uint64_t self_[4]; // 256-bit
+	uint64_t self_[6]; // 384-bit
 	template<class T, class G> friend struct WrapArray;
 	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(self_); }
 	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(self_); }
@@ -144,7 +150,7 @@ public:
 	sQ ; public key
 */
 class PublicKey {
-	uint64_t self_[4 * 2 * 3]; // 256-bit x 2 x 3
+	uint64_t self_[6 * 2 * 3]; // 384-bit x 2 x 3
 	friend class SecretKey;
 	friend class Sign;
 	template<class T, class G> friend struct WrapArray;
@@ -181,7 +187,7 @@ public:
 	s H(m) ; sign
 */
 class Sign {
-	uint64_t self_[4 * 3]; // 256-bit x 3
+	uint64_t self_[6 * 3]; // 384-bit x 3
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
 	impl::Sign& getInner() { return *reinterpret_cast<impl::Sign*>(self_); }

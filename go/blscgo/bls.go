@@ -9,14 +9,18 @@ import "C"
 import "fmt"
 import "unsafe"
 
+const CurveFp254BNb = 0
+const CurveFp382_1 = 1
+const CurveFp382_2 = 2
+
 // Init --
-func Init() {
-	C.blsInit()
+func Init(curve int) {
+	C.blsInit(C.int(curve))
 }
 
 // ID --
 type ID struct {
-	v [4]C.uint64_t
+	v [6]C.uint64_t
 }
 
 // getPointer --
@@ -49,8 +53,8 @@ func (id *ID) SetStr(s string) error {
 
 // Set --
 func (id *ID) Set(v []uint64) error {
-	if len(v) != 4 {
-		return fmt.Errorf("bad size (%d), expected size 4", len(v))
+	if len(v) != 6 {
+		return fmt.Errorf("bad size (%d), expected size 6", len(v))
 	}
 	// #nosec
 	C.blsIdSet(id.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
@@ -59,7 +63,7 @@ func (id *ID) Set(v []uint64) error {
 
 // SecretKey --
 type SecretKey struct {
-	v [4]C.uint64_t
+	v [6]C.uint64_t
 }
 
 // getPointer --
@@ -92,8 +96,8 @@ func (sec *SecretKey) SetStr(s string) error {
 
 // SetArray --
 func (sec *SecretKey) SetArray(v []uint64) error {
-	if len(v) != 4 {
-		return fmt.Errorf("bad size (%d), expected size 4", len(v))
+	if len(v) != 6 {
+		return fmt.Errorf("bad size (%d), expected size 6", len(v))
 	}
 	// #nosec
 	C.blsSecretKeySetArray(sec.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
@@ -149,7 +153,7 @@ func (sec *SecretKey) GetPop() (sign *Sign) {
 
 // PublicKey --
 type PublicKey struct {
-	v [4 * 2 * 3]C.uint64_t
+	v [6 * 2 * 3]C.uint64_t
 }
 
 // getPointer --
@@ -197,7 +201,7 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) {
 
 // Sign  --
 type Sign struct {
-	v [4 * 3]C.uint64_t
+	v [6 * 3]C.uint64_t
 }
 
 // getPointer --

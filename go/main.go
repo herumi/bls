@@ -24,7 +24,7 @@ func testRecoverSecretKey() {
 	secVec := make([]blscgo.SecretKey, n)
 	idVec := make([]blscgo.ID, n)
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
+		idVec[i].Set([]uint64{1, 2, 3, uint64(i), 4, 5})
 		secVec[i].Set(msk, &idVec[i])
 	}
 	// recover sec2 from secVec and idVec
@@ -56,7 +56,7 @@ func testSign() {
 	idVec := make([]blscgo.ID, n)
 
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0})
+		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0})
 		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
 		secVec[i].Set(msk, &idVec[i])
@@ -112,10 +112,10 @@ func testPop() {
 }
 func main() {
 	fmt.Println("init")
-	blscgo.Init()
+	blscgo.Init(blscgo.CurveFp254BNb)
 	{
 		var id blscgo.ID
-		id.Set([]uint64{4, 3, 2, 1})
+		id.Set([]uint64{6, 5, 4, 3, 2, 1})
 		fmt.Println("id :", id)
 		var id2 blscgo.ID
 		id2.SetStr(id.String())
@@ -123,7 +123,7 @@ func main() {
 	}
 	{
 		var sec blscgo.SecretKey
-		sec.SetArray([]uint64{1, 2, 3, 4})
+		sec.SetArray([]uint64{1, 2, 3, 4, 5, 6})
 		fmt.Println("sec=", sec)
 	}
 
