@@ -13,4 +13,5 @@ script:
   - git clone https://github.com/herumi/bls.git
   - cd bls
   - make test DEBUG=1
+  - make run_go
  
