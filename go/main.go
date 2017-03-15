@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 import "./blscgo"
+
 //import "runtime"
 //import "time"
 
@@ -157,13 +158,13 @@ func test(cp int) {
 	fmt.Println("end of test")
 
 	// put memory status
-/*
-	runtime.GC()
-	time.Sleep(2 * time.Second)
-	var mem runtime.MemStats
-	runtime.ReadMemStats(&mem)
-	fmt.Println("mem=", mem)
-*/
+	/*
+		runtime.GC()
+		time.Sleep(2 * time.Second)
+		var mem runtime.MemStats
+		runtime.ReadMemStats(&mem)
+		fmt.Println("mem=", mem)
+	*/
 }
 func main() {
 	fmt.Println("GetMaxOpUnitSize() = %d\n", blscgo.GetMaxOpUnitSize())

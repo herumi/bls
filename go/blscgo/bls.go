@@ -19,10 +19,12 @@ const CurveFp382_2 = 2
 func Init(curve int) {
 	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 }
+
 // getMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
 	return int(C.BLS_MAX_OP_UNIT_SIZE)
 }
+
 // getOpUnitSize --
 func GetOpUnitSize() int {
 	return int(C.blsGetOpUnitSize())
