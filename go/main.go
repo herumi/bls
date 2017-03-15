@@ -2,8 +2,10 @@ package main
 
 import "fmt"
 import "./blscgo"
-import "runtime"
-import "time"
+//import "runtime"
+//import "time"
+
+var unitN = 0
 
 func verifyTrue(b bool) {
 	if !b {
@@ -24,7 +26,7 @@ func testRecoverSecretKey() {
 	secVec := make([]blscgo.SecretKey, n)
 	idVec := make([]blscgo.ID, n)
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{1, 2, 3, uint64(i), 4, 5})
+		idVec[i].Set([]uint64{1, 2, 3, uint64(i), 4, 5}[0:unitN])
 		secVec[i].Set(msk, &idVec[i])
 	}
 	// recover sec2 from secVec and idVec
@@ -56,7 +58,7 @@ func testSign() {
 	idVec := make([]blscgo.ID, n)
 
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0})
+		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
 		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
 		secVec[i].Set(msk, &idVec[i])
@@ -110,12 +112,13 @@ func testPop() {
 	sec.Init()
 	verifyTrue(!pop.VerifyPop(sec.GetPublicKey()))
 }
-func main() {
+func test(cp int) {
 	fmt.Println("init")
-	blscgo.Init(blscgo.CurveFp254BNb)
+	blscgo.Init(cp)
+	unitN = blscgo.GetOpUnitSize()
 	{
 		var id blscgo.ID
-		id.Set([]uint64{6, 5, 4, 3, 2, 1})
+		id.Set([]uint64{6, 5, 4, 3, 2, 1}[0:unitN])
 		fmt.Println("id :", id)
 		var id2 blscgo.ID
 		id2.SetStr(id.String())
@@ -123,7 +126,7 @@ func main() {
 	}
 	{
 		var sec blscgo.SecretKey
-		sec.SetArray([]uint64{1, 2, 3, 4, 5, 6})
+		sec.SetArray([]uint64{1, 2, 3, 4, 5, 6}[0:unitN])
 		fmt.Println("sec=", sec)
 	}
 
@@ -151,11 +154,25 @@ func main() {
 	testAdd()
 	testSign()
 	testPop()
+	fmt.Println("end of test")
 
 	// put memory status
+/*
 	runtime.GC()
 	time.Sleep(2 * time.Second)
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	fmt.Println("mem=", mem)
+*/
+}
+func main() {
+	fmt.Println("GetMaxOpUnitSize() = %d\n", blscgo.GetMaxOpUnitSize())
+	fmt.Println("CurveFp254BNb")
+	test(blscgo.CurveFp254BNb)
+	if blscgo.GetMaxOpUnitSize() == 6 {
+		fmt.Println("CurveFp382_1")
+		test(blscgo.CurveFp382_1)
+		fmt.Println("CurveFp382_1")
+		test(blscgo.CurveFp382_2)
+	}
 }

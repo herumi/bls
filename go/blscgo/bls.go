@@ -19,6 +19,14 @@ const CurveFp382_2 = 2
 func Init(curve int) {
 	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 }
+// getMaxOpUnitSize --
+func GetMaxOpUnitSize() int {
+	return int(C.BLS_MAX_OP_UNIT_SIZE)
+}
+// getOpUnitSize --
+func GetOpUnitSize() int {
+	return int(C.blsGetOpUnitSize())
+}
 
 // ID --
 type ID struct {
@@ -54,13 +62,13 @@ func (id *ID) SetStr(s string) error {
 }
 
 // Set --
-func (id *ID) Set(v []uint64) error {
-	if len(v) != 6 {
-		return fmt.Errorf("bad size (%d), expected size 6", len(v))
+func (id *ID) Set(v []uint64) {
+	expect := GetOpUnitSize()
+	if len(v) != expect {
+		panic(fmt.Errorf("bad size (%d), expected size %d", len(v), expect))
 	}
 	// #nosec
 	C.blsIdSet(id.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
-	return nil
 }
 
 // SecretKey --
@@ -97,13 +105,13 @@ func (sec *SecretKey) SetStr(s string) error {
 }
 
 // SetArray --
-func (sec *SecretKey) SetArray(v []uint64) error {
-	if len(v) != 6 {
-		return fmt.Errorf("bad size (%d), expected size 6", len(v))
+func (sec *SecretKey) SetArray(v []uint64) {
+	expect := GetOpUnitSize()
+	if len(v) != expect {
+		panic(fmt.Errorf("bad size (%d), expected size %d", len(v), expect))
 	}
 	// #nosec
 	C.blsSecretKeySetArray(sec.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
-	return nil
 }
 
 // Init --
