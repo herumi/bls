@@ -208,7 +208,7 @@ void init(int curve, int maxUnitSize)
 }
 size_t getOpUnitSize()
 {
-	return sizeof(Fp) / sizeof(uint64_t);
+	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
 }
 
 Id::Id(unsigned int id)
