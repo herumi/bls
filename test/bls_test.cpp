@@ -16,29 +16,6 @@ void streamTest(const T& t)
 	CYBOZU_TEST_EQUAL(t, t2);
 }
 
-CYBOZU_TEST_AUTO(bls)
-{
-	bls::init(bls::CurveFp254BNb);
-	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
-	bls::SecretKey sec;
-	sec.init();
-	streamTest(sec);
-	bls::PublicKey pub;
-	sec.getPublicKey(pub);
-	streamTest(pub);
-	for (int i = 0; i < 5; i++) {
-		std::string m = "hello";
-		m += char('0' + i);
-		bls::Sign s;
-		sec.sign(s, m);
-		CYBOZU_TEST_ASSERT(s.verify(pub, m));
-		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
-		streamTest(s);
-		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
-		CYBOZU_BENCH_C("verify", 100, s.verify, pub, "abc");
-	}
-}
-
 template<class T>
 void testSet()
 {
@@ -66,7 +43,7 @@ void testSet()
 	}
 }
 
-CYBOZU_TEST_AUTO(id)
+void IdTestBN256()
 {
 	bls::Id id;
 	CYBOZU_TEST_ASSERT(id.isZero());
@@ -82,12 +59,41 @@ CYBOZU_TEST_AUTO(id)
 	testSet<bls::Id>();
 }
 
-CYBOZU_TEST_AUTO(SecretKey_set)
+void SecretKeyTestBN256()
 {
 	testSet<bls::SecretKey>();
 }
 
-CYBOZU_TEST_AUTO(k_of_n)
+CYBOZU_TEST_AUTO(bn256)
+{
+	bls::init(bls::CurveFp254BNb);
+	IdTestBN256();
+	SecretKeyTestBN256();
+	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
+}
+
+void blsTest()
+{
+	bls::SecretKey sec;
+	sec.init();
+	streamTest(sec);
+	bls::PublicKey pub;
+	sec.getPublicKey(pub);
+	streamTest(pub);
+	for (int i = 0; i < 5; i++) {
+		std::string m = "hello";
+		m += char('0' + i);
+		bls::Sign s;
+		sec.sign(s, m);
+		CYBOZU_TEST_ASSERT(s.verify(pub, m));
+		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
+		streamTest(s);
+		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
+		CYBOZU_BENCH_C("verify", 100, s.verify, pub, "abc");
+	}
+}
+
+void k_of_nTest()
 {
 	const std::string m = "abc";
 	const int n = 5;
@@ -257,7 +263,7 @@ CYBOZU_TEST_AUTO(k_of_n)
 	}
 }
 
-CYBOZU_TEST_AUTO(pop)
+void popTest()
 {
 	const size_t k = 3;
 	const size_t n = 6;
@@ -320,7 +326,7 @@ CYBOZU_TEST_AUTO(pop)
 	CYBOZU_TEST_EQUAL(s, s2);
 }
 
-CYBOZU_TEST_AUTO(add)
+void addTest()
 {
 	bls::SecretKey sec1, sec2;
 	sec1.init();
@@ -336,4 +342,26 @@ CYBOZU_TEST_AUTO(add)
 	sec1.sign(s1, m);
 	sec2.sign(s2, m);
 	CYBOZU_TEST_ASSERT((s1 + s2).verify(pub1 + pub2, m));
+}
+
+void testAll()
+{
+	blsTest();
+	k_of_nTest();
+	popTest();
+	addTest();
+}
+CYBOZU_TEST_AUTO(all)
+{
+	const int tbl[] = {
+		bls::CurveFp254BNb,
+#if BLS_MAX_OP_UNIT_SIZE == 6
+		bls::CurveFp382_1,
+		bls::CurveFp382_2
+#endif
+	};
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {
+		bls::init(tbl[i]);
+		testAll();
+	}
 }

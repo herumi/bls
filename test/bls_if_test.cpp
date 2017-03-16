@@ -2,7 +2,7 @@
 #include <bls_if.h>
 #include <string.h>
 
-CYBOZU_TEST_AUTO(bls_if)
+void bls_ifTest()
 {
 	blsSecretKey *sec;
 	blsPublicKey *pub;
@@ -10,7 +10,6 @@ CYBOZU_TEST_AUTO(bls_if)
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
-	blsInit(BlsCurveFp254BNb, BLS_MAX_OP_UNIT_SIZE);
 	sec = blsSecretKeyCreate();
 	blsSecretKeyInit(sec);
 	blsSecretKeyPut(sec);
@@ -23,14 +22,14 @@ CYBOZU_TEST_AUTO(bls_if)
 	blsSecretKeySign(sec, sign, msg, msgSize);
 	blsSignPut(sign);
 
-	printf("verify %d\n", blsSignVerify(sign, pub, msg, msgSize));
+	CYBOZU_TEST_ASSERT(blsSignVerify(sign, pub, msg, msgSize));
 
 	blsSignDestroy(sign);
 	blsPublicKeyDestroy(pub);
 	blsSecretKeyDestroy(sec);
 }
 
-CYBOZU_TEST_AUTO(bls_if_use_stack)
+void bls_if_use_stackTest()
 {
 	blsSecretKey sec;
 	blsPublicKey pub;
@@ -38,7 +37,6 @@ CYBOZU_TEST_AUTO(bls_if_use_stack)
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
-	blsInit(BlsCurveFp254BNb, BLS_MAX_OP_UNIT_SIZE);
 	blsSecretKeyInit(&sec);
 	blsSecretKeyPut(&sec);
 
@@ -48,5 +46,22 @@ CYBOZU_TEST_AUTO(bls_if_use_stack)
 	blsSecretKeySign(&sec, &sign, msg, msgSize);
 	blsSignPut(&sign);
 
-	printf("verify %d\n", blsSignVerify(&sign, &pub, msg, msgSize));
+	CYBOZU_TEST_ASSERT(blsSignVerify(&sign, &pub, msg, msgSize));
+}
+
+CYBOZU_TEST_AUTO(all)
+{
+	const int tbl[] = {
+		BlsCurveFp254BNb,
+#if BLS_MAX_OP_UNIT_SIZE == 6
+		BlsCurveFp382_1,
+		BlsCurveFp382_2
+#endif
+	};
+	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
+		printf("i=%d\n", (int)i);
+		blsInit(tbl[i], BLS_MAX_OP_UNIT_SIZE);
+		bls_ifTest();
+		bls_if_use_stackTest();
+	}
 }
