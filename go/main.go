@@ -167,7 +167,7 @@ func test(cp int) {
 	*/
 }
 func main() {
-	fmt.Println("GetMaxOpUnitSize() = %d\n", blscgo.GetMaxOpUnitSize())
+	fmt.Printf("GetMaxOpUnitSize() = %d\n", blscgo.GetMaxOpUnitSize())
 	fmt.Println("CurveFp254BNb")
 	test(blscgo.CurveFp254BNb)
 	if blscgo.GetMaxOpUnitSize() == 6 {
