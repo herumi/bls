@@ -70,6 +70,8 @@ func testSign() {
 		verifyTrue(pubVec[i].String() == secVec[i].GetPublicKey().String())
 
 		signVec[i] = *secVec[i].Sign(m)
+		s := *secVec[i].SignCT(m)
+		verifyTrue(signVec[i] == s);
 		verifyTrue(signVec[i].Verify(&pubVec[i], m))
 	}
 	var sec1 blscgo.SecretKey

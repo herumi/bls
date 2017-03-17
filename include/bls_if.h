@@ -77,6 +77,7 @@ void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 void blsSecretKeyInit(blsSecretKey *sec);
 void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
 void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
+void blsSecretKeySignCT(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
 void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
 void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
 void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign);

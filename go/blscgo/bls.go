@@ -259,6 +259,14 @@ func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	C.blsSecretKeySign(sec.getPointer(), sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	return sign
 }
+// Constant Time Sign --
+func (sec *SecretKey) SignCT(m string) (sign *Sign) {
+	sign = new(Sign)
+	buf := []byte(m)
+	// #nosec
+	C.blsSecretKeySignCT(sec.getPointer(), sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	return sign
+}
 
 // Add --
 func (sign *Sign) Add(rhs *Sign) {

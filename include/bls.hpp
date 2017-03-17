@@ -119,6 +119,8 @@ public:
 	void set(const uint64_t *p);
 	void getPublicKey(PublicKey& pub) const;
 	void sign(Sign& sign, const std::string& m) const;
+	// constant time sign
+	void signCT(Sign& sign, const std::string& m) const;
 	/*
 		make Pop(Proof of Possesion)
 		pop = prv.sign(pub)
