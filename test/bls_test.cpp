@@ -88,8 +88,9 @@ void blsTest()
 		CYBOZU_TEST_ASSERT(s.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
+		CYBOZU_BENCH_C("sign", 100, sec.sign, s, m);
+		CYBOZU_BENCH_C("signCT", 100, sec.signCT, s, m);
 		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
-		CYBOZU_BENCH_C("verify", 100, s.verify, pub, "abc");
 	}
 }
 
@@ -353,15 +354,19 @@ void testAll()
 }
 CYBOZU_TEST_AUTO(all)
 {
-	const int tbl[] = {
-		bls::CurveFp254BNb,
+	const struct {
+		int type;
+		const char *name;
+	} tbl[] = {
+		{ bls::CurveFp254BNb, "Fp254" },
 #if BLS_MAX_OP_UNIT_SIZE == 6
-		bls::CurveFp382_1,
-		bls::CurveFp382_2
+		{ bls::CurveFp382_1, "Fp382_1" },
+		{ bls::CurveFp382_2, "Fp382_2" },
 #endif
 	};
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {
-		bls::init(tbl[i]);
+		printf("curve=%s\n", tbl[i].name);
+		bls::init(tbl[i].type);
 		testAll();
 	}
 }
