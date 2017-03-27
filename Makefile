@@ -28,7 +28,6 @@ BLS_LIB=$(LIB_DIR)/libbls.a
 LIB_OBJ=$(OBJ_DIR)/bls.o
 
 $(BLS_LIB): $(LIB_OBJ)
-	-$(MKDIR) $(@D)
 	$(AR) $@ $(LIB_OBJ)
 
 MCL_LIB=../mcl/lib/libmcl.a
@@ -51,15 +50,12 @@ VPATH=test sample src
 .SUFFIXES: .cpp .d .exe
 
 $(OBJ_DIR)/%.o: %.cpp
-	-$(MKDIR) $(@D)
 	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d)
 
 $(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS_LIB) $(MCL_LIB)
-	-$(MKDIR) $(@D)
 	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 $(EXE_DIR)/bls_if_test.exe: $(OBJ_DIR)/bls_if_test.o $(BLS_LIB) $(MCL_LIB) $(BLS_IF_LIB)
-	-$(MKDIR) $(@D)
 	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(BLS_IF_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 SAMPLE_EXE=$(addprefix $(EXE_DIR)/,$(SAMPLE_SRC:.cpp=.exe))
