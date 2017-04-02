@@ -71,7 +71,7 @@ func testSign() {
 
 		signVec[i] = *secVec[i].Sign(m)
 		s := *secVec[i].SignCT(m)
-		verifyTrue(signVec[i] == s);
+		verifyTrue(signVec[i].String() == s.String());
 		verifyTrue(signVec[i].Verify(&pubVec[i], m))
 	}
 	var sec1 blscgo.SecretKey
