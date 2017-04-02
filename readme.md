@@ -18,7 +18,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # Build and test for Linux
-Specifiy UNIT=4 or 6 always to make.
+Specifiy UNIT=4 or 6 always to make. Default UNIT is 6.
 To make lib/libbls.a and test, run
 ```
 cd bls

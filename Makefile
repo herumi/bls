@@ -9,7 +9,7 @@ TEST_SRC=bls_test.cpp bls_if_test.cpp
 SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
 
 CFLAGS+=-I../mcl/include
-UNIT?=4
+UNIT?=6
 ifeq ($(UNIT),4)
   CFLAGS+=-DBLS_MAX_OP_UNIT_SIZE=4
   GO_TAG=bn256

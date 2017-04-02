@@ -1,9 +1,9 @@
 package blscgo
 
 /*
-#cgo CFLAGS:-I../../include
-#cgo bn256 CFLAGS:-DBLS_MAX_OP_UNIT_SIZE=4
-#cgo bn384 CFLAGS:-DBLS_MAX_OP_UNIT_SIZE=6
+#cgo CFLAGS:-I../../include -DBLS_MAX_OP_UNIT_SIZE=6
+#cgo bn256 CFLAGS:-UBLS_MAX_OP_UNIT_SIZE -DBLS_MAX_OP_UNIT_SIZE=4
+#cgo bn384 CFLAGS:-UBLS_MAX_OP_UNIT_SIZE -DBLS_MAX_OP_UNIT_SIZE=6
 #cgo LDFLAGS:-lbls -lbls_if -lmcl -lgmp -lgmpxx -L../lib -L../../lib -L../../../mcl/lib -L../../mcl/lib  -lstdc++ -lcrypto
 #include "bls_if.h"
 */
