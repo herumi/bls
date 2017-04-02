@@ -85,14 +85,10 @@ void blsTest()
 		m += char('0' + i);
 		bls::Sign s;
 		sec.sign(s, m);
-		bls::Sign t;
-		sec.signCT(t, m);
 		CYBOZU_TEST_ASSERT(s.verify(pub, m));
-		CYBOZU_TEST_ASSERT(t.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
 		streamTest(s);
 		CYBOZU_BENCH_C("sign", 100, sec.sign, s, m);
-		CYBOZU_BENCH_C("signCT", 100, sec.signCT, s, m);
 		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
 	}
 }

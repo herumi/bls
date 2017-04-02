@@ -379,13 +379,7 @@ void SecretKey::sign(Sign& sign, const std::string& m) const
 {
 	G1 Hm;
 	HashAndMapToG1(Hm, m);
-	G1::mul(sign.getInner().sHm, Hm, getInner().s);
-}
-// constant time sign
-void SecretKey::signCT(Sign& sign, const std::string& m) const
-{
-	G1 Hm;
-	HashAndMapToG1(Hm, m);
+//	G1::mul(sign.getInner().sHm, Hm, getInner().s);
 	G1::mulCT(sign.getInner().sHm, Hm, getInner().s);
 }
 

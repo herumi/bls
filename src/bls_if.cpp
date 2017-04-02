@@ -134,11 +134,6 @@ void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, siz
 {
 	((const bls::SecretKey*)sec)->sign(*(bls::Sign*)sign, std::string(m, size));
 }
-void blsSecretKeySignCT(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size)
-{
-	((const bls::SecretKey*)sec)->signCT(*(bls::Sign*)sign, std::string(m, size));
-}
-
 void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id)
 {
 	((bls::SecretKey*)sec)->set((const bls::SecretKey *)msk, k, *(const bls::Id*)id);

@@ -72,10 +72,6 @@ func testSign(t *testing.T) {
 		}
 
 		signVec[i] = *secVec[i].Sign(m)
-		s := *secVec[i].SignCT(m)
-		if signVec[i].String() != s.String() {
-			t.Fatal("SingCT %d", i)
-		}
 		if !signVec[i].Verify(&pubVec[i], m) {
 			t.Fatal("singVec %d", i)
 		}
