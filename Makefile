@@ -67,8 +67,8 @@ test: $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
-run_go: go/main.go $(BLS_LIB) $(BLS_IF_LIB)
-	cd go && go run -tags $(GO_TAG) main.go
+run_go: go/main_test.go $(BLS_LIB) $(BLS_IF_LIB)
+	cd go && go test -tags $(GO_TAG) -v .
 
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)

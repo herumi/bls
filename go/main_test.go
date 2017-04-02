@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 import "./blscgo"
+import "testing"
 
 //import "runtime"
 //import "time"
@@ -13,12 +14,10 @@ func verifyTrue(b bool) {
 		fmt.Println("ERR")
 	}
 }
-func testRecoverSecretKey() {
-	fmt.Println("testRecoverSecretKey")
+func testRecoverSecretKey(t *testing.T) {
 	k := 3000
 	var sec blscgo.SecretKey
 	sec.Init()
-	fmt.Println("sec =", sec)
 
 	// make master secret key
 	msk := sec.GetMasterSecretKey(k)
@@ -33,18 +32,21 @@ func testRecoverSecretKey() {
 	// recover sec2 from secVec and idVec
 	var sec2 blscgo.SecretKey
 	sec2.Recover(secVec, idVec)
-	fmt.Println("sec2=", sec2)
+	if sec.String() != sec2.String() {
+		t.Fatal("sec err %s %s\n", sec, sec2)
+	}
 }
 
-func testSign() {
+func testSign(t *testing.T) {
 	m := "testSign"
-	fmt.Println(m)
 
 	var sec0 blscgo.SecretKey
 	sec0.Init()
 	pub0 := sec0.GetPublicKey()
 	s0 := sec0.Sign(m)
-	verifyTrue(s0.Verify(pub0, m))
+	if !s0.Verify(pub0, m) {
+		t.Fatal("s0.Verify")
+	}
 
 	k := 3
 	msk := sec0.GetMasterSecretKey(k)
@@ -60,33 +62,42 @@ func testSign() {
 
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
-		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
 		secVec[i].Set(msk, &idVec[i])
 
 		pubVec[i].Set(mpk, &idVec[i])
-		fmt.Printf("pubVec[%d]=%s\n", i, pubVec[i].String())
 
-		verifyTrue(pubVec[i].String() == secVec[i].GetPublicKey().String())
+		if pubVec[i].String() != secVec[i].GetPublicKey().String() {
+			t.Fatal("pubVec %d", i)
+		}
 
 		signVec[i] = *secVec[i].Sign(m)
 		s := *secVec[i].SignCT(m)
-		verifyTrue(signVec[i].String() == s.String());
-		verifyTrue(signVec[i].Verify(&pubVec[i], m))
+		if signVec[i].String() != s.String() {
+			t.Fatal("SingCT %d", i)
+		}
+		if !signVec[i].Verify(&pubVec[i], m) {
+			t.Fatal("singVec %d", i)
+		}
 	}
 	var sec1 blscgo.SecretKey
 	sec1.Recover(secVec, idVec)
-	verifyTrue(sec0.String() == sec1.String())
+	if sec0.String() != sec1.String() {
+		t.Fatal("sec0 sec1")
+	}
 	var pub1 blscgo.PublicKey
 	pub1.Recover(pubVec, idVec)
-	verifyTrue(pub0.String() == pub1.String())
+	if pub0.String() != pub1.String() {
+		t.Fatal("pub0 pub1")
+	}
 	var s1 blscgo.Sign
 	s1.Recover(signVec, idVec)
-	verifyTrue(s0.String() == s1.String())
+	if s0.String() != s1.String() {
+		t.Fatal("s0 s1")
+	}
 }
 
-func testAdd() {
-	fmt.Println("testAdd")
+func testAdd(t *testing.T) {
 	var sec1 blscgo.SecretKey
 	var sec2 blscgo.SecretKey
 	sec1.Init()
@@ -99,65 +110,64 @@ func testAdd() {
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
-	fmt.Println("sign1    :", sign1)
 	sign1.Add(sign2)
-	fmt.Println("sign1 add:", sign1)
 	pub1.Add(pub2)
-	verifyTrue(sign1.Verify(pub1, m))
+	if !sign1.Verify(pub1, m) {
+		t.Fatal("sign1.Verify")
+	}
 }
 
-func testPop() {
-	fmt.Println("testPop")
+func testPop(t *testing.T) {
 	var sec blscgo.SecretKey
 	sec.Init()
 	pop := sec.GetPop()
-	verifyTrue(pop.VerifyPop(sec.GetPublicKey()))
+	if !pop.VerifyPop(sec.GetPublicKey()) {
+		t.Fatal("pop.VerifyPop")
+	}
 	sec.Init()
-	verifyTrue(!pop.VerifyPop(sec.GetPublicKey()))
+	if pop.VerifyPop(sec.GetPublicKey()) {
+		t.Fatal("pop.Verify another")
+	}
 }
-func test(cp int) {
-	fmt.Println("init")
+
+func test(t *testing.T, cp int) {
 	blscgo.Init(cp)
 	unitN = blscgo.GetOpUnitSize()
 	{
 		var id blscgo.ID
 		id.Set([]uint64{6, 5, 4, 3, 2, 1}[0:unitN])
-		fmt.Println("id :", id)
 		var id2 blscgo.ID
 		id2.SetStr(id.String())
-		fmt.Println("id2:", id2)
+		if id.String() != id2.String() {
+			t.Fatal("id err %s %s", id, id2)
+		}
 	}
 	{
 		var sec blscgo.SecretKey
 		sec.SetArray([]uint64{1, 2, 3, 4, 5, 6}[0:unitN])
-		fmt.Println("sec=", sec)
 	}
 
 	fmt.Println("create secret key")
 	m := "this is a blscgo sample for go"
 	var sec blscgo.SecretKey
 	sec.Init()
-	fmt.Println("sec:", sec)
-	fmt.Println("create public key")
 	pub := sec.GetPublicKey()
-	fmt.Println("pub:", pub)
 	sign := sec.Sign(m)
-	fmt.Println("sign:", sign)
-	verifyTrue(sign.Verify(pub, m))
+	if !sign.Verify(pub, m) {
+		t.Fatal("sign.Verify")
+	}
 
 	// How to make array of SecretKey
 	{
 		sec := make([]blscgo.SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
 			sec[i].Init()
-			fmt.Println("sec=", sec[i].String())
 		}
 	}
-	testRecoverSecretKey()
-	testAdd()
-	testSign()
-	testPop()
-	fmt.Println("end of test")
+	testRecoverSecretKey(t)
+	testAdd(t)
+	testSign(t)
+	testPop(t)
 
 	// put memory status
 	/*
@@ -168,14 +178,15 @@ func test(cp int) {
 		fmt.Println("mem=", mem)
 	*/
 }
-func main() {
+
+func TestMain(t *testing.T) {
 	fmt.Printf("GetMaxOpUnitSize() = %d\n", blscgo.GetMaxOpUnitSize())
 	fmt.Println("CurveFp254BNb")
-	test(blscgo.CurveFp254BNb)
+	test(t, blscgo.CurveFp254BNb)
 	if blscgo.GetMaxOpUnitSize() == 6 {
 		fmt.Println("CurveFp382_1")
-		test(blscgo.CurveFp382_1)
+		test(t, blscgo.CurveFp382_1)
 		fmt.Println("CurveFp382_1")
-		test(blscgo.CurveFp382_2)
+		test(t, blscgo.CurveFp382_2)
 	}
 }
