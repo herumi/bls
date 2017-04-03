@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #ifdef _MSC_VER
+	#pragma comment(lib, "mcl.lib")
 	#pragma comment(lib, "bls.lib")
 #endif
 

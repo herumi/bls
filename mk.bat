@@ -1,2 +1,8 @@
 @echo off
-cl /DNOMINMAX /Ox /DNDEBUG /W4 /Zi /EHsc -I ./include -I../mcl/include -I../cybozulib/include -I../cybozulib_ext/include -DBLS_MAX_OP_UNIT_SIZE=4 %1 %2 %3 /link /LIBPATH:..\cybozulib_ext\lib /LIBPATH:.\lib /LIBPATH:..\mcl\lib
+call setvar.bat
+set SRC=%1
+set EXE=%SRC:.cpp=.exe%
+set EXE=%EXE:.c=.exe%
+set EXE=%EXE:test\=bin\%
+set EXE=%EXE:sample\=bin\%
+cl %CFLAGS% %1 %2 %3 /Fe:%EXE% /link %LDFLAGS%
