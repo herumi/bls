@@ -35,8 +35,6 @@ MCL_LIB=../mcl/lib/libmcl.a
 $(MCL_LIB):
 	$(MAKE) -C ../mcl
 
-.PHONY: $(MCL_LIB)
-
 ##################################################################
 
 BLS_IF_LIB=$(LIB_DIR)/libbls_if.a
@@ -71,7 +69,7 @@ run_go: go/main_test.go $(BLS_LIB) $(BLS_IF_LIB)
 	cd go && go test -tags $(GO_TAG) -v .
 
 clean:
-	$(RM) $(BLS_LIB) $(OBJ_DIR)/* $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)
+	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS_IF_LIB)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
