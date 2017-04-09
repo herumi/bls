@@ -43,6 +43,33 @@ size_t getStrT(const Outer *p, char *buf, size_t maxBufSize)
 	return 0;
 }
 
+template<class Inner, class Outer>
+int setDataT(Outer *p, const char *buf, size_t bufSize)
+	try
+{
+	((Inner*)p)->setData(std::string(buf, bufSize));
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err setDataT %s\n", e.what());
+	return 1;
+}
+
+template<class Inner, class Outer>
+size_t getDataT(const Outer *p, char *buf, size_t maxBufSize)
+	try
+{
+	std::string s;
+	((const Inner*)p)->getData(s);
+	if (s.size() > maxBufSize) {
+		fprintf(stderr, "err getDataT size is small %d %d\n", (int)s.size(), (int)maxBufSize);
+		return 0;
+	}
+	memcpy(buf, s.c_str(), s.size());
+	return s.size();
+} catch (std::exception&) {
+	return 0;
+}
+
 void blsInit(int curve, int maxUnitSize)
 {
 	bls::init(curve, maxUnitSize);
@@ -60,6 +87,18 @@ blsId *blsIdCreate()
 void blsIdDestroy(blsId *id)
 {
 	delete (bls::Id*)id;
+}
+size_t blsIdGetData(const blsId *id, char *buf, size_t maxBufSize)
+{
+	return getDataT<bls::Id, blsId>(id, buf, maxBufSize);
+}
+int blsIdSetData(blsId *id, const char *buf, size_t bufSize)
+{
+	return setDataT<bls::Id, blsId>(id, buf, bufSize);
+}
+int blsIdIsSame(const blsId *lhs, const blsId *rhs)
+{
+	return *(const bls::Id*)lhs == *(const bls::Id*)rhs ? 1 : 0;
 }
 void blsIdPut(const blsId *id)
 {
@@ -93,6 +132,18 @@ blsSecretKey* blsSecretKeyCreate()
 void blsSecretKeyDestroy(blsSecretKey *sec)
 {
 	delete (bls::SecretKey*)sec;
+}
+size_t blsSecretKeyGetData(const blsSecretKey *sec, char *buf, size_t maxBufSize)
+{
+	return getDataT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize);
+}
+int blsSecretKeySetData(blsSecretKey *sec, const char *buf, size_t bufSize)
+{
+	return setDataT<bls::SecretKey, blsSecretKey>(sec, buf, bufSize);
+}
+int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs)
+{
+	return *(const bls::SecretKey*)lhs == *(const bls::SecretKey*)rhs ? 1 : 0;
 }
 void blsSecretKeyCopy(blsSecretKey *dst, const blsSecretKey *src)
 {
@@ -158,6 +209,18 @@ void blsPublicKeyDestroy(blsPublicKey *pub)
 {
 	delete (bls::PublicKey*)pub;
 }
+size_t blsPublicKeyGetData(const blsPublicKey *pub, char *buf, size_t maxBufSize)
+{
+	return getDataT<bls::PublicKey, blsPublicKey>(pub, buf, maxBufSize);
+}
+int blsPublicKeySetData(blsPublicKey *pub, const char *buf, size_t bufSize)
+{
+	return setDataT<bls::PublicKey, blsPublicKey>(pub, buf, bufSize);
+}
+int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs)
+{
+	return *(const bls::PublicKey*)lhs == *(const bls::PublicKey*)rhs ? 1 : 0;
+}
 void blsPublicKeyCopy(blsPublicKey *dst, const blsPublicKey *src)
 {
 	*((bls::PublicKey*)dst) = *((const bls::PublicKey*)src);
@@ -196,6 +259,18 @@ blsSign *blsSignCreate()
 void blsSignDestroy(blsSign *sign)
 {
 	delete (bls::Sign*)sign;
+}
+size_t blsSignGetData(const blsSign *sign, char *buf, size_t maxBufSize)
+{
+	return getDataT<bls::Sign, blsSign>(sign, buf, maxBufSize);
+}
+int blsSignSetData(blsSign *sign, const char *buf, size_t bufSize)
+{
+	return setDataT<bls::Sign, blsSign>(sign, buf, bufSize);
+}
+int blsSignIsSame(const blsSign *lhs, const blsSign *rhs)
+{
+	return *(const bls::Sign*)lhs == *(const bls::Sign*)rhs ? 1 : 0;
 }
 void blsSignCopy(blsSign *dst, const blsSign *src)
 {
