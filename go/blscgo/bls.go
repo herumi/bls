@@ -242,7 +242,7 @@ func (sec *PublicKey) GetData() []byte {
 	fpSize := GetOpUnitSize() * 8
 	buf := make([]byte, fpSize*2)
 	n := C.blsPublicKeyGetData(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if n != C.size_t(fpSize * 2) {
+	if n != C.size_t(fpSize*2) {
 		panic("implementation err. size of buf is small")
 	}
 	return buf
