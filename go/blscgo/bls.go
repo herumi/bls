@@ -11,8 +11,13 @@ import "C"
 import "fmt"
 import "unsafe"
 
+// CurveFp254BNb -- 254 bit curve
 const CurveFp254BNb = 0
+
+// CurveFp382_1 -- 382 bit curve 1
 const CurveFp382_1 = 1
+
+// CurveFp382_2 -- 382 bit curve 2
 const CurveFp382_2 = 2
 
 // Init --
@@ -20,12 +25,12 @@ func Init(curve int) {
 	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 }
 
-// getMaxOpUnitSize --
+// GetMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
 	return int(C.BLS_MAX_OP_UNIT_SIZE)
 }
 
-// getOpUnitSize --
+// GetOpUnitSize --
 func GetOpUnitSize() int {
 	return int(C.blsGetOpUnitSize())
 }
@@ -332,7 +337,7 @@ func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 	return pub
 }
 
-// Constant Time Sign --
+// Sign -- Constant Time version
 func (sec *SecretKey) Sign(m string) (sign *Sign) {
 	sign = new(Sign)
 	buf := []byte(m)
