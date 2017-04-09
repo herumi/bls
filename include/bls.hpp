@@ -86,6 +86,11 @@ public:
 	bool operator!=(const Id& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Id& id);
 	friend std::istream& operator>>(std::istream& is, Id& id);
+	/*
+		get tight repl
+	*/
+	void getData(std::string& str) const;
+	void setData(const std::string& str);
 	bool isZero() const;
 	/*
 		set p[0, .., keySize)
@@ -109,6 +114,11 @@ public:
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
 	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
+	/*
+		get tight repl
+	*/
+	void getData(std::string& str) const;
+	void setData(const std::string& str);
 	/*
 		initialize secretKey with random number and set id = 0
 	*/
@@ -171,6 +181,11 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
 	/*
+		get tight repl
+	*/
+	void getData(std::string& str) const;
+	void setData(const std::string& str);
+	/*
 		set public for id from mpk
 	*/
 	void set(const PublicKeyVec& mpk, const Id& id)
@@ -206,6 +221,11 @@ public:
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
+	/*
+		get tight repl
+	*/
+	void getData(std::string& str) const;
+	void setData(const std::string& str);
 	bool verify(const PublicKey& pub, const std::string& m) const;
 	/*
 		verify self(pop) with pub

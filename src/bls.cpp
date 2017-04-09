@@ -230,6 +230,14 @@ std::istream& operator>>(std::istream& is, Id& id)
 {
 	return is >> id.getInner().v;
 }
+void Id::getData(std::string& str) const
+{
+	getInner().v.getStr(str, mcl::IoTight);
+}
+void Id::setData(const std::string& str)
+{
+	getInner().v.setStr(str, mcl::IoTight);
+}
 
 bool Id::isZero() const
 {
@@ -254,6 +262,14 @@ std::ostream& operator<<(std::ostream& os, const Sign& s)
 std::istream& operator>>(std::istream& os, Sign& s)
 {
 	return os >> s.getInner().sHm;
+}
+void Sign::getData(std::string& str) const
+{
+	getInner().sHm.getStr(str, mcl::IoTight);
+}
+void Sign::setData(const std::string& str)
+{
+	getInner().sHm.setStr(str, mcl::IoTight);
 }
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
@@ -322,6 +338,14 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 	return is >> pub.getInner().sQ;
 }
 
+void PublicKey::getData(std::string& str) const
+{
+	getInner().sQ.getStr(str, mcl::IoTight);
+}
+void PublicKey::setData(const std::string& str)
+{
+	getInner().sQ.setStr(str, mcl::IoTight);
+}
 void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
 	WrapArray<PublicKey, G2> w(mpk, k);
@@ -358,6 +382,14 @@ std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
 std::istream& operator>>(std::istream& is, SecretKey& sec)
 {
 	return is >> sec.getInner().s;
+}
+void SecretKey::getData(std::string& str) const
+{
+	getInner().s.getStr(str, mcl::IoTight);
+}
+void SecretKey::setData(const std::string& str)
+{
+	getInner().s.setStr(str, mcl::IoTight);
 }
 
 void SecretKey::init()

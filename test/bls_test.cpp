@@ -344,12 +344,57 @@ void addTest()
 	CYBOZU_TEST_ASSERT((s1 + s2).verify(pub1 + pub2, m));
 }
 
+void dataTest()
+{
+	const size_t size = bls::getOpUnitSize() * sizeof(uint64_t);
+	bls::SecretKey sec;
+	sec.init();
+	std::string str;
+	sec.getData(str);
+	{
+		CYBOZU_TEST_EQUAL(str.size(), size);
+		bls::SecretKey sec2;
+		sec2.setData(str);
+		CYBOZU_TEST_EQUAL(sec, sec2);
+	}
+	bls::PublicKey pub;
+	sec.getPublicKey(pub);
+	pub.getData(str);
+	{
+		CYBOZU_TEST_EQUAL(str.size(), size * 2);
+		bls::PublicKey pub2;
+		pub2.setData(str);
+		CYBOZU_TEST_EQUAL(pub, pub2);
+	}
+	std::string m = "abc";
+	bls::Sign sign;
+	sec.sign(sign, m);
+	sign.getData(str);
+	{
+		CYBOZU_TEST_EQUAL(str.size(), size);
+		bls::Sign sign2;
+		sign2.setData(str);
+		CYBOZU_TEST_EQUAL(sign, sign2);
+	}
+	bls::Id id;
+	const uint64_t v[] = { 1, 2, 3, 4, 5, 6, };
+	id.set(v);
+	id.getData(str);
+	{
+		CYBOZU_TEST_EQUAL(str.size(), size);
+		bls::Id id2;
+		id2.setData(str);
+		CYBOZU_TEST_EQUAL(id, id2);
+	}
+}
+
 void testAll()
 {
 	blsTest();
 	k_of_nTest();
 	popTest();
 	addTest();
+	dataTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
