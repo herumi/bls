@@ -126,6 +126,31 @@ func testPop(t *testing.T) {
 	}
 }
 
+func testData(t *testing.T) {
+	var sec1, sec2 blscgo.SecretKey
+	sec1.Init()
+	s := sec1.GetData()
+	sec2.SetData(s)
+	if !sec1.IsSame(&sec2) {
+		t.Fatal("SecretKey not same")
+	}
+	pub1 := sec1.GetPublicKey()
+	s = pub1.GetData()
+	var pub2 blscgo.PublicKey
+	pub2.SetData(s)
+	if !pub1.IsSame(&pub2) {
+		t.Fatal("PublicKey not same")
+	}
+	m := "doremi"
+	sign1 := sec1.Sign(m)
+	s = sign1.GetData()
+	var sign2 blscgo.Sign
+	sign2.SetData(s)
+	if !sign1.IsSame(&sign2) {
+		t.Fatal("Sign not same")
+	}
+}
+
 func test(t *testing.T, cp int) {
 	blscgo.Init(cp)
 	unitN = blscgo.GetOpUnitSize()
@@ -164,6 +189,7 @@ func test(t *testing.T, cp int) {
 	testAdd(t)
 	testSign(t)
 	testPop(t)
+	testData(t)
 
 	// put memory status
 	/*
