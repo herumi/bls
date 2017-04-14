@@ -338,7 +338,7 @@ func TestMain(t *testing.T) {
 	if GetMaxOpUnitSize() == 6 {
 		t.Log("CurveFp382_1")
 		test(t, CurveFp382_1)
-		t.Log("CurveFp382_1")
+		t.Log("CurveFp382_2")
 		test(t, CurveFp382_2)
 	}
 }
