@@ -1,4 +1,4 @@
-package blscgo
+package bls
 
 /*
 #cgo CFLAGS:-I../../include -DBLS_MAX_OP_UNIT_SIZE=6
