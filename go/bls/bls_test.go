@@ -10,14 +10,13 @@ var unitN = 0
 
 func testPre(t *testing.T) {
 	t.Log("init")
-	var err error
 	{
 		var id ID
 		id.Set([]uint64{6, 5, 4, 3, 2, 1}[0:unitN])
 
 		t.Log("id :", id)
 		var id2 ID
-		err = id2.SetStr(id.String())
+		err := id2.SetStr(id.String())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -51,6 +50,28 @@ func testPre(t *testing.T) {
 			t.Log("sec=", sec[i].String())
 		}
 	}
+}
+
+func testStringConversion(t *testing.T) {
+	t.Log("testRecoverSecretKey")
+	var sec SecretKey
+	var s string
+	if unitN == 6 {
+		s = "16798108731015832284940804142231733909759579603404752749028378864165570215949"
+	} else {
+		s = "40804142231733909759579603404752749028378864165570215949"
+	}
+	err := sec.SetStr(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("String: ", s, sec.String())
+	s = "401035055535747319451436327113007154621327258807739504261475863403006987855"
+	err = sec.SetStr(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("String: ", s, sec.String())
 }
 
 func testRecoverSecretKey(t *testing.T) {
@@ -178,14 +199,20 @@ func testData(t *testing.T) {
 	var sec1, sec2 SecretKey
 	sec1.Init()
 	s := sec1.GetData()
-	sec2.SetData(s)
+	err := sec2.SetData(s)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !sec1.IsSame(&sec2) {
 		t.Error("SecretKey not same")
 	}
 	pub1 := sec1.GetPublicKey()
 	s = pub1.GetData()
 	var pub2 PublicKey
-	pub2.SetData(s)
+	err = pub2.SetData(s)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !pub1.IsSame(&pub2) {
 		t.Error("PublicKey not same")
 	}
@@ -193,7 +220,10 @@ func testData(t *testing.T) {
 	sign1 := sec1.Sign(m)
 	s = sign1.GetData()
 	var sign2 Sign
-	sign2.SetData(s)
+	err = sign2.SetData(s)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !sign1.IsSame(&sign2) {
 		t.Error("Sign not same")
 	}
@@ -329,6 +359,7 @@ func test(t *testing.T, c int) {
 	testSign(t)
 	testPop(t)
 	testData(t)
+	testStringConversion(t)
 }
 
 func TestMain(t *testing.T) {
