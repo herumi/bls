@@ -3,10 +3,9 @@ package bls
 import "testing"
 import "strconv"
 
-var curve = CurveFp382_1
-
-//var curve = CurveFp254BNb
 var unitN = 0
+
+// Tests (for Benchmarks see below)
 
 func testPre(t *testing.T) {
 	t.Log("init")
@@ -229,6 +228,37 @@ func testData(t *testing.T) {
 	}
 }
 
+
+func test(t *testing.T, c int) {
+	Init(c)
+	unitN = GetOpUnitSize()
+	t.Logf("unitN=%d\n", unitN)
+	testPre(t)
+	testRecoverSecretKey(t)
+	testAdd(t)
+	testSign(t)
+	testPop(t)
+	testData(t)
+	testStringConversion(t)
+}
+
+func TestMain(t *testing.T) {
+	t.Logf("GetMaxOpUnitSize() = %d\n", GetMaxOpUnitSize())
+	t.Log("CurveFp254BNb")
+	test(t, CurveFp254BNb)
+	if GetMaxOpUnitSize() == 6 {
+		t.Log("CurveFp382_1")
+		test(t, CurveFp382_1)
+		t.Log("CurveFp382_2")
+		test(t, CurveFp382_2)
+	}
+}
+
+// Benchmarks
+
+var curve = CurveFp382_1
+//var curve = CurveFp254BNb
+
 func BenchmarkPubkeyFromSeckey(b *testing.B) {
 	b.StopTimer()
 	Init(curve)
@@ -348,28 +378,3 @@ func BenchmarkRecoverSignature100(b *testing.B)  { benchmarkRecoverSignature(100
 func BenchmarkRecoverSignature200(b *testing.B)  { benchmarkRecoverSignature(200, b) }
 func BenchmarkRecoverSignature500(b *testing.B)  { benchmarkRecoverSignature(500, b) }
 func BenchmarkRecoverSignature1000(b *testing.B) { benchmarkRecoverSignature(1000, b) }
-
-func test(t *testing.T, c int) {
-	Init(c)
-	unitN = GetOpUnitSize()
-	t.Logf("unitN=%d\n", unitN)
-	testPre(t)
-	testRecoverSecretKey(t)
-	testAdd(t)
-	testSign(t)
-	testPop(t)
-	testData(t)
-	testStringConversion(t)
-}
-
-func TestMain(t *testing.T) {
-	t.Logf("GetMaxOpUnitSize() = %d\n", GetMaxOpUnitSize())
-	t.Log("CurveFp254BNb")
-	test(t, CurveFp254BNb)
-	if GetMaxOpUnitSize() == 6 {
-		t.Log("CurveFp382_1")
-		test(t, CurveFp382_1)
-		t.Log("CurveFp382_2")
-		test(t, CurveFp382_2)
-	}
-}
