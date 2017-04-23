@@ -26,6 +26,16 @@ int setStrT(Outer *p, const char *buf, size_t bufSize)
 	return 1;
 }
 
+size_t checkAndCopy(char *buf, size_t maxBufSize, const std::string& s)
+{
+	if (s.size() >= maxBufSize) {
+		return 0;
+	}
+	memcpy(buf, s.c_str(), s.size());
+	buf[s.size()] = '\0';
+	return s.size();
+}
+
 template<class Inner, class Outer>
 size_t getStrT(const Outer *p, char *buf, size_t maxBufSize)
 	try
@@ -33,12 +43,7 @@ size_t getStrT(const Outer *p, char *buf, size_t maxBufSize)
 	std::ostringstream oss;
 	oss << *(const Inner*)p;
 	std::string s = oss.str();
-	if (s.size() > maxBufSize) {
-		fprintf(stderr, "err getStrT size is small %d %d\n", (int)s.size(), (int)maxBufSize);
-		return 0;
-	}
-	memcpy(buf, s.c_str(), s.size());
-	return s.size();
+	return checkAndCopy(buf, maxBufSize, s);
 } catch (std::exception&) {
 	return 0;
 }
@@ -77,6 +82,26 @@ void blsInit(int curve, int maxUnitSize)
 size_t blsGetOpUnitSize()
 {
 	return bls::getOpUnitSize();
+}
+
+int blsGetCurveOrder(char *buf, size_t maxBufSize)
+	try
+{
+	std::string s;
+	bls::getCurveOrder(s);
+	return checkAndCopy(buf, maxBufSize, s);
+} catch (std::exception&) {
+	return 0;
+}
+
+int blsGetFieldOrder(char *buf, size_t maxBufSize)
+	try
+{
+	std::string s;
+	bls::getFieldOrder(s);
+	return checkAndCopy(buf, maxBufSize, s);
+} catch (std::exception&) {
+	return 0;
 }
 
 blsId *blsIdCreate()

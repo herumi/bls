@@ -45,6 +45,9 @@ typedef struct {
 
 void blsInit(int curve, int maxUnitSize);
 size_t blsGetOpUnitSize(void);
+// return strlen(buf) if success else 0
+int blsGetCurveOrder(char *buf, size_t maxBufSize);
+int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
 blsId *blsIdCreate(void);
 void blsIdDestroy(blsId *id);
@@ -58,10 +61,7 @@ void blsIdCopy(blsId *dst, const blsId *src);
 // return 0 if success
 int blsIdSetStr(blsId *id, const char *buf, size_t bufSize);
 
-/*
-	return written size
-	otherwise 0
-*/
+// return strlen(buf) if success else 0
 size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize);
 /*
 	access p[0], ..., p[3] if 256-bit curve
@@ -71,6 +71,7 @@ void blsIdSet(blsId *id, const uint64_t *p);
 
 blsSecretKey* blsSecretKeyCreate(void);
 void blsSecretKeyDestroy(blsSecretKey *sec);
+// return written byte size if success else 0
 size_t blsSecretKeyGetData(const blsSecretKey *sec, char *buf, size_t maxBufSize);
 int blsSecretKeySetData(blsSecretKey *sec, const char *buf, size_t bufSize);
 // return 1 if same else 0
@@ -80,6 +81,7 @@ void blsSecretKeyPut(const blsSecretKey *sec);
 void blsSecretKeyCopy(blsSecretKey *dst, const blsSecretKey *src);
 void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p);
 int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize);
+// return strlen(buf) if success else 0
 size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize);
 void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 
@@ -99,6 +101,7 @@ int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs);
 void blsPublicKeyPut(const blsPublicKey *pub);
 void blsPublicKeyCopy(blsPublicKey *dst, const blsPublicKey *src);
 int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize);
+// return strlen(buf) if success else 0
 size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize);
 void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
@@ -113,6 +116,7 @@ int blsSignIsSame(const blsSign *lhs, const blsSign *rhs);
 void blsSignPut(const blsSign *sign);
 void blsSignCopy(blsSign *dst, const blsSign *src);
 int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize);
+// return strlen(buf) if success else 0
 size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize);
 void blsSignAdd(blsSign *sign, const blsSign *rhs);
 void blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n);

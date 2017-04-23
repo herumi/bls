@@ -211,6 +211,15 @@ size_t getOpUnitSize()
 	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
 }
 
+void getCurveOrder(std::string& str)
+{
+	Fr::getModulo(str);
+}
+void getFieldOrder(std::string& str)
+{
+	Fp::getModulo(str);
+}
+
 Id::Id(unsigned int id)
 {
 	getInner().v = id;

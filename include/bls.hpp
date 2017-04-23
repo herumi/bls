@@ -55,6 +55,8 @@ struct Id;
 */
 void init(int curve = CurveFp254BNb, int maxUnitSize = BLS_MAX_OP_UNIT_SIZE);
 size_t getOpUnitSize();
+void getCurveOrder(std::string& str);
+void getFieldOrder(std::string& str);
 
 class SecretKey;
 class PublicKey;
