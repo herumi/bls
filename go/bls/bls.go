@@ -35,6 +35,28 @@ func GetOpUnitSize() int {
 	return int(C.blsGetOpUnitSize())
 }
 
+// GetCurveOrder --
+func GetCurveOrder() string {
+	buf := make([]byte, 1024)
+	// #nosec
+	n := C.blsGetCurveOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	if n == 0 {
+		panic("implementation err. size of buf is small")
+	}
+	return string(buf[:n])
+}
+
+// GetCurveOrder --
+func GetFieldOrder() string {
+	buf := make([]byte, 1024)
+	// #nosec
+	n := C.blsGetFieldOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	if n == 0 {
+		panic("implementation err. size of buf is small")
+	}
+	return string(buf[:n])
+}
+
 // ID --
 type ID struct {
 	v [C.BLS_MAX_OP_UNIT_SIZE]C.uint64_t

@@ -228,6 +228,31 @@ func testData(t *testing.T) {
 	}
 }
 
+func testOrder(t *testing.T, c int) {
+	var curve string
+	var field string
+	if c == CurveFp254BNb {
+		curve = "16798108731015832284940804142231733909759579603404752749028378864165570215949"
+		field = "16798108731015832284940804142231733909889187121439069848933715426072753864723"
+	} else if c == CurveFp382_1 {
+		curve = "5540996953667913971058039301942914304734176495422447785042938606876043190415948413757785063597439175372845535461389"
+		field = "5540996953667913971058039301942914304734176495422447785045292539108217242186829586959562222833658991069414454984723"
+	} else if c == CurveFp382_2 {
+		curve = "5541245505022739011583672869577435255026888277144126952448297309161979278754528049907713682488818304329661351460877"
+		field = "5541245505022739011583672869577435255026888277144126952450651294188487038640194767986566260919128250811286032482323"
+	} else {
+		t.Fatal("bad c", c)
+	}
+	var s string
+	s = GetCurveOrder()
+	if s != curve {
+		t.Errorf("bad curve order\n%s\n%s\n", s, curve)
+	}
+	s = GetFieldOrder()
+	if s != field {
+		t.Errorf("bad field order\n%s\n%s\n", s, field)
+	}
+}
 
 func test(t *testing.T, c int) {
 	Init(c)
@@ -240,6 +265,7 @@ func test(t *testing.T, c int) {
 	testPop(t)
 	testData(t)
 	testStringConversion(t)
+	testOrder(t, c)
 }
 
 func TestMain(t *testing.T) {
@@ -257,6 +283,7 @@ func TestMain(t *testing.T) {
 // Benchmarks
 
 var curve = CurveFp382_1
+
 //var curve = CurveFp254BNb
 
 func BenchmarkPubkeyFromSeckey(b *testing.B) {
