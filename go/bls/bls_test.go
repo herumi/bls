@@ -243,8 +243,7 @@ func testOrder(t *testing.T, c int) {
 	} else {
 		t.Fatal("bad c", c)
 	}
-	var s string
-	s = GetCurveOrder()
+	s := GetCurveOrder()
 	if s != curve {
 		t.Errorf("bad curve order\n%s\n%s\n", s, curve)
 	}

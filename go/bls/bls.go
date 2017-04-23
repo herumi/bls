@@ -46,7 +46,7 @@ func GetCurveOrder() string {
 	return string(buf[:n])
 }
 
-// GetCurveOrder --
+// GetFieldOrder --
 func GetFieldOrder() string {
 	buf := make([]byte, 1024)
 	// #nosec
