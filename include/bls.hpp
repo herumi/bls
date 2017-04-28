@@ -52,6 +52,7 @@ struct Id;
 	call this once before using the other method
 	@param curve [in] type of curve
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
+	@note init() is not thread safe
 */
 void init(int curve = CurveFp254BNb, int maxUnitSize = BLS_MAX_OP_UNIT_SIZE);
 size_t getOpUnitSize();

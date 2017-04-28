@@ -21,6 +21,8 @@ const CurveFp382_1 = 1
 const CurveFp382_2 = 2
 
 // Init --
+// call this function before calling all the other operations
+// this function is not thread safe
 func Init(curve int) {
 	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 }

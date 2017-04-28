@@ -43,6 +43,11 @@ typedef struct {
 	uint64_t buf[BLS_MAX_OP_UNIT_SIZE * 3];
 } blsSign;
 
+/*
+	initialize this library
+	call this once before using the other method
+	@note init() is not thread safe
+*/
 void blsInit(int curve, int maxUnitSize);
 size_t blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0
