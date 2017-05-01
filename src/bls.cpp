@@ -241,11 +241,11 @@ std::istream& operator>>(std::istream& is, Id& id)
 }
 void Id::getData(std::string& str) const
 {
-	getInner().v.getStr(str, mcl::IoTight);
+	getInner().v.getStr(str, mcl::IoEcComp);
 }
 void Id::setData(const std::string& str)
 {
-	getInner().v.setStr(str, mcl::IoTight);
+	getInner().v.setStr(str, mcl::IoEcComp);
 }
 
 bool Id::isZero() const
@@ -274,11 +274,11 @@ std::istream& operator>>(std::istream& os, Sign& s)
 }
 void Sign::getData(std::string& str) const
 {
-	getInner().sHm.getStr(str, mcl::IoTight);
+	getInner().sHm.getStr(str, mcl::IoEcComp);
 }
 void Sign::setData(const std::string& str)
 {
-	getInner().sHm.setStr(str, mcl::IoTight);
+	getInner().sHm.setStr(str, mcl::IoEcComp);
 }
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
@@ -349,11 +349,11 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 
 void PublicKey::getData(std::string& str) const
 {
-	getInner().sQ.getStr(str, mcl::IoTight);
+	getInner().sQ.getStr(str, mcl::IoEcComp);
 }
 void PublicKey::setData(const std::string& str)
 {
-	getInner().sQ.setStr(str, mcl::IoTight);
+	getInner().sQ.setStr(str, mcl::IoEcComp);
 }
 void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
@@ -394,11 +394,11 @@ std::istream& operator>>(std::istream& is, SecretKey& sec)
 }
 void SecretKey::getData(std::string& str) const
 {
-	getInner().s.getStr(str, mcl::IoTight);
+	getInner().s.getStr(str, mcl::IoEcComp);
 }
 void SecretKey::setData(const std::string& str)
 {
-	getInner().s.setStr(str, mcl::IoTight);
+	getInner().s.setStr(str, mcl::IoEcComp);
 }
 
 void SecretKey::init()
