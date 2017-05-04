@@ -15,7 +15,7 @@ func testPre(t *testing.T) {
 
 		t.Log("id :", id)
 		var id2 ID
-		err := id2.SetStr(id.String())
+		err := id2.SetStr(id.GetString(10), 10)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -46,7 +46,7 @@ func testPre(t *testing.T) {
 		sec := make([]SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
 			sec[i].Init()
-			t.Log("sec=", sec[i].String())
+			t.Log("sec=", sec[i].GetString(16))
 		}
 	}
 }
@@ -60,17 +60,13 @@ func testStringConversion(t *testing.T) {
 	} else {
 		s = "40804142231733909759579603404752749028378864165570215949"
 	}
-	err := sec.SetStr(s)
+	err := sec.SetStr(s, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("String: ", s, sec.String())
-	s = "401035055535747319451436327113007154621327258807739504261475863403006987855"
-	err = sec.SetStr(s)
-	if err != nil {
-		t.Fatal(err)
+	if s != sec.GetString(10) {
+		t.Error("not equal")
 	}
-	t.Log("String: ", s, sec.String())
 }
 
 func testRecoverSecretKey(t *testing.T) {
@@ -92,8 +88,8 @@ func testRecoverSecretKey(t *testing.T) {
 	// recover sec2 from secVec and idVec
 	var sec2 SecretKey
 	sec2.Recover(secVec, idVec)
-	if sec.String() != sec2.String() {
-		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.String(), sec2.String())
+	if sec.GetString(16) != sec2.GetString(16) {
+		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetString(16), sec2.GetString(16))
 	}
 }
 
@@ -123,14 +119,14 @@ func testSign(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
-		t.Logf("idVec[%d]=%s\n", i, idVec[i].String())
+		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetString(16))
 
 		secVec[i].Set(msk, &idVec[i])
 
 		pubVec[i].Set(mpk, &idVec[i])
-		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].String())
+		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetString(16))
 
-		if pubVec[i].String() != secVec[i].GetPublicKey().String() {
+		if pubVec[i].GetString(16) != secVec[i].GetPublicKey().GetString(16) {
 			t.Error("Pubkey derivation does not match")
 		}
 
@@ -141,17 +137,17 @@ func testSign(t *testing.T) {
 	}
 	var sec1 SecretKey
 	sec1.Recover(secVec, idVec)
-	if sec0.String() != sec1.String() {
+	if sec0.GetString(16) != sec1.GetString(16) {
 		t.Error("Mismatch in recovered seckey.")
 	}
 	var pub1 PublicKey
 	pub1.Recover(pubVec, idVec)
-	if pub0.String() != pub1.String() {
+	if pub0.GetString(16) != pub1.GetString(16) {
 		t.Error("Mismatch in recovered pubkey.")
 	}
 	var s1 Sign
 	s1.Recover(signVec, idVec)
-	if s0.String() != s1.String() {
+	if s0.GetString(16) != s1.GetString(16) {
 		t.Error("Mismatch in recovered signature.")
 	}
 }

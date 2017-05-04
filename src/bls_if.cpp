@@ -15,11 +15,10 @@ Outer *createT()
 }
 
 template<class Inner, class Outer>
-int setStrT(Outer *p, const char *buf, size_t bufSize)
+int setStrT(Outer *p, const char *buf, size_t bufSize, int ioMode)
 	try
 {
-	std::istringstream iss(std::string(buf, bufSize));
-	iss >> *(Inner*)p;
+	((Inner*)p)->setStr(std::string(buf, bufSize), ioMode);
 	return 0;
 } catch (std::exception& e) {
 	fprintf(stderr, "err setStrT %s\n", e.what());
@@ -28,48 +27,30 @@ int setStrT(Outer *p, const char *buf, size_t bufSize)
 
 size_t checkAndCopy(char *buf, size_t maxBufSize, const std::string& s)
 {
-	if (s.size() >= maxBufSize) {
+	if (s.size() > maxBufSize + 1) {
 		return 0;
 	}
 	memcpy(buf, s.c_str(), s.size());
 	buf[s.size()] = '\0';
 	return s.size();
 }
-
 template<class Inner, class Outer>
-size_t getStrT(const Outer *p, char *buf, size_t maxBufSize)
-	try
-{
-	std::ostringstream oss;
-	oss << *(const Inner*)p;
-	std::string s = oss.str();
-	return checkAndCopy(buf, maxBufSize, s);
-} catch (std::exception&) {
-	return 0;
-}
-
-template<class Inner, class Outer>
-int setDataT(Outer *p, const char *buf, size_t bufSize)
-	try
-{
-	((Inner*)p)->setData(std::string(buf, bufSize));
-	return 0;
-} catch (std::exception& e) {
-	fprintf(stderr, "err setDataT %s\n", e.what());
-	return 1;
-}
-
-template<class Inner, class Outer>
-size_t getDataT(const Outer *p, char *buf, size_t maxBufSize)
+size_t getStrT(const Outer *p, char *buf, size_t maxBufSize, int ioMode)
 	try
 {
 	std::string s;
-	((const Inner*)p)->getData(s);
-	if (s.size() > maxBufSize) {
-		fprintf(stderr, "err getDataT size is small %d %d\n", (int)s.size(), (int)maxBufSize);
+	((const Inner*)p)->getStr(s, ioMode);
+	size_t terminate = 0;
+	if (ioMode == 0 || ioMode == BlsIoBin || ioMode == BlsIoDec || ioMode == BlsIoHex) {
+		terminate = 1; // for '\0'
+	}
+	if (s.size() > maxBufSize + terminate) {
 		return 0;
 	}
 	memcpy(buf, s.c_str(), s.size());
+	if (terminate) {
+		buf[s.size()] = '\0';
+	}
 	return s.size();
 } catch (std::exception&) {
 	return 0;
@@ -113,14 +94,6 @@ void blsIdDestroy(blsId *id)
 {
 	delete (bls::Id*)id;
 }
-size_t blsIdGetData(const blsId *id, char *buf, size_t maxBufSize)
-{
-	return getDataT<bls::Id, blsId>(id, buf, maxBufSize);
-}
-int blsIdSetData(blsId *id, const char *buf, size_t bufSize)
-{
-	return setDataT<bls::Id, blsId>(id, buf, bufSize);
-}
 int blsIdIsSame(const blsId *lhs, const blsId *rhs)
 {
 	return *(const bls::Id*)lhs == *(const bls::Id*)rhs ? 1 : 0;
@@ -134,14 +107,14 @@ void blsIdCopy(blsId *dst, const blsId *src)
 	*((bls::Id*)dst) = *((const bls::Id*)src);
 }
 
-int blsIdSetStr(blsId *id, const char *buf, size_t bufSize)
+int blsIdSetStr(blsId *id, const char *buf, size_t bufSize, int ioMode)
 {
-	return setStrT<bls::Id, blsId>(id, buf, bufSize);
+	return setStrT<bls::Id, blsId>(id, buf, bufSize, ioMode);
 }
 
-size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize)
+size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize, int ioMode)
 {
-	return getStrT<bls::Id, blsId>(id, buf, maxBufSize);
+	return getStrT<bls::Id, blsId>(id, buf, maxBufSize, ioMode);
 }
 
 void blsIdSet(blsId *id, const uint64_t *p)
@@ -157,14 +130,6 @@ blsSecretKey* blsSecretKeyCreate()
 void blsSecretKeyDestroy(blsSecretKey *sec)
 {
 	delete (bls::SecretKey*)sec;
-}
-size_t blsSecretKeyGetData(const blsSecretKey *sec, char *buf, size_t maxBufSize)
-{
-	return getDataT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize);
-}
-int blsSecretKeySetData(blsSecretKey *sec, const char *buf, size_t bufSize)
-{
-	return setDataT<bls::SecretKey, blsSecretKey>(sec, buf, bufSize);
 }
 int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs)
 {
@@ -184,13 +149,13 @@ void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p)
 	((bls::SecretKey*)sec)->set(p);
 }
 
-int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize)
+int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize, int ioMode)
 {
-	return setStrT<bls::SecretKey, blsSecretKey>(sec, buf, bufSize);
+	return setStrT<bls::SecretKey, blsSecretKey>(sec, buf, bufSize, ioMode);
 }
-size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize)
+size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize, int ioMode)
 {
-	return getStrT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize);
+	return getStrT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize, ioMode);
 }
 
 void blsSecretKeyInit(blsSecretKey *sec)
@@ -234,14 +199,6 @@ void blsPublicKeyDestroy(blsPublicKey *pub)
 {
 	delete (bls::PublicKey*)pub;
 }
-size_t blsPublicKeyGetData(const blsPublicKey *pub, char *buf, size_t maxBufSize)
-{
-	return getDataT<bls::PublicKey, blsPublicKey>(pub, buf, maxBufSize);
-}
-int blsPublicKeySetData(blsPublicKey *pub, const char *buf, size_t bufSize)
-{
-	return setDataT<bls::PublicKey, blsPublicKey>(pub, buf, bufSize);
-}
 int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs)
 {
 	return *(const bls::PublicKey*)lhs == *(const bls::PublicKey*)rhs ? 1 : 0;
@@ -255,13 +212,13 @@ void blsPublicKeyPut(const blsPublicKey *pub)
 	std::cout << *(const bls::PublicKey*)pub << std::endl;
 }
 
-int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize)
+int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize, int ioMode)
 {
-	return setStrT<bls::PublicKey, blsPublicKey>(pub, buf, bufSize);
+	return setStrT<bls::PublicKey, blsPublicKey>(pub, buf, bufSize, ioMode);
 }
-size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize)
+size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize, int ioMode)
 {
-	return getStrT<bls::PublicKey, blsPublicKey>(pub, buf, maxBufSize);
+	return getStrT<bls::PublicKey, blsPublicKey>(pub, buf, maxBufSize, ioMode);
 }
 void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
 {
@@ -285,14 +242,6 @@ void blsSignDestroy(blsSign *sign)
 {
 	delete (bls::Sign*)sign;
 }
-size_t blsSignGetData(const blsSign *sign, char *buf, size_t maxBufSize)
-{
-	return getDataT<bls::Sign, blsSign>(sign, buf, maxBufSize);
-}
-int blsSignSetData(blsSign *sign, const char *buf, size_t bufSize)
-{
-	return setDataT<bls::Sign, blsSign>(sign, buf, bufSize);
-}
 int blsSignIsSame(const blsSign *lhs, const blsSign *rhs)
 {
 	return *(const bls::Sign*)lhs == *(const bls::Sign*)rhs ? 1 : 0;
@@ -306,13 +255,13 @@ void blsSignPut(const blsSign *sign)
 	std::cout << *(const bls::Sign*)sign << std::endl;
 }
 
-int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize)
+int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize, int ioMode)
 {
-	return setStrT<bls::Sign, blsSign>(sign, buf, bufSize);
+	return setStrT<bls::Sign, blsSign>(sign, buf, bufSize, ioMode);
 }
-size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize)
+size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize, int ioMode)
 {
-	return getStrT<bls::Sign, blsSign>(sign, buf, maxBufSize);
+	return getStrT<bls::Sign, blsSign>(sign, buf, maxBufSize, ioMode);
 }
 void blsSignAdd(blsSign *sign, const blsSign *rhs)
 {

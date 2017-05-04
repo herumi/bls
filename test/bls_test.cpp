@@ -350,40 +350,40 @@ void dataTest()
 	bls::SecretKey sec;
 	sec.init();
 	std::string str;
-	sec.getData(str);
+	sec.getStr(str, bls::IoEcComp);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::SecretKey sec2;
-		sec2.setData(str);
+		sec2.setStr(str, bls::IoEcComp);
 		CYBOZU_TEST_EQUAL(sec, sec2);
 	}
 	bls::PublicKey pub;
 	sec.getPublicKey(pub);
-	pub.getData(str);
+	pub.getStr(str, bls::IoEcComp);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size * 2);
 		bls::PublicKey pub2;
-		pub2.setData(str);
+		pub2.setStr(str, bls::IoEcComp);
 		CYBOZU_TEST_EQUAL(pub, pub2);
 	}
 	std::string m = "abc";
 	bls::Sign sign;
 	sec.sign(sign, m);
-	sign.getData(str);
+	sign.getStr(str, bls::IoEcComp);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::Sign sign2;
-		sign2.setData(str);
+		sign2.setStr(str, bls::IoEcComp);
 		CYBOZU_TEST_EQUAL(sign, sign2);
 	}
 	bls::Id id;
 	const uint64_t v[] = { 1, 2, 3, 4, 5, 6, };
 	id.set(v);
-	id.getData(str);
+	id.getStr(str, bls::IoEcComp);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::Id id2;
-		id2.setData(str);
+		id2.setStr(str, bls::IoEcComp);
 		CYBOZU_TEST_EQUAL(id, id2);
 	}
 }

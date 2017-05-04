@@ -27,6 +27,14 @@ enum {
 	CurveFp382_2 = 2
 };
 
+// same value with IoMode of mcl/op.hpp
+enum {
+	IoBin = 2, // binary number
+	IoDec = 10, // decimal number
+	IoHex = 16, // hexadecimal number
+	IoEcComp = 512 // fixed byte representation
+};
+
 namespace impl {
 
 struct SecretKey;
@@ -89,11 +97,8 @@ public:
 	bool operator!=(const Id& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Id& id);
 	friend std::istream& operator>>(std::istream& is, Id& id);
-	/*
-		get tight repl
-	*/
-	void getData(std::string& str) const;
-	void setData(const std::string& str);
+	void getStr(std::string& str, int ioMode = 0) const;
+	void setStr(const std::string& str, int ioMode = 0);
 	bool isZero() const;
 	/*
 		set p[0, .., keySize)
@@ -117,11 +122,8 @@ public:
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
 	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
-	/*
-		get tight repl
-	*/
-	void getData(std::string& str) const;
-	void setData(const std::string& str);
+	void getStr(std::string& str, int ioMode = 0) const;
+	void setStr(const std::string& str, int ioMode = 0);
 	/*
 		initialize secretKey with random number and set id = 0
 	*/
@@ -183,11 +185,8 @@ public:
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
 	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
-	/*
-		get tight repl
-	*/
-	void getData(std::string& str) const;
-	void setData(const std::string& str);
+	void getStr(std::string& str, int ioMode = 0) const;
+	void setStr(const std::string& str, int ioMode = 0);
 	/*
 		set public for id from mpk
 	*/
@@ -224,11 +223,8 @@ public:
 	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
 	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
 	friend std::istream& operator>>(std::istream& is, Sign& s);
-	/*
-		get tight repl
-	*/
-	void getData(std::string& str) const;
-	void setData(const std::string& str);
+	void getStr(std::string& str, int ioMode = 0) const;
+	void setStr(const std::string& str, int ioMode = 0);
 	bool verify(const PublicKey& pub, const std::string& m) const;
 	/*
 		verify self(pop) with pub

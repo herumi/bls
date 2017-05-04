@@ -239,13 +239,13 @@ std::istream& operator>>(std::istream& is, Id& id)
 {
 	return is >> id.getInner().v;
 }
-void Id::getData(std::string& str) const
+void Id::getStr(std::string& str, int ioMode) const
 {
-	getInner().v.getStr(str, mcl::IoEcComp);
+	getInner().v.getStr(str, ioMode);
 }
-void Id::setData(const std::string& str)
+void Id::setStr(const std::string& str, int ioMode)
 {
-	getInner().v.setStr(str, mcl::IoEcComp);
+	getInner().v.setStr(str, ioMode);
 }
 
 bool Id::isZero() const
@@ -272,13 +272,13 @@ std::istream& operator>>(std::istream& os, Sign& s)
 {
 	return os >> s.getInner().sHm;
 }
-void Sign::getData(std::string& str) const
+void Sign::getStr(std::string& str, int ioMode) const
 {
-	getInner().sHm.getStr(str, mcl::IoEcComp);
+	getInner().sHm.getStr(str, ioMode);
 }
-void Sign::setData(const std::string& str)
+void Sign::setStr(const std::string& str, int ioMode)
 {
-	getInner().sHm.setStr(str, mcl::IoEcComp);
+	getInner().sHm.setStr(str, ioMode);
 }
 
 bool Sign::verify(const PublicKey& pub, const std::string& m) const
@@ -347,13 +347,13 @@ std::istream& operator>>(std::istream& is, PublicKey& pub)
 	return is >> pub.getInner().sQ;
 }
 
-void PublicKey::getData(std::string& str) const
+void PublicKey::getStr(std::string& str, int ioMode) const
 {
-	getInner().sQ.getStr(str, mcl::IoEcComp);
+	getInner().sQ.getStr(str, ioMode);
 }
-void PublicKey::setData(const std::string& str)
+void PublicKey::setStr(const std::string& str, int ioMode)
 {
-	getInner().sQ.setStr(str, mcl::IoEcComp);
+	getInner().sQ.setStr(str, ioMode);
 }
 void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
@@ -392,13 +392,13 @@ std::istream& operator>>(std::istream& is, SecretKey& sec)
 {
 	return is >> sec.getInner().s;
 }
-void SecretKey::getData(std::string& str) const
+void SecretKey::getStr(std::string& str, int ioMode) const
 {
-	getInner().s.getStr(str, mcl::IoEcComp);
+	getInner().s.getStr(str, ioMode);
 }
-void SecretKey::setData(const std::string& str)
+void SecretKey::setStr(const std::string& str, int ioMode)
 {
-	getInner().s.setStr(str, mcl::IoEcComp);
+	getInner().s.setStr(str, ioMode);
 }
 
 void SecretKey::init()

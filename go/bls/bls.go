@@ -70,11 +70,11 @@ func (id *ID) getPointer() (p *C.blsId) {
 	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
 }
 
-// String --
-func (id *ID) String() string {
+// GetString --
+func (id *ID) GetString(ioMode int) string {
 	buf := make([]byte, 1024)
 	// #nosec
-	n := C.blsIdGetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsIdGetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
@@ -82,10 +82,10 @@ func (id *ID) String() string {
 }
 
 // SetStr --
-func (id *ID) SetStr(s string) error {
+func (id *ID) SetStr(s string, ioMode int) error {
 	buf := []byte(s)
 	// #nosec
-	err := C.blsIdSetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsIdSetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
 	}
@@ -113,11 +113,11 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(&sec.v[0]))
 }
 
-// String --
-func (sec *SecretKey) String() string {
+// GetString --
+func (sec *SecretKey) GetString(ioMode int) string {
 	buf := make([]byte, 1024)
 	// #nosec
-	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
@@ -125,10 +125,10 @@ func (sec *SecretKey) String() string {
 }
 
 // SetStr -- The string passed in is a number and can be either hex or decimal
-func (sec *SecretKey) SetStr(s string) error {
+func (sec *SecretKey) SetStr(s string, ioMode int) error {
 	buf := []byte(s)
 	// #nosec
-	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
 	}
@@ -138,7 +138,7 @@ func (sec *SecretKey) SetStr(s string) error {
 // SetData --
 func (sec *SecretKey) SetData(buf []byte) error {
 	// #nosec
-	err := C.blsSecretKeySetData(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if err > 0 {
 		return fmt.Errorf("bad buf:%s", buf)
 	}
@@ -150,7 +150,7 @@ func (sec *SecretKey) GetData() []byte {
 	fpSize := GetOpUnitSize() * 8
 	buf := make([]byte, fpSize)
 	// #nosec
-	n := C.blsSecretKeyGetData(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if n != C.size_t(fpSize) {
 		panic("implementation err. size of buf is small")
 	}
@@ -230,11 +230,11 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
 }
 
-// String --
-func (pub *PublicKey) String() string {
+// GetString --
+func (pub *PublicKey) GetString(ioMode int) string {
 	buf := make([]byte, 1024)
 	// #nosec
-	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
@@ -242,10 +242,10 @@ func (pub *PublicKey) String() string {
 }
 
 // SetStr --
-func (pub *PublicKey) SetStr(s string) error {
+func (pub *PublicKey) SetStr(s string, ioMode int) error {
 	buf := []byte(s)
 	// #nosec
-	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
 	}
@@ -255,7 +255,7 @@ func (pub *PublicKey) SetStr(s string) error {
 // SetData --
 func (pub *PublicKey) SetData(buf []byte) error {
 	// #nosec
-	err := C.blsPublicKeySetData(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if err > 0 {
 		return fmt.Errorf("bad buf:%s", buf)
 	}
@@ -267,7 +267,7 @@ func (pub *PublicKey) GetData() []byte {
 	fpSize := GetOpUnitSize() * 8
 	buf := make([]byte, fpSize*2)
 	// #nosec
-	n := C.blsPublicKeyGetData(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if n != C.size_t(fpSize*2) {
 		panic("implementation err. size of buf is small")
 	}
@@ -305,11 +305,11 @@ func (sign *Sign) getPointer() (p *C.blsSign) {
 	return (*C.blsSign)(unsafe.Pointer(&sign.v[0]))
 }
 
-// String --
-func (sign *Sign) String() string {
+// GetString --
+func (sign *Sign) GetString(ioMode int) string {
 	buf := make([]byte, 1024)
 	// #nosec
-	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
@@ -317,10 +317,10 @@ func (sign *Sign) String() string {
 }
 
 // SetStr --
-func (sign *Sign) SetStr(s string) error {
+func (sign *Sign) SetStr(s string, ioMode int) error {
 	buf := []byte(s)
 	// #nosec
-	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
 		return fmt.Errorf("bad string:%s", s)
 	}
@@ -330,7 +330,7 @@ func (sign *Sign) SetStr(s string) error {
 // SetData --
 func (sign *Sign) SetData(buf []byte) error {
 	// #nosec
-	err := C.blsSignSetData(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if err > 0 {
 		return fmt.Errorf("bad buf:%s", buf)
 	}
@@ -342,7 +342,7 @@ func (sign *Sign) GetData() []byte {
 	fpSize := GetOpUnitSize() * 8
 	buf := make([]byte, fpSize)
 	// #nosec
-	n := C.blsSignGetData(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
 	if n != C.size_t(fpSize) {
 		panic("implementation err. size of buf is small")
 	}
