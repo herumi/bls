@@ -15,11 +15,20 @@ func testPre(t *testing.T) {
 
 		t.Log("id :", id)
 		var id2 ID
-		err := id2.SetStr(id.GetString(10), 10)
+		err := id2.SetHexString(id.GetHexString())
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log("id2:", id2)
+		if !id.IsSame(&id2) {
+			t.Errorf("not same id", id.GetHexString(), id2.GetHexString())
+		}
+		err = id2.SetDecString(id.GetDecString())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !id.IsSame(&id2) {
+			t.Errorf("not same id", id.GetDecString(), id2.GetDecString())
+		}
 	}
 	{
 		var sec SecretKey
@@ -46,7 +55,7 @@ func testPre(t *testing.T) {
 		sec := make([]SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
 			sec[i].Init()
-			t.Log("sec=", sec[i].GetString(16))
+			t.Log("sec=", sec[i].GetHexString())
 		}
 	}
 }
@@ -60,11 +69,20 @@ func testStringConversion(t *testing.T) {
 	} else {
 		s = "40804142231733909759579603404752749028378864165570215949"
 	}
-	err := sec.SetStr(s, 10)
+	err := sec.SetDecString(s)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if s != sec.GetString(10) {
+	if s != sec.GetDecString() {
+		t.Error("not equal")
+	}
+	s = sec.GetHexString()
+	var sec2 SecretKey
+	err = sec2.SetHexString(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !sec.IsSame(&sec2) {
 		t.Error("not equal")
 	}
 }
@@ -88,8 +106,8 @@ func testRecoverSecretKey(t *testing.T) {
 	// recover sec2 from secVec and idVec
 	var sec2 SecretKey
 	sec2.Recover(secVec, idVec)
-	if sec.GetString(16) != sec2.GetString(16) {
-		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetString(16), sec2.GetString(16))
+	if !sec.IsSame(&sec2) {
+		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
 	}
 }
 
@@ -119,15 +137,15 @@ func testSign(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
-		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetString(16))
+		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
 
 		secVec[i].Set(msk, &idVec[i])
 
 		pubVec[i].Set(mpk, &idVec[i])
-		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetString(16))
+		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
 
-		if pubVec[i].GetString(16) != secVec[i].GetPublicKey().GetString(16) {
-			t.Error("Pubkey derivation does not match")
+		if !pubVec[i].IsSame(secVec[i].GetPublicKey()) {
+			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
 		}
 
 		signVec[i] = *secVec[i].Sign(m)
@@ -137,17 +155,17 @@ func testSign(t *testing.T) {
 	}
 	var sec1 SecretKey
 	sec1.Recover(secVec, idVec)
-	if sec0.GetString(16) != sec1.GetString(16) {
+	if !sec0.IsSame(&sec1) {
 		t.Error("Mismatch in recovered seckey.")
 	}
 	var pub1 PublicKey
 	pub1.Recover(pubVec, idVec)
-	if pub0.GetString(16) != pub1.GetString(16) {
+	if !pub0.IsSame(&pub1) {
 		t.Error("Mismatch in recovered pubkey.")
 	}
 	var s1 Sign
 	s1.Recover(signVec, idVec)
-	if s0.GetString(16) != s1.GetString(16) {
+	if !s0.IsSame(&s1) {
 		t.Error("Mismatch in recovered signature.")
 	}
 }
@@ -193,8 +211,8 @@ func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
 	sec1.Init()
-	s := sec1.GetData()
-	err := sec2.SetData(s)
+	b := sec1.Serialize()
+	err := sec2.Deserialize(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,9 +220,9 @@ func testData(t *testing.T) {
 		t.Error("SecretKey not same")
 	}
 	pub1 := sec1.GetPublicKey()
-	s = pub1.GetData()
+	b = pub1.Serialize()
 	var pub2 PublicKey
-	err = pub2.SetData(s)
+	err = pub2.Deserialize(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,9 +231,9 @@ func testData(t *testing.T) {
 	}
 	m := "doremi"
 	sign1 := sec1.Sign(m)
-	s = sign1.GetData()
+	b = sign1.Serialize()
 	var sign2 Sign
-	err = sign2.SetData(s)
+	err = sign2.Deserialize(b)
 	if err != nil {
 		t.Fatal(err)
 	}

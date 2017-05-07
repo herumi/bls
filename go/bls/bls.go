@@ -10,6 +10,7 @@ package bls
 import "C"
 import "fmt"
 import "unsafe"
+import "encoding/hex"
 
 // CurveFp254BNb -- 254 bit curve
 const CurveFp254BNb = 0
@@ -70,26 +71,60 @@ func (id *ID) getPointer() (p *C.blsId) {
 	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
 }
 
-// GetString --
-func (id *ID) GetString(ioMode int) string {
+// GetByte
+func (id *ID) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
 	// #nosec
 	n := C.blsIdGetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
-	return string(buf[:n])
+	return buf[:n]
 }
 
-// SetStr --
-func (id *ID) SetStr(s string, ioMode int) error {
-	buf := []byte(s)
+// SetByte --
+func (id *ID) SetByte(buf []byte, ioMode int) error {
 	// #nosec
 	err := C.blsIdSetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
-		return fmt.Errorf("bad string:%s", s)
+		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
+}
+
+// Serialize
+func (id *ID) Serialize() []byte {
+	return id.GetByte(C.BlsIoEcComp)
+}
+
+// Deserialize
+func (id *ID) Deserialize(b []byte) error {
+	return id.SetByte(b, C.BlsIoEcComp)
+}
+
+// GetHexString
+func (id *ID) GetHexString() string {
+	return string(id.GetByte(16))
+}
+
+// GetDecString
+func (id *ID) GetDecString() string {
+	return string(id.GetByte(10))
+}
+
+// SetHexString
+func (id *ID) SetHexString(s string) error {
+	return id.SetByte([]byte(s), 16)
+}
+
+// SetDecString
+func (id *ID) SetDecString(s string) error {
+	return id.SetByte([]byte(s), 10)
+}
+
+// IsSame --
+func (id *ID) IsSame(rhs *ID) bool {
+	return C.blsIdIsSame(id.getPointer(), rhs.getPointer()) == 1
 }
 
 // Set --
@@ -113,48 +148,55 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(&sec.v[0]))
 }
 
-// GetString --
-func (sec *SecretKey) GetString(ioMode int) string {
+// GetByte
+func (sec *SecretKey) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
 	// #nosec
 	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
-	return string(buf[:n])
+	return buf[:n]
 }
 
-// SetStr -- The string passed in is a number and can be either hex or decimal
-func (sec *SecretKey) SetStr(s string, ioMode int) error {
-	buf := []byte(s)
+// SetByte --
+func (sec *SecretKey) SetByte(buf []byte, ioMode int) error {
 	// #nosec
 	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
-		return fmt.Errorf("bad string:%s", s)
+		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
 }
 
-// SetData --
-func (sec *SecretKey) SetData(buf []byte) error {
-	// #nosec
-	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if err > 0 {
-		return fmt.Errorf("bad buf:%s", buf)
-	}
-	return nil
+// Serialize
+func (sec *SecretKey) Serialize() []byte {
+	return sec.GetByte(C.BlsIoEcComp)
 }
 
-// GetData --
-func (sec *SecretKey) GetData() []byte {
-	fpSize := GetOpUnitSize() * 8
-	buf := make([]byte, fpSize)
-	// #nosec
-	n := C.blsSecretKeyGetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if n != C.size_t(fpSize) {
-		panic("implementation err. size of buf is small")
-	}
-	return buf
+// Deserialize
+func (sec *SecretKey) Deserialize(b []byte) error {
+	return sec.SetByte(b, C.BlsIoEcComp)
+}
+
+// GetHexString
+func (sec *SecretKey) GetHexString() string {
+	return string(sec.GetByte(16))
+}
+
+// GetDecString
+func (sec *SecretKey) GetDecString() string {
+	return string(sec.GetByte(10))
+}
+
+// SetHexString
+func (sec *SecretKey) SetHexString(s string) error {
+	return sec.SetByte([]byte(s), 16)
+}
+
+// SetDecString
+func (sec *SecretKey) SetDecString(s string) error {
+	return sec.SetByte([]byte(s), 10)
 }
 
 // IsSame --
@@ -230,48 +272,49 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
 }
 
-// GetString --
-func (pub *PublicKey) GetString(ioMode int) string {
+// GetByte
+func (pub *PublicKey) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
-	// #nosec
+	// #nopub
 	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
-	return string(buf[:n])
+	return buf[:n]
 }
 
-// SetStr --
-func (pub *PublicKey) SetStr(s string, ioMode int) error {
-	buf := []byte(s)
-	// #nosec
+// SetByte --
+func (pub *PublicKey) SetByte(buf []byte, ioMode int) error {
+	// #nopub
 	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
-		return fmt.Errorf("bad string:%s", s)
+		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
 }
 
-// SetData --
-func (pub *PublicKey) SetData(buf []byte) error {
-	// #nosec
-	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if err > 0 {
-		return fmt.Errorf("bad buf:%s", buf)
-	}
-	return nil
+// Serialize
+func (pub *PublicKey) Serialize() []byte {
+	return pub.GetByte(C.BlsIoEcComp)
 }
 
-// GetData --
-func (pub *PublicKey) GetData() []byte {
-	fpSize := GetOpUnitSize() * 8
-	buf := make([]byte, fpSize*2)
-	// #nosec
-	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if n != C.size_t(fpSize*2) {
-		panic("implementation err. size of buf is small")
+// Deserialize
+func (pub *PublicKey) Deserialize(b []byte) error {
+	return pub.SetByte(b, C.BlsIoEcComp)
+}
+
+// GetHexString
+func (pub *PublicKey) GetHexString() string {
+	return fmt.Sprintf("%x", pub.Serialize())
+}
+
+// SetStr
+func (pub *PublicKey) SetStr(s string) error {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		return err
 	}
-	return buf
+	return pub.Deserialize(b)
 }
 
 // IsSame --
@@ -305,48 +348,49 @@ func (sign *Sign) getPointer() (p *C.blsSign) {
 	return (*C.blsSign)(unsafe.Pointer(&sign.v[0]))
 }
 
-// GetString --
-func (sign *Sign) GetString(ioMode int) string {
+// GetByte
+func (sign *Sign) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
-	// #nosec
+	// #nosign
 	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
 	}
-	return string(buf[:n])
+	return buf[:n]
 }
 
-// SetStr --
-func (sign *Sign) SetStr(s string, ioMode int) error {
-	buf := []byte(s)
-	// #nosec
+// SetByte --
+func (sign *Sign) SetByte(buf []byte, ioMode int) error {
+	// #nosign
 	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err > 0 {
-		return fmt.Errorf("bad string:%s", s)
+		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
 }
 
-// SetData --
-func (sign *Sign) SetData(buf []byte) error {
-	// #nosec
-	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if err > 0 {
-		return fmt.Errorf("bad buf:%s", buf)
-	}
-	return nil
+// Serialize
+func (sign *Sign) Serialize() []byte {
+	return sign.GetByte(C.BlsIoEcComp)
 }
 
-// GetData --
-func (sign *Sign) GetData() []byte {
-	fpSize := GetOpUnitSize() * 8
-	buf := make([]byte, fpSize)
-	// #nosec
-	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.BlsIoEcComp)
-	if n != C.size_t(fpSize) {
-		panic("implementation err. size of buf is small")
+// Deserialize
+func (sign *Sign) Deserialize(b []byte) error {
+	return sign.SetByte(b, C.BlsIoEcComp)
+}
+
+// GetHexString
+func (sign *Sign) GetHexString() string {
+	return fmt.Sprintf("%x", sign.Serialize())
+}
+
+// SetStr
+func (sign *Sign) SetStr(s string) error {
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		return err
 	}
-	return buf
+	return sign.Deserialize(b)
 }
 
 // IsSame --
