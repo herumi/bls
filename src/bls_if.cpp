@@ -1,4 +1,5 @@
 #include "bls.hpp"
+#define BLS256_DLL_EXPORT
 #include "bls_if.h"
 #include <iostream>
 #include <sstream>
