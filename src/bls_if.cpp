@@ -70,7 +70,7 @@ int blsGetCurveOrder(char *buf, size_t maxBufSize)
 {
 	std::string s;
 	bls::getCurveOrder(s);
-	return checkAndCopy(buf, maxBufSize, s);
+	return (int)checkAndCopy(buf, maxBufSize, s);
 } catch (std::exception&) {
 	return 0;
 }
@@ -80,7 +80,7 @@ int blsGetFieldOrder(char *buf, size_t maxBufSize)
 {
 	std::string s;
 	bls::getFieldOrder(s);
-	return checkAndCopy(buf, maxBufSize, s);
+	return (int)checkAndCopy(buf, maxBufSize, s);
 } catch (std::exception&) {
 	return 0;
 }
