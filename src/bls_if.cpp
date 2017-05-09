@@ -23,7 +23,7 @@ int setStrT(Outer *p, const char *buf, size_t bufSize, int ioMode)
 	return 0;
 } catch (std::exception& e) {
 	fprintf(stderr, "err setStrT %s\n", e.what());
-	return 1;
+	return -1;
 }
 
 size_t checkAndCopy(char *buf, size_t maxBufSize, const std::string& s)
@@ -57,9 +57,13 @@ size_t getStrT(const Outer *p, char *buf, size_t maxBufSize, int ioMode)
 	return 0;
 }
 
-void blsInit(int curve, int maxUnitSize)
+int blsInit(int curve, int maxUnitSize)
+	try
 {
 	bls::init(curve, maxUnitSize);
+	return 0;
+} catch (std::exception&) {
+	return -1;
 }
 size_t blsGetOpUnitSize()
 {
@@ -176,14 +180,24 @@ void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, siz
 {
 	((const bls::SecretKey*)sec)->sign(*(bls::Sign*)sign, std::string(m, size));
 }
-void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id)
+int blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id)
+	try
 {
 	((bls::SecretKey*)sec)->set((const bls::SecretKey *)msk, k, *(const bls::Id*)id);
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err blsSecretKeySet %s\n", e.what());
+	return -1;
 }
 
-void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n)
+int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n)
+	try
 {
 	((bls::SecretKey*)sec)->recover((const bls::SecretKey *)secVec, (const bls::Id *)idVec, n);
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err blsSecretKeyRecover %s\n", e.what());
+	return -1;
 }
 
 void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign)
@@ -225,13 +239,23 @@ void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
 {
 	((bls::PublicKey*)pub)->add(*(const bls::PublicKey*)rhs);
 }
-void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id)
+int blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id)
+	try
 {
 	((bls::PublicKey*)pub)->set((const bls::PublicKey*)mpk, k, *(const bls::Id*)id);
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err blsPublicKeySet %s\n", e.what());
+	return -1;
 }
-void blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n)
+int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n)
+	try
 {
 	((bls::PublicKey*)pub)->recover((const bls::PublicKey*)pubVec, (const bls::Id*)idVec, n);
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err blsPublicKeyRecover %s\n", e.what());
+	return -1;
 }
 
 blsSign *blsSignCreate()
@@ -268,9 +292,14 @@ void blsSignAdd(blsSign *sign, const blsSign *rhs)
 {
 	((bls::Sign*)sign)->add(*(const bls::Sign*)rhs);
 }
-void blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n)
+int blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n)
+	try
 {
 	((bls::Sign*)sign)->recover((const bls::Sign*)signVec, (const bls::Id*)idVec, n);
+	return 0;
+} catch (std::exception& e) {
+	fprintf(stderr, "err blsSignRecover %s\n", e.what());
+	return -1;
 }
 
 int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size)

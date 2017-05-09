@@ -65,9 +65,10 @@ typedef struct {
 /*
 	initialize this library
 	call this once before using the other method
+	return 0 if success
 	@note init() is not thread safe
 */
-BLS256_DLL_API void blsInit(int curve, int maxUnitSize);
+BLS256_DLL_API int blsInit(int curve, int maxUnitSize);
 BLS256_DLL_API size_t blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0
 BLS256_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
@@ -103,6 +104,7 @@ BLS256_DLL_API int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKe
 BLS256_DLL_API void blsSecretKeyPut(const blsSecretKey *sec);
 BLS256_DLL_API void blsSecretKeyCopy(blsSecretKey *dst, const blsSecretKey *src);
 BLS256_DLL_API void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p);
+// return 0 if success
 BLS256_DLL_API int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize, int ioMode);
 /*
 	return written byte size if ioMode = BlsIoComp
@@ -115,8 +117,10 @@ BLS256_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 BLS256_DLL_API void blsSecretKeyInit(blsSecretKey *sec);
 BLS256_DLL_API void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
 BLS256_DLL_API void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
-BLS256_DLL_API void blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
-BLS256_DLL_API void blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
+// return 0 if success
+BLS256_DLL_API int blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
+// return 0 if success
+BLS256_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
 BLS256_DLL_API void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign);
 
 BLS256_DLL_API blsPublicKey *blsPublicKeyCreate(void);
@@ -125,6 +129,7 @@ BLS256_DLL_API void blsPublicKeyDestroy(blsPublicKey *pub);
 BLS256_DLL_API int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs);
 BLS256_DLL_API void blsPublicKeyPut(const blsPublicKey *pub);
 BLS256_DLL_API void blsPublicKeyCopy(blsPublicKey *dst, const blsPublicKey *src);
+// return 0 if success
 BLS256_DLL_API int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize, int ioMode);
 /*
 	return written byte size if ioMode = BlsIoComp
@@ -133,8 +138,10 @@ BLS256_DLL_API int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t
 */
 BLS256_DLL_API size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize, int ioMode);
 BLS256_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
-BLS256_DLL_API void blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
-BLS256_DLL_API void blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
+// return 0 if success
+BLS256_DLL_API int blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
+// return 0 if success
+BLS256_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
 
 BLS256_DLL_API blsSign *blsSignCreate(void);
 BLS256_DLL_API void blsSignDestroy(blsSign *sign);
@@ -142,6 +149,7 @@ BLS256_DLL_API void blsSignDestroy(blsSign *sign);
 BLS256_DLL_API int blsSignIsSame(const blsSign *lhs, const blsSign *rhs);
 BLS256_DLL_API void blsSignPut(const blsSign *sign);
 BLS256_DLL_API void blsSignCopy(blsSign *dst, const blsSign *src);
+// return 0 if success
 BLS256_DLL_API int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize, int ioMode);
 /*
 	return written byte size if ioMode = BlsIoComp
@@ -150,8 +158,8 @@ BLS256_DLL_API int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize,
 */
 BLS256_DLL_API size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize, int ioMode);
 BLS256_DLL_API void blsSignAdd(blsSign *sign, const blsSign *rhs);
-BLS256_DLL_API void blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n);
-
+// return 0 if success
+BLS256_DLL_API int blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n);
 BLS256_DLL_API int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size);
 
 BLS256_DLL_API int blsSignVerifyPop(const blsSign *sign, const blsPublicKey *pub);

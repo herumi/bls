@@ -24,8 +24,12 @@ const CurveFp382_2 = 2
 // Init --
 // call this function before calling all the other operations
 // this function is not thread safe
-func Init(curve int) {
-	C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
+func Init(curve int) error {
+	err := C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
+	if err != 0 {
+		return fmt.Errorf("ERR Init curve=%d\n", curve)
+	}
+	return nil
 }
 
 // GetMaxOpUnitSize --
@@ -86,7 +90,7 @@ func (id *ID) GetByte(ioMode int) []byte {
 func (id *ID) SetByte(buf []byte, ioMode int) error {
 	// #nosec
 	err := C.blsIdSetStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
-	if err > 0 {
+	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
@@ -163,7 +167,7 @@ func (sec *SecretKey) GetByte(ioMode int) []byte {
 func (sec *SecretKey) SetByte(buf []byte, ioMode int) error {
 	// #nosec
 	err := C.blsSecretKeySetStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
-	if err > 0 {
+	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
@@ -245,13 +249,21 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 }
 
 // Set --
-func (sec *SecretKey) Set(msk []SecretKey, id *ID) {
-	C.blsSecretKeySet(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
+func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
+	err := C.blsSecretKeySet(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
+	if err != 0 {
+		return fmt.Errorf("SecretKey.Set")
+	}
+	return nil
 }
 
 // Recover --
-func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) {
-	C.blsSecretKeyRecover(sec.getPointer(), secVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(secVec)))
+func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
+	err := C.blsSecretKeyRecover(sec.getPointer(), secVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(secVec)))
+	if err != 0 {
+		return fmt.Errorf("SecretKey.Recover")
+	}
+	return nil
 }
 
 // GetPop --
@@ -287,7 +299,7 @@ func (pub *PublicKey) GetByte(ioMode int) []byte {
 func (pub *PublicKey) SetByte(buf []byte, ioMode int) error {
 	// #nopub
 	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
-	if err > 0 {
+	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
@@ -328,13 +340,21 @@ func (pub *PublicKey) Add(rhs *PublicKey) {
 }
 
 // Set --
-func (pub *PublicKey) Set(mpk []PublicKey, id *ID) {
-	C.blsPublicKeySet(pub.getPointer(), mpk[0].getPointer(), C.size_t(len(mpk)), id.getPointer())
+func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
+	err := C.blsPublicKeySet(pub.getPointer(), mpk[0].getPointer(), C.size_t(len(mpk)), id.getPointer())
+	if err != 0 {
+		return fmt.Errorf("PublicKey.set")
+	}
+	return nil
 }
 
 // Recover --
-func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) {
-	C.blsPublicKeyRecover(pub.getPointer(), pubVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(pubVec)))
+func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
+	err := C.blsPublicKeyRecover(pub.getPointer(), pubVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(pubVec)))
+	if err != 0 {
+		return fmt.Errorf("PublicKey.Recover")
+	}
+	return nil
 }
 
 // Sign  --
@@ -363,7 +383,7 @@ func (sign *Sign) GetByte(ioMode int) []byte {
 func (sign *Sign) SetByte(buf []byte, ioMode int) error {
 	// #nosign
 	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
-	if err > 0 {
+	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
 	}
 	return nil
@@ -420,8 +440,12 @@ func (sign *Sign) Add(rhs *Sign) {
 }
 
 // Recover --
-func (sign *Sign) Recover(signVec []Sign, idVec []ID) {
-	C.blsSignRecover(sign.getPointer(), signVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(signVec)))
+func (sign *Sign) Recover(signVec []Sign, idVec []ID) error {
+	err := C.blsSignRecover(sign.getPointer(), signVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(signVec)))
+	if err != 0 {
+		return fmt.Errorf("Sign.Recover")
+	}
+	return nil
 }
 
 // Verify --
