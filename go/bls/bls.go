@@ -308,8 +308,8 @@ func (pub *PublicKey) GetHexString() string {
 	return fmt.Sprintf("%x", pub.Serialize())
 }
 
-// SetStr
-func (pub *PublicKey) SetStr(s string) error {
+// SetHexString
+func (pub *PublicKey) SetHexString(s string) error {
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return err
@@ -384,8 +384,8 @@ func (sign *Sign) GetHexString() string {
 	return fmt.Sprintf("%x", sign.Serialize())
 }
 
-// SetStr
-func (sign *Sign) SetStr(s string) error {
+// SetHexString
+func (sign *Sign) SetHexString(s string) error {
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		return err
@@ -434,4 +434,59 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 // VerifyPop --
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
 	return C.blsSignVerifyPop(sign.getPointer(), pub.getPointer()) == 1
+}
+
+// for backward compatibility (these methods will be removed in the next version)
+func (id *ID) String() string {
+	return id.GetHexString()
+}
+
+func (id *ID) SetStr(s string) error {
+	if s[:2] == "0x" {
+		return id.SetHexString(s)
+	} else {
+		return id.SetDecString(s)
+	}
+}
+
+func (sec *SecretKey) String() string {
+	return sec.GetHexString()
+}
+func (sec *SecretKey) SetStr(s string) error {
+	if s[:2] == "0x" {
+		return sec.SetHexString(s)
+	} else {
+		return sec.SetDecString(s)
+	}
+}
+func (sec *SecretKey) GetData() []byte {
+	return sec.Serialize()
+}
+func (sec *SecretKey) SetData(b []byte) error {
+	return sec.Deserialize(b)
+}
+func (pub *PublicKey) String() string {
+	return pub.GetHexString()
+}
+func (pub *PublicKey) SetStr(s string) error {
+	return pub.SetHexString(s)
+}
+func (pub *PublicKey) GetData() []byte {
+	return pub.Serialize()
+}
+func (pub *PublicKey) SetData(b []byte) error {
+	return pub.Deserialize(b)
+}
+
+func (sign *Sign) String() string {
+	return sign.GetHexString()
+}
+func (sign *Sign) SetStr(s string) error {
+	return sign.SetHexString(s)
+}
+func (sign *Sign) GetData() []byte {
+	return sign.Serialize()
+}
+func (sign *Sign) SetData(b []byte) error {
+	return sign.Deserialize(b)
 }
