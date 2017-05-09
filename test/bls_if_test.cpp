@@ -59,23 +59,23 @@ void bls_ifDataTest()
 	char buf[BLS_MAX_OP_UNIT_SIZE * sizeof(uint64_t) * 2];
 	size_t n;
 	int ret;
-	n = blsSecretKeyGetStr(&sec1, buf, sizeof(buf), BlsIoEcComp);
+	n = blsSecretKeyGetStr(&sec1, buf, sizeof(buf), blsIoEcComp);
 	CYBOZU_TEST_EQUAL(n, fpSize);
-	ret = blsSecretKeySetStr(&sec2, buf, n, BlsIoEcComp);
+	ret = blsSecretKeySetStr(&sec2, buf, n, blsIoEcComp);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsSame(&sec1, &sec2));
 	blsPublicKey pub1, pub2;
 	blsSecretKeyGetPublicKey(&sec1, &pub1);
-	n = blsPublicKeyGetStr(&pub1, buf, sizeof(buf), BlsIoEcComp);
+	n = blsPublicKeyGetStr(&pub1, buf, sizeof(buf), blsIoEcComp);
 	CYBOZU_TEST_EQUAL(n, fpSize * 2);
-	ret = blsPublicKeySetStr(&pub2, buf, n, BlsIoEcComp);
+	ret = blsPublicKeySetStr(&pub2, buf, n, blsIoEcComp);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsSame(&pub1, &pub2));
 	blsSign sign1, sign2;
 	blsSecretKeySign(&sec1, &sign1, msg, msgSize);
-	n = blsSignGetStr(&sign1, buf, sizeof(buf), BlsIoEcComp);
+	n = blsSignGetStr(&sign1, buf, sizeof(buf), blsIoEcComp);
 	CYBOZU_TEST_EQUAL(n, fpSize);
-	ret = blsSignSetStr(&sign2, buf, n, BlsIoEcComp);
+	ret = blsSignSetStr(&sign2, buf, n, blsIoEcComp);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSignIsSame(&sign1, &sign2));
 }
@@ -95,10 +95,10 @@ void bls_ifOrderTest(const char *curveOrder, const char *fieldOrder)
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
-		BlsCurveFp254BNb,
+		blsCurveFp254BNb,
 #if BLS_MAX_OP_UNIT_SIZE == 6
-		BlsCurveFp382_1,
-		BlsCurveFp382_2
+		blsCurveFp382_1,
+		blsCurveFp382_2
 #endif
 	};
 	const char *curveOrderTbl[] = {

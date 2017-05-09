@@ -42,7 +42,7 @@ size_t getStrT(const Outer *p, char *buf, size_t maxBufSize, int ioMode)
 	std::string s;
 	((const Inner*)p)->getStr(s, ioMode);
 	size_t terminate = 0;
-	if (ioMode == 0 || ioMode == BlsIoBin || ioMode == BlsIoDec || ioMode == BlsIoHex) {
+	if (ioMode == 0 || ioMode == blsIoBin || ioMode == blsIoDec || ioMode == blsIoHex) {
 		terminate = 1; // for '\0'
 	}
 	if (s.size() > maxBufSize + terminate) {

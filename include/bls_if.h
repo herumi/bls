@@ -18,8 +18,10 @@
 #define BLS256_DLL_API __declspec(dllexport)
 #else
 #define BLS256_DLL_API __declspec(dllimport)
-#ifndef MCL_NO_AUTOLINK
-	#pragma comment(lib, "bls_if.lib")
+#ifndef BLS_NO_AUTOLINK
+	#if BLS_MAX_OP_UNIT_SIZE == 4
+		#pragma comment(lib, "bls_if256.lib")
+	#endif
 #endif
 #endif
 #else
@@ -31,17 +33,17 @@ extern "C" {
 #endif
 
 enum {
-	BlsCurveFp254BNb = 0,
-	BlsCurveFp382_1 = 1,
-	BlsCurveFp382_2 = 2
+	blsCurveFp254BNb = 0,
+	blsCurveFp382_1 = 1,
+	blsCurveFp382_2 = 2
 };
 
 // same value with bls.hpp
 enum {
-	BlsIoBin = 2, // binary number
-	BlsIoDec = 10, // decimal number
-	BlsIoHex = 16, // hexadecimal number
-	BlsIoEcComp = 512 // fixed byte representation
+	blsIoBin = 2, // binary number
+	blsIoDec = 10, // decimal number
+	blsIoHex = 16, // hexadecimal number
+	blsIoEcComp = 512 // fixed byte representation
 };
 
 typedef struct {
