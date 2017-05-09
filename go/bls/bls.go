@@ -94,12 +94,12 @@ func (id *ID) SetByte(buf []byte, ioMode int) error {
 
 // Serialize
 func (id *ID) Serialize() []byte {
-	return id.GetByte(C.BlsIoEcComp)
+	return id.GetByte(C.blsIoEcComp)
 }
 
 // Deserialize
 func (id *ID) Deserialize(b []byte) error {
-	return id.SetByte(b, C.BlsIoEcComp)
+	return id.SetByte(b, C.blsIoEcComp)
 }
 
 // GetHexString
@@ -171,12 +171,12 @@ func (sec *SecretKey) SetByte(buf []byte, ioMode int) error {
 
 // Serialize
 func (sec *SecretKey) Serialize() []byte {
-	return sec.GetByte(C.BlsIoEcComp)
+	return sec.GetByte(C.blsIoEcComp)
 }
 
 // Deserialize
 func (sec *SecretKey) Deserialize(b []byte) error {
-	return sec.SetByte(b, C.BlsIoEcComp)
+	return sec.SetByte(b, C.blsIoEcComp)
 }
 
 // GetHexString
@@ -295,12 +295,12 @@ func (pub *PublicKey) SetByte(buf []byte, ioMode int) error {
 
 // Serialize
 func (pub *PublicKey) Serialize() []byte {
-	return pub.GetByte(C.BlsIoEcComp)
+	return pub.GetByte(C.blsIoEcComp)
 }
 
 // Deserialize
 func (pub *PublicKey) Deserialize(b []byte) error {
-	return pub.SetByte(b, C.BlsIoEcComp)
+	return pub.SetByte(b, C.blsIoEcComp)
 }
 
 // GetHexString
@@ -371,12 +371,12 @@ func (sign *Sign) SetByte(buf []byte, ioMode int) error {
 
 // Serialize
 func (sign *Sign) Serialize() []byte {
-	return sign.GetByte(C.BlsIoEcComp)
+	return sign.GetByte(C.blsIoEcComp)
 }
 
 // Deserialize
 func (sign *Sign) Deserialize(b []byte) error {
-	return sign.SetByte(b, C.BlsIoEcComp)
+	return sign.SetByte(b, C.blsIoEcComp)
 }
 
 // GetHexString
