@@ -7,4 +7,4 @@ rem echo make lib_if.lib
 rem cl /c %CFLAGS% src\bls_if.cpp
 rem lib /OUT:lib\bls_if.lib /nodefaultlib bls_if.obj %LDFLAGS%
 echo make bls256.dll
-link /nologo /DLL /OUT:bin\bls_if256.dll bls.obj bls_if.obj %LDFLAGS% /implib:lib\bls_if256.lib
+link /nologo /DLL /OUT:bin\bls256.dll bls.obj bls_if.obj %LDFLAGS% /implib:lib\bls_if256.lib
