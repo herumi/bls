@@ -20,14 +20,14 @@ func testPre(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !id.IsSame(&id2) {
-			t.Errorf("not same id", id.GetHexString(), id2.GetHexString())
+			t.Errorf("not same id\n%s\n%s", id.GetHexString(), id2.GetHexString())
 		}
 		err = id2.SetDecString(id.GetDecString())
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !id.IsSame(&id2) {
-			t.Errorf("not same id", id.GetDecString(), id2.GetDecString())
+			t.Errorf("not same id\n%s\n%s", id.GetDecString(), id2.GetDecString())
 		}
 	}
 	{
@@ -101,16 +101,57 @@ func testRecoverSecretKey(t *testing.T) {
 	idVec := make([]ID, n)
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{uint64(i), 1, 2, 3, 4, 5}[0:unitN])
-		secVec[i].Set(msk, &idVec[i])
+		err := secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			t.Errorf("%s\n", err)
+		}
 	}
 	// recover sec2 from secVec and idVec
 	var sec2 SecretKey
-	sec2.Recover(secVec, idVec)
+	err := sec2.Recover(secVec, idVec)
+	if err != nil {
+		t.Errorf("err%s\n", err)
+	}
 	if !sec.IsSame(&sec2) {
 		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
 	}
 }
 
+func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]ID, []SecretKey, []PublicKey, []Sign) {
+	idTbl := []uint64{3, 5, 193, 22, 15}
+	n := len(idTbl)
+
+	secVec := make([]SecretKey, n)
+	pubVec := make([]PublicKey, n)
+	signVec := make([]Sign, n)
+	idVec := make([]ID, n)
+
+	for i := 0; i < n; i++ {
+		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
+		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
+
+		err := secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			t.Error(err)
+		}
+
+		err = pubVec[i].Set(mpk, &idVec[i])
+		if err != nil {
+			t.Error(err)
+		}
+		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
+
+		if !pubVec[i].IsSame(secVec[i].GetPublicKey()) {
+			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
+		}
+
+		signVec[i] = *secVec[i].Sign(m)
+		if !signVec[i].Verify(&pubVec[i], m) {
+			t.Error("Pubkey derivation does not match")
+		}
+	}
+	return idVec, secVec, pubVec, signVec
+}
 func testSign(t *testing.T) {
 	m := "testSign"
 	t.Log(m)
@@ -126,45 +167,29 @@ func testSign(t *testing.T) {
 	k := 3
 	msk := sec0.GetMasterSecretKey(k)
 	mpk := GetMasterPublicKey(msk)
+	idVec, secVec, pubVec, signVec := testEachSign(t, m, msk, mpk)
 
-	idTbl := []uint64{3, 5, 193, 22, 15}
-	n := len(idTbl)
-
-	secVec := make([]SecretKey, n)
-	pubVec := make([]PublicKey, n)
-	signVec := make([]Sign, n)
-	idVec := make([]ID, n)
-
-	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
-		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
-
-		secVec[i].Set(msk, &idVec[i])
-
-		pubVec[i].Set(mpk, &idVec[i])
-		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
-
-		if !pubVec[i].IsSame(secVec[i].GetPublicKey()) {
-			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
-		}
-
-		signVec[i] = *secVec[i].Sign(m)
-		if !signVec[i].Verify(&pubVec[i], m) {
-			t.Error("Pubkey derivation does not match")
-		}
-	}
 	var sec1 SecretKey
-	sec1.Recover(secVec, idVec)
+	err := sec1.Recover(secVec, idVec)
+	if err != nil {
+		t.Error(err)
+	}
 	if !sec0.IsSame(&sec1) {
 		t.Error("Mismatch in recovered seckey.")
 	}
 	var pub1 PublicKey
-	pub1.Recover(pubVec, idVec)
+	err = pub1.Recover(pubVec, idVec)
+	if err != nil {
+		t.Error(err)
+	}
 	if !pub0.IsSame(&pub1) {
 		t.Error("Mismatch in recovered pubkey.")
 	}
 	var s1 Sign
-	s1.Recover(signVec, idVec)
+	err = s1.Recover(signVec, idVec)
+	if err != nil {
+		t.Error(err)
+	}
 	if !s0.IsSame(&s1) {
 		t.Error("Mismatch in recovered signature.")
 	}
@@ -268,7 +293,10 @@ func testOrder(t *testing.T, c int) {
 }
 
 func test(t *testing.T, c int) {
-	Init(c)
+	err := Init(c)
+	if err != nil {
+		t.Fatal(err)
+	}
 	unitN = GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
 	testPre(t)
@@ -301,7 +329,10 @@ var curve = CurveFp382_1
 
 func BenchmarkPubkeyFromSeckey(b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
 		sec.Init()
@@ -313,7 +344,10 @@ func BenchmarkPubkeyFromSeckey(b *testing.B) {
 
 func BenchmarkSigning(b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
 		sec.Init()
@@ -325,7 +359,10 @@ func BenchmarkSigning(b *testing.B) {
 
 func BenchmarkValidation(b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
 		sec.Init()
@@ -340,7 +377,10 @@ func BenchmarkValidation(b *testing.B) {
 
 func benchmarkDeriveSeckeyShare(k int, b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	sec.Init()
 	msk := sec.GetMasterSecretKey(k)
@@ -348,8 +388,11 @@ func benchmarkDeriveSeckeyShare(k int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		id.Set([]uint64{1, 2, 3, 4, 5, uint64(n)})
 		b.StartTimer()
-		sec.Set(msk, &id)
+		err := sec.Set(msk, &id)
 		b.StopTimer()
+		if err != nil {
+			b.Errorf("%s\n", err)
+		}
 	}
 }
 
@@ -361,7 +404,10 @@ func BenchmarkDeriveSeckeyShare500(b *testing.B) { benchmarkDeriveSeckeyShare(50
 
 func benchmarkRecoverSeckey(k int, b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	sec.Init()
 	msk := sec.GetMasterSecretKey(k)
@@ -372,14 +418,20 @@ func benchmarkRecoverSeckey(k int, b *testing.B) {
 	idVec := make([]ID, n)
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{1, 2, 3, 4, 5, uint64(i)})
-		secVec[i].Set(msk, &idVec[i])
+		err := secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			b.Errorf("%s\n", err)
+		}
 	}
 
 	// recover from secVec and idVec
 	var sec2 SecretKey
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		sec2.Recover(secVec, idVec)
+		err := sec2.Recover(secVec, idVec)
+		if err != nil {
+			b.Errorf("%s\n", err)
+		}
 	}
 }
 
@@ -390,7 +442,10 @@ func BenchmarkRecoverSeckey1000(b *testing.B) { benchmarkRecoverSeckey(1000, b) 
 
 func benchmarkRecoverSignature(k int, b *testing.B) {
 	b.StopTimer()
-	Init(curve)
+	err := Init(curve)
+	if err != nil {
+		b.Fatal(err)
+	}
 	var sec SecretKey
 	sec.Init()
 	msk := sec.GetMasterSecretKey(k)
@@ -402,7 +457,10 @@ func benchmarkRecoverSignature(k int, b *testing.B) {
 	signVec := make([]Sign, n)
 	for i := 0; i < n; i++ {
 		idVec[i].Set([]uint64{1, 2, 3, 4, 5, uint64(i)})
-		secVec[i].Set(msk, &idVec[i])
+		err := secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			b.Errorf("%s\n", err)
+		}
 		signVec[i] = *secVec[i].Sign("test message")
 	}
 
@@ -410,7 +468,10 @@ func benchmarkRecoverSignature(k int, b *testing.B) {
 	var sig Sign
 	b.StartTimer()
 	for n := 0; n < b.N; n++ {
-		sig.Recover(signVec, idVec)
+		err := sig.Recover(signVec, idVec)
+		if err != nil {
+			b.Errorf("%s\n", err)
+		}
 	}
 }
 

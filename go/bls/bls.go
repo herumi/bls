@@ -27,7 +27,7 @@ const CurveFp382_2 = 2
 func Init(curve int) error {
 	err := C.blsInit(C.int(curve), C.BLS_MAX_OP_UNIT_SIZE)
 	if err != 0 {
-		return fmt.Errorf("ERR Init curve=%d\n", curve)
+		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
 	return nil
 }
@@ -75,7 +75,7 @@ func (id *ID) getPointer() (p *C.blsId) {
 	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
 }
 
-// GetByte
+// GetByte --
 func (id *ID) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
 	// #nosec
@@ -96,32 +96,32 @@ func (id *ID) SetByte(buf []byte, ioMode int) error {
 	return nil
 }
 
-// Serialize
+// Serialize --
 func (id *ID) Serialize() []byte {
 	return id.GetByte(C.blsIoEcComp)
 }
 
-// Deserialize
+// Deserialize --
 func (id *ID) Deserialize(b []byte) error {
 	return id.SetByte(b, C.blsIoEcComp)
 }
 
-// GetHexString
+// GetHexString --
 func (id *ID) GetHexString() string {
 	return string(id.GetByte(16))
 }
 
-// GetDecString
+// GetDecString --
 func (id *ID) GetDecString() string {
 	return string(id.GetByte(10))
 }
 
-// SetHexString
+// SetHexString --
 func (id *ID) SetHexString(s string) error {
 	return id.SetByte([]byte(s), 16)
 }
 
-// SetDecString
+// SetDecString --
 func (id *ID) SetDecString(s string) error {
 	return id.SetByte([]byte(s), 10)
 }
@@ -152,7 +152,7 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(&sec.v[0]))
 }
 
-// GetByte
+// GetByte --
 func (sec *SecretKey) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
 	// #nosec
@@ -173,32 +173,32 @@ func (sec *SecretKey) SetByte(buf []byte, ioMode int) error {
 	return nil
 }
 
-// Serialize
+// Serialize --
 func (sec *SecretKey) Serialize() []byte {
 	return sec.GetByte(C.blsIoEcComp)
 }
 
-// Deserialize
+// Deserialize --
 func (sec *SecretKey) Deserialize(b []byte) error {
 	return sec.SetByte(b, C.blsIoEcComp)
 }
 
-// GetHexString
+// GetHexString --
 func (sec *SecretKey) GetHexString() string {
 	return string(sec.GetByte(16))
 }
 
-// GetDecString
+// GetDecString --
 func (sec *SecretKey) GetDecString() string {
 	return string(sec.GetByte(10))
 }
 
-// SetHexString
+// SetHexString --
 func (sec *SecretKey) SetHexString(s string) error {
 	return sec.SetByte([]byte(s), 16)
 }
 
-// SetDecString
+// SetDecString --
 func (sec *SecretKey) SetDecString(s string) error {
 	return sec.SetByte([]byte(s), 10)
 }
@@ -284,10 +284,10 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
 }
 
-// GetByte
+// GetByte --
 func (pub *PublicKey) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
-	// #nopub
+	// #nosec
 	n := C.blsPublicKeyGetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -297,7 +297,7 @@ func (pub *PublicKey) GetByte(ioMode int) []byte {
 
 // SetByte --
 func (pub *PublicKey) SetByte(buf []byte, ioMode int) error {
-	// #nopub
+	// #nosec
 	err := C.blsPublicKeySetStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
@@ -305,22 +305,22 @@ func (pub *PublicKey) SetByte(buf []byte, ioMode int) error {
 	return nil
 }
 
-// Serialize
+// Serialize --
 func (pub *PublicKey) Serialize() []byte {
 	return pub.GetByte(C.blsIoEcComp)
 }
 
-// Deserialize
+// Deserialize --
 func (pub *PublicKey) Deserialize(b []byte) error {
 	return pub.SetByte(b, C.blsIoEcComp)
 }
 
-// GetHexString
+// GetHexString --
 func (pub *PublicKey) GetHexString() string {
 	return fmt.Sprintf("%x", pub.Serialize())
 }
 
-// SetHexString
+// SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
 	b, err := hex.DecodeString(s)
 	if err != nil {
@@ -368,10 +368,10 @@ func (sign *Sign) getPointer() (p *C.blsSign) {
 	return (*C.blsSign)(unsafe.Pointer(&sign.v[0]))
 }
 
-// GetByte
+// GetByte --
 func (sign *Sign) GetByte(ioMode int) []byte {
 	buf := make([]byte, 1024)
-	// #nosign
+	// #nosec
 	n := C.blsSignGetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if n == 0 {
 		panic("implementation err. size of buf is small")
@@ -381,7 +381,7 @@ func (sign *Sign) GetByte(ioMode int) []byte {
 
 // SetByte --
 func (sign *Sign) SetByte(buf []byte, ioMode int) error {
-	// #nosign
+	// #nosec
 	err := C.blsSignSetStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), C.int(ioMode))
 	if err != 0 {
 		return fmt.Errorf("bad byte:%x", buf)
@@ -389,22 +389,22 @@ func (sign *Sign) SetByte(buf []byte, ioMode int) error {
 	return nil
 }
 
-// Serialize
+// Serialize --
 func (sign *Sign) Serialize() []byte {
 	return sign.GetByte(C.blsIoEcComp)
 }
 
-// Deserialize
+// Deserialize --
 func (sign *Sign) Deserialize(b []byte) error {
 	return sign.SetByte(b, C.blsIoEcComp)
 }
 
-// GetHexString
+// GetHexString --
 func (sign *Sign) GetHexString() string {
 	return fmt.Sprintf("%x", sign.Serialize())
 }
 
-// SetHexString
+// SetHexString --
 func (sign *Sign) SetHexString(s string) error {
 	b, err := hex.DecodeString(s)
 	if err != nil {
