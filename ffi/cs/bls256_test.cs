@@ -45,10 +45,10 @@ namespace mcl {
 			SecretKey sec = new SecretKey();
 			sec.Init();
 			PublicKey pub = sec.GetPublicKey();
-			String s = pub.ToString();
-			Console.WriteLine("pub={0}", s);
+			String sign = pub.ToString();
+			Console.WriteLine("pub={0}", sign);
 			PublicKey pub2 = new PublicKey();
-			pub2.SetStr(s);
+			pub2.SetStr(sign);
 			assert("pub.SetStr", pub.IsSame(pub2));
 		}
 		static void TestSign()
@@ -58,9 +58,9 @@ namespace mcl {
 			sec.Init();
 			PublicKey pub = sec.GetPublicKey();
 			String m = "abc";
-			Sign s = sec.Sign(m);
-			assert("verify", s.Verify(pub, m));
-			assert("not verify", !s.Verify(pub, m + "a"));
+			Sign sign = sec.Sign(m);
+			assert("verify", pub.Verify(sign, m));
+			assert("not verify", !pub.Verify(sign, m + "a"));
 		}
 		static void TestSharing()
 		{
@@ -86,7 +86,7 @@ namespace mcl {
 			string m = "doremi";
 			for (int i = 0; i < n; i++) {
 				Sign sign = secs[i].Sign(m);
-				assert("sign.Verify", sign.Verify(pubs[i], m));
+				assert("sign.Verify", pubs[i].Verify(sign, m));
 			}
 			{
 				int[] idxTbl = { 0, 2, 5, 8, 10 };
@@ -106,7 +106,7 @@ namespace mcl {
 				PublicKey pub = RecoverPublicKey(subPubs, subIds);
 				assert("check pub", pub.IsSame(sec.GetPublicKey()));
 				Sign sign = RecoverSign(subSigns, subIds);
-				assert("sign.verify", sign.Verify(pub, m));
+				assert("sign.verify", pub.Verify(sign, m));
 			}
 		}
 		static void Main(string[] args)

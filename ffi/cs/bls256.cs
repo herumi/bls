@@ -242,9 +242,13 @@ namespace mcl {
 			{
 				blsPublicKeyAdd(ref this, ref rhs);
 			}
-		}
-		// publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
-		public static PublicKey SharePublicKey(PublicKey[] mpk, Id id)
+            public bool Verify(Sign sign, string m)
+            {
+                return blsSignVerify(ref sign, ref this, m, (ulong)m.Length) == 1;
+            }
+        }
+        // publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
+        public static PublicKey SharePublicKey(PublicKey[] mpk, Id id)
 		{
 			PublicKey pub = new PublicKey();
 			if (blsPublicKeySet(ref pub, ref mpk[0], (ulong)mpk.Length, ref id) != 0) {
@@ -286,12 +290,8 @@ namespace mcl {
 			{
 				blsSignAdd(ref this, ref rhs);
 			}
-			public bool Verify(PublicKey pub, string m)
-			{
-				return blsSignVerify(ref this, ref pub, m, (ulong)m.Length) == 1;
-			}
 		}
-		public static Sign RecoverSign(Sign[] signs, Id[] ids)
+        public static Sign RecoverSign(Sign[] signs, Id[] ids)
 		{
 			Sign sign = new Sign();
 			if (blsSignRecover(ref sign, ref signs[0], ref ids[0], (ulong)signs.Length) != 0) {
