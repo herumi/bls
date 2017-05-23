@@ -125,11 +125,11 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const;
 	void setStr(const std::string& str, int ioMode = 0);
 	/*
-		initialize secretKey with random number and set id = 0
+		initialize secretKey with random number
 	*/
 	void init();
 	/*
-		set secretKey with p[0, .., keySize) and set id = 0
+		set secretKey with p[0, .., keySize)
 		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
