@@ -8,7 +8,7 @@
 #include <cybozu/random_generator.hpp>
 #include <vector>
 #include <string>
-#include <bls.hpp>
+#include <bls/bls.hpp>
 #if BLS_MAX_OP_UNIT_SIZE == 4
 #include <mcl/bn256.hpp>
 using namespace mcl::bn256;

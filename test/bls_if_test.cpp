@@ -1,5 +1,5 @@
 #include <cybozu/test.hpp>
-#include <bls_if.h>
+#include <bls/bls_if.h>
 #include <string.h>
 
 void bls_ifTest()

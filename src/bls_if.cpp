@@ -1,6 +1,6 @@
-#include "bls.hpp"
+#include "bls/bls.hpp"
 #define BLS256_DLL_EXPORT
-#include "bls_if.h"
+#include "bls/bls_if.h"
 #include <iostream>
 #include <sstream>
 #include <memory.h>

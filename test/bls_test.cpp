@@ -1,4 +1,4 @@
-#include <bls.hpp>
+#include <bls/bls.hpp>
 #include <cybozu/test.hpp>
 #include <cybozu/inttype.hpp>
 #include <iostream>
