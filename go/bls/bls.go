@@ -10,7 +10,6 @@ package bls
 import "C"
 import "fmt"
 import "unsafe"
-import "encoding/hex"
 
 // CurveFp254BNb -- 254 bit curve
 const CurveFp254BNb = 0
@@ -315,16 +314,24 @@ func (pub *PublicKey) Deserialize(buf []byte) error {
 
 // GetHexString --
 func (pub *PublicKey) GetHexString() string {
-	return fmt.Sprintf("%x", pub.Serialize())
+	buf := make([]byte, 1024)
+	// #nosec
+	n := C.blsPublicKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), pub.getPointer())
+	if n == 0 {
+		panic("err blsPublicKeyGetHexStr")
+	}
+	return string(buf[:n])
 }
 
 // SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
-	b, err := hex.DecodeString(s)
-	if err != nil {
-		return err
+	buf := []byte(s)
+	// #nosec
+	err := C.blsPublicKeySetHexStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err blsPublicKeySetHexStr %x", buf)
 	}
-	return pub.Deserialize(b)
+	return nil
 }
 
 // IsSame --
@@ -389,16 +396,24 @@ func (sign *Sign) Deserialize(buf []byte) error {
 
 // GetHexString --
 func (sign *Sign) GetHexString() string {
-	return fmt.Sprintf("%x", sign.Serialize())
+	buf := make([]byte, 1024)
+	// #nosec
+	n := C.blsSignatureGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), sign.getPointer())
+	if n == 0 {
+		panic("err blsSignatureGetHexStr")
+	}
+	return string(buf[:n])
 }
 
 // SetHexString --
 func (sign *Sign) SetHexString(s string) error {
-	b, err := hex.DecodeString(s)
-	if err != nil {
-		return err
+	buf := []byte(s)
+	// #nosec
+	err := C.blsSignatureSetHexStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err blsSignatureSetHexStr %x", buf)
 	}
-	return sign.Deserialize(b)
+	return nil
 }
 
 // IsSame --

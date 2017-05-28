@@ -222,7 +222,9 @@ size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const blsPublicKey *p
 {
 	std::string s;
 	s.resize(1024);
-	if (blsPublicKeySerialize(&s[0], s.size(), pub) == 0) {
+	size_t len = blsPublicKeySerialize(&s[0], s.size(), pub);
+	if (len > 0) {
+		s.resize(len);
 		s = mcl::fp::littleEndianToHexStr(s.c_str(), s.size());
 		if (s.size() < maxBufSize) {
 			memcpy(buf, s.c_str(), s.size());
@@ -276,7 +278,9 @@ size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *s
 {
 	std::string s;
 	s.resize(1024);
-	if (blsSignatureSerialize(&s[0], s.size(), sig) == 0) {
+	size_t len = blsSignatureSerialize(&s[0], s.size(), sig);
+	if (len > 0) {
+		s.resize(len);
 		s = mcl::fp::littleEndianToHexStr(s.c_str(), s.size());
 		if (s.size() < maxBufSize) {
 			memcpy(buf, s.c_str(), s.size());
