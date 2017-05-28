@@ -350,40 +350,40 @@ void dataTest()
 	bls::SecretKey sec;
 	sec.init();
 	std::string str;
-	sec.getStr(str, bls::IoEcComp);
+	sec.getStr(str, bls::IoFixedByteSeq);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::SecretKey sec2;
-		sec2.setStr(str, bls::IoEcComp);
+		sec2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sec, sec2);
 	}
 	bls::PublicKey pub;
 	sec.getPublicKey(pub);
-	pub.getStr(str, bls::IoEcComp);
+	pub.getStr(str, bls::IoFixedByteSeq);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size * 2);
 		bls::PublicKey pub2;
-		pub2.setStr(str, bls::IoEcComp);
+		pub2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(pub, pub2);
 	}
 	std::string m = "abc";
 	bls::Sign sign;
 	sec.sign(sign, m);
-	sign.getStr(str, bls::IoEcComp);
+	sign.getStr(str, bls::IoFixedByteSeq);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::Sign sign2;
-		sign2.setStr(str, bls::IoEcComp);
+		sign2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sign, sign2);
 	}
 	bls::Id id;
 	const uint64_t v[] = { 1, 2, 3, 4, 5, 6, };
 	id.set(v);
-	id.getStr(str, bls::IoEcComp);
+	id.getStr(str, bls::IoFixedByteSeq);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
 		bls::Id id2;
-		id2.setStr(str, bls::IoEcComp);
+		id2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(id, id2);
 	}
 }

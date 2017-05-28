@@ -2,51 +2,21 @@
 #include <bls/bls_if.h>
 #include <string.h>
 
-void bls_ifTest()
-{
-	blsSecretKey *sec;
-	blsPublicKey *pub;
-	blsSign *sign;
-	const char *msg = "this is a pen";
-	const size_t msgSize = strlen(msg);
-
-	sec = blsSecretKeyCreate();
-	blsSecretKeyInit(sec);
-	blsSecretKeyPut(sec);
-
-	pub = blsPublicKeyCreate();
-	blsSecretKeyGetPublicKey(sec, pub);
-	blsPublicKeyPut(pub);
-
-	sign = blsSignCreate();
-	blsSecretKeySign(sec, sign, msg, msgSize);
-	blsSignPut(sign);
-
-	CYBOZU_TEST_ASSERT(blsSignVerify(sign, pub, msg, msgSize));
-
-	blsSignDestroy(sign);
-	blsPublicKeyDestroy(pub);
-	blsSecretKeyDestroy(sec);
-}
-
 void bls_if_use_stackTest()
 {
 	blsSecretKey sec;
 	blsPublicKey pub;
-	blsSign sign;
+	blsSignature sig;
 	const char *msg = "this is a pen";
 	const size_t msgSize = strlen(msg);
 
-	blsSecretKeyInit(&sec);
-	blsSecretKeyPut(&sec);
+	blsSecretKeySetByCSPRNG(&sec);
 
-	blsSecretKeyGetPublicKey(&sec, &pub);
-	blsPublicKeyPut(&pub);
+	blsGetPublicKey(&pub, &sec);
 
-	blsSecretKeySign(&sec, &sign, msg, msgSize);
-	blsSignPut(&sign);
+	blsSign(&sig, &sec, msg, msgSize);
 
-	CYBOZU_TEST_ASSERT(blsSignVerify(&sign, &pub, msg, msgSize));
+	CYBOZU_TEST_ASSERT(blsVerify(&sig, &pub, msg, msgSize));
 }
 
 void bls_ifDataTest()
@@ -55,29 +25,29 @@ void bls_ifDataTest()
 	const size_t msgSize = strlen(msg);
 	const size_t fpSize = blsGetOpUnitSize() * sizeof(uint64_t);
 	blsSecretKey sec1, sec2;
-	blsSecretKeyInit(&sec1);
+	blsSecretKeySetByCSPRNG(&sec1);
 	char buf[BLS_MAX_OP_UNIT_SIZE * sizeof(uint64_t) * 2];
 	size_t n;
 	int ret;
-	n = blsSecretKeyGetStr(&sec1, buf, sizeof(buf), blsIoEcComp);
-	CYBOZU_TEST_EQUAL(n, fpSize);
-	ret = blsSecretKeySetStr(&sec2, buf, n, blsIoEcComp);
+	n = blsSecretKeyGetHexStr(buf, sizeof(buf), &sec1);
+	CYBOZU_TEST_EQUAL(n, fpSize * 2);
+	ret = blsSecretKeySetHexStr(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsSame(&sec1, &sec2));
 	blsPublicKey pub1, pub2;
-	blsSecretKeyGetPublicKey(&sec1, &pub1);
-	n = blsPublicKeyGetStr(&pub1, buf, sizeof(buf), blsIoEcComp);
+	blsGetPublicKey(&pub1, &sec1);
+	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, fpSize * 2);
-	ret = blsPublicKeySetStr(&pub2, buf, n, blsIoEcComp);
+	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsSame(&pub1, &pub2));
-	blsSign sign1, sign2;
-	blsSecretKeySign(&sec1, &sign1, msg, msgSize);
-	n = blsSignGetStr(&sign1, buf, sizeof(buf), blsIoEcComp);
+	blsSignature sig1, sig2;
+	blsSign(&sig1, &sec1, msg, msgSize);
+	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, fpSize);
-	ret = blsSignSetStr(&sign2, buf, n, blsIoEcComp);
+	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
-	CYBOZU_TEST_ASSERT(blsSignIsSame(&sign1, &sign2));
+	CYBOZU_TEST_ASSERT(blsSignatureIsSame(&sig1, &sig2));
 }
 
 void bls_ifOrderTest(const char *curveOrder, const char *fieldOrder)
@@ -114,7 +84,6 @@ CYBOZU_TEST_AUTO(all)
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
 		blsInit(tbl[i], BLS_MAX_OP_UNIT_SIZE);
-		bls_ifTest();
 		bls_if_use_stackTest();
 		bls_ifDataTest();
 		bls_ifOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);

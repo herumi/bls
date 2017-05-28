@@ -32,7 +32,7 @@ enum {
 	IoBin = 2, // binary number
 	IoDec = 10, // decimal number
 	IoHex = 16, // hexadecimal number
-	IoEcComp = 512 // fixed byte representation
+	IoFixedByteSeq = 512 // fixed byte representation
 };
 
 namespace impl {
@@ -105,7 +105,8 @@ public:
 		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
-
+	// bufSize is truncted/zero extended to keySize
+	void setLittleEndian(const void *buf, size_t bufSize);
 };
 
 /*
@@ -125,14 +126,16 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const;
 	void setStr(const std::string& str, int ioMode = 0);
 	/*
-		initialize secretKey with random number
+		initialize secretKey with random number and set id = 0
 	*/
 	void init();
 	/*
-		set secretKey with p[0, .., keySize)
+		set secretKey with p[0, .., keySize) and set id = 0
 		@note the value must be less than r
 	*/
 	void set(const uint64_t *p);
+	// bufSize is truncted/zero extended to keySize
+	void setLittleEndian(const void *buf, size_t bufSize);
 	void getPublicKey(PublicKey& pub) const;
 	// constant time sign
 	void sign(Sign& sign, const std::string& m) const;

@@ -1,4 +1,4 @@
-#include <bls.hpp>
+#include <bls/bls.hpp>
 #include <cybozu/option.hpp>
 #include <cybozu/itoa.hpp>
 #include <fstream>

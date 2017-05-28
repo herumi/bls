@@ -258,6 +258,11 @@ void Id::set(const uint64_t *p)
 	getInner().v.setArrayMask(p, keySize);
 }
 
+void Id::setLittleEndian(const void *buf, size_t bufSize)
+{
+	getInner().v.setArrayMask((const char *)buf, bufSize);
+}
+
 bool Sign::operator==(const Sign& rhs) const
 {
 	return getInner().sHm == rhs.getInner().sHm;
@@ -409,6 +414,10 @@ void SecretKey::init()
 void SecretKey::set(const uint64_t *p)
 {
 	getInner().s.setArrayMask(p, keySize);
+}
+void SecretKey::setLittleEndian(const void *buf, size_t bufSize)
+{
+	getInner().s.setArrayMask((const char *)buf, bufSize);
 }
 
 void SecretKey::getPublicKey(PublicKey& pub) const

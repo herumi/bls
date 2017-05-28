@@ -11,11 +11,13 @@ func testPre(t *testing.T) {
 	t.Log("init")
 	{
 		var id ID
-		id.Set([]uint64{6, 5, 4, 3, 2, 1}[0:unitN])
-
-		t.Log("id :", id)
+		err := id.SetLittleEndian([]byte{6, 5, 4, 3, 2, 1})
+		if err != nil {
+			t.Error(err)
+		}
+		t.Log("id :", id.GetHexString())
 		var id2 ID
-		err := id2.SetHexString(id.GetHexString())
+		err = id2.SetHexString(id.GetHexString())
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -32,20 +34,23 @@ func testPre(t *testing.T) {
 	}
 	{
 		var sec SecretKey
-		sec.SetArray([]uint64{1, 2, 3, 4, 5, 6}[0:unitN])
-		t.Log("sec=", sec)
+		err := sec.SetLittleEndian([]byte{1, 2, 3, 4, 5, 6})
+		if err != nil {
+			t.Error(err)
+		}
+		t.Log("sec=", sec.GetHexString())
 	}
 
 	t.Log("create secret key")
 	m := "this is a bls sample for go"
 	var sec SecretKey
 	sec.Init()
-	t.Log("sec:", sec)
+	t.Log("sec:", sec.GetHexString())
 	t.Log("create public key")
 	pub := sec.GetPublicKey()
-	t.Log("pub:", pub)
+	t.Log("pub:", pub.GetHexString())
 	sign := sec.Sign(m)
-	t.Log("sign:", sign)
+	t.Log("sign:", sign.GetHexString())
 	if !sign.Verify(pub, m) {
 		t.Error("Signature does not verify")
 	}
@@ -92,6 +97,7 @@ func testRecoverSecretKey(t *testing.T) {
 	k := 3000
 	var sec SecretKey
 	sec.Init()
+	t.Logf("sec=%s\n", sec.GetHexString())
 
 	// make master secret key
 	msk := sec.GetMasterSecretKey(k)
@@ -100,17 +106,21 @@ func testRecoverSecretKey(t *testing.T) {
 	secVec := make([]SecretKey, n)
 	idVec := make([]ID, n)
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{uint64(i), 1, 2, 3, 4, 5}[0:unitN])
-		err := secVec[i].Set(msk, &idVec[i])
+		err := idVec[i].SetLittleEndian([]byte{byte(i & 255), byte(i >> 8), 2, 3, 4, 5})
 		if err != nil {
-			t.Errorf("%s\n", err)
+			t.Error(err)
 		}
+		err = secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			t.Error(err)
+		}
+		//		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
 	}
 	// recover sec2 from secVec and idVec
 	var sec2 SecretKey
 	err := sec2.Recover(secVec, idVec)
 	if err != nil {
-		t.Errorf("err%s\n", err)
+		t.Error(err)
 	}
 	if !sec.IsSame(&sec2) {
 		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
@@ -118,7 +128,7 @@ func testRecoverSecretKey(t *testing.T) {
 }
 
 func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]ID, []SecretKey, []PublicKey, []Sign) {
-	idTbl := []uint64{3, 5, 193, 22, 15}
+	idTbl := []byte{3, 5, 193, 22, 15}
 	n := len(idTbl)
 
 	secVec := make([]SecretKey, n)
@@ -127,10 +137,13 @@ func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]I
 	idVec := make([]ID, n)
 
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0, 0, 0}[0:unitN])
+		err := idVec[i].SetLittleEndian([]byte{idTbl[i], 0, 0, 0, 0, 0})
+		if err != nil {
+			t.Error(err)
+		}
 		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
 
-		err := secVec[i].Set(msk, &idVec[i])
+		err = secVec[i].Set(msk, &idVec[i])
 		if err != nil {
 			t.Error(err)
 		}
@@ -236,8 +249,8 @@ func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
 	sec1.Init()
-	b := sec1.Serialize()
-	err := sec2.Deserialize(b)
+	b := sec1.GetLittleEndian()
+	err := sec2.SetLittleEndian(b)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -386,12 +399,15 @@ func benchmarkDeriveSeckeyShare(k int, b *testing.B) {
 	msk := sec.GetMasterSecretKey(k)
 	var id ID
 	for n := 0; n < b.N; n++ {
-		id.Set([]uint64{1, 2, 3, 4, 5, uint64(n)})
+		err = id.SetLittleEndian([]byte{1, 2, 3, 4, 5, byte(n)})
+		if err != nil {
+			b.Error(err)
+		}
 		b.StartTimer()
 		err := sec.Set(msk, &id)
 		b.StopTimer()
 		if err != nil {
-			b.Errorf("%s\n", err)
+			b.Error(err)
 		}
 	}
 }
@@ -417,10 +433,13 @@ func benchmarkRecoverSeckey(k int, b *testing.B) {
 	secVec := make([]SecretKey, n)
 	idVec := make([]ID, n)
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{1, 2, 3, 4, 5, uint64(i)})
-		err := secVec[i].Set(msk, &idVec[i])
+		err := idVec[i].SetLittleEndian([]byte{1, 2, 3, 4, 5, byte(i)})
 		if err != nil {
-			b.Errorf("%s\n", err)
+			b.Error(err)
+		}
+		err = secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			b.Error(err)
 		}
 	}
 
@@ -456,10 +475,13 @@ func benchmarkRecoverSignature(k int, b *testing.B) {
 	secVec := make([]SecretKey, n)
 	signVec := make([]Sign, n)
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{1, 2, 3, 4, 5, uint64(i)})
-		err := secVec[i].Set(msk, &idVec[i])
+		err := idVec[i].SetLittleEndian([]byte{1, 2, 3, 4, 5, byte(i)})
 		if err != nil {
-			b.Errorf("%s\n", err)
+			b.Error(err)
+		}
+		err = secVec[i].Set(msk, &idVec[i])
+		if err != nil {
+			b.Error(err)
 		}
 		signVec[i] = *secVec[i].Sign("test message")
 	}
@@ -470,7 +492,7 @@ func benchmarkRecoverSignature(k int, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		err := sig.Recover(signVec, idVec)
 		if err != nil {
-			b.Errorf("%s\n", err)
+			b.Error(err)
 		}
 	}
 }

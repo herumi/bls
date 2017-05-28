@@ -14,10 +14,10 @@
 #include <stdlib.h> // for size_t
 
 #ifdef _MSC_VER
-#ifdef BLS256_DLL_EXPORT
-#define BLS256_DLL_API __declspec(dllexport)
+#ifdef BLS_DLL_EXPORT
+#define BLS_DLL_API __declspec(dllexport)
 #else
-#define BLS256_DLL_API __declspec(dllimport)
+#define BLS_DLL_API __declspec(dllimport)
 #ifndef BLS_NO_AUTOLINK
 	#if BLS_MAX_OP_UNIT_SIZE == 4
 		#pragma comment(lib, "bls_if256.lib")
@@ -25,7 +25,7 @@
 #endif
 #endif
 #else
-#define BLS256_DLL_API
+#define BLS_DLL_API
 #endif
 
 #ifdef __cplusplus
@@ -36,14 +36,6 @@ enum {
 	blsCurveFp254BNb = 0,
 	blsCurveFp382_1 = 1,
 	blsCurveFp382_2 = 2
-};
-
-// same value with bls.hpp
-enum {
-	blsIoBin = 2, // binary number
-	blsIoDec = 10, // decimal number
-	blsIoHex = 16, // hexadecimal number
-	blsIoEcComp = 512 // fixed byte representation
 };
 
 typedef struct {
@@ -60,7 +52,7 @@ typedef struct {
 
 typedef struct {
 	uint64_t buf[BLS_MAX_OP_UNIT_SIZE * 3];
-} blsSign;
+} blsSignature;
 
 /*
 	initialize this library
@@ -68,101 +60,100 @@ typedef struct {
 	return 0 if success
 	@note init() is not thread safe
 */
-BLS256_DLL_API int blsInit(int curve, int maxUnitSize);
-BLS256_DLL_API size_t blsGetOpUnitSize(void);
+BLS_DLL_API int blsInit(int curve, int maxUnitSize);
+BLS_DLL_API size_t blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0
-BLS256_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
-BLS256_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
+BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
+BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
-BLS256_DLL_API blsId *blsIdCreate(void);
-BLS256_DLL_API void blsIdDestroy(blsId *id);
 // return 1 if same else 0
-BLS256_DLL_API int blsIdIsSame(const blsId *lhs, const blsId *rhs);
-BLS256_DLL_API void blsIdPut(const blsId *id);
-BLS256_DLL_API void blsIdCopy(blsId *dst, const blsId *src);
+BLS_DLL_API int blsIdIsSame(const blsId *lhs, const blsId *rhs);
 
 // return 0 if success
-BLS256_DLL_API int blsIdSetStr(blsId *id, const char *buf, size_t bufSize, int ioMode);
+BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize);
+BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);
+BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize);
 
 /*
-	return written byte size if ioMode = BlsIoComp
-	return strlen(buf) if ioMode = 2, 10, 16 ; written byte size = strlen(buf) + 1
-	return 0 otherwise
+	return written byte size if success else 0
 */
-BLS256_DLL_API size_t blsIdGetStr(const blsId *id, char *buf, size_t maxBufSize, int ioMode);
+BLS_DLL_API size_t blsIdGetLittleEndian(void *buf, size_t maxBufSize, const blsId *id);
 /*
-	access p[0], ..., p[3] if 256-bit curve
-	access p[0], ..., p[5] if 384-bit curve
+	return strlen(buf) if success else 0
+	buf is '\0' terminated
 */
-BLS256_DLL_API void blsIdSet(blsId *id, const uint64_t *p);
+BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id);
+BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
 
-BLS256_DLL_API blsSecretKey* blsSecretKeyCreate(void);
-BLS256_DLL_API void blsSecretKeyDestroy(blsSecretKey *sec);
 // return 1 if same else 0
-BLS256_DLL_API int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs);
+BLS_DLL_API int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs);
 
-BLS256_DLL_API void blsSecretKeyPut(const blsSecretKey *sec);
-BLS256_DLL_API void blsSecretKeyCopy(blsSecretKey *dst, const blsSecretKey *src);
-BLS256_DLL_API void blsSecretKeySetArray(blsSecretKey *sec, const uint64_t *p);
 // return 0 if success
-BLS256_DLL_API int blsSecretKeySetStr(blsSecretKey *sec, const char *buf, size_t bufSize, int ioMode);
+BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, size_t bufSize);
+BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, size_t bufSize);
+BLS_DLL_API int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, size_t bufSize);
 /*
-	return written byte size if ioMode = BlsIoComp
-	return strlen(buf) if ioMode = 2, 10, 16 ; written byte size = strlen(buf) + 1
-	return 0 otherwise
+	return written byte size if success else 0
 */
-BLS256_DLL_API size_t blsSecretKeyGetStr(const blsSecretKey *sec, char *buf, size_t maxBufSize, int ioMode);
-BLS256_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
+BLS_DLL_API size_t blsSecretKeyGetLittleEndian(void *buf, size_t maxBufSize, const blsSecretKey *sec);
+/*
+	hash buf and set
+*/
+BLS_DLL_API int blsSecretKeySetByHash(blsSecretKey *sec, const void *buf, size_t bufSize);
+/*
+	set secretKey if system has /dev/urandom or CryptGenRandom
+	return 0 if success else -1
+*/
+BLS_DLL_API int blsSecretKeySetByCSPRNG(blsSecretKey *sec);
+/*
+	return strlen(buf) if success else 0
+	buf is '\0' terminated
+*/
+BLS_DLL_API size_t blsSecretKeyGetDecStr(char *buf, size_t maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 
-BLS256_DLL_API void blsSecretKeyInit(blsSecretKey *sec);
-BLS256_DLL_API void blsSecretKeyGetPublicKey(const blsSecretKey *sec, blsPublicKey *pub);
-BLS256_DLL_API void blsSecretKeySign(const blsSecretKey *sec, blsSign *sign, const char *m, size_t size);
+BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
+BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const char *m, size_t size);
 // return 0 if success
-BLS256_DLL_API int blsSecretKeySet(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
+BLS_DLL_API int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
 // return 0 if success
-BLS256_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
-BLS256_DLL_API void blsSecretKeyGetPop(const blsSecretKey *sec, blsSign *sign);
+BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
+BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
 
-BLS256_DLL_API blsPublicKey *blsPublicKeyCreate(void);
-BLS256_DLL_API void blsPublicKeyDestroy(blsPublicKey *pub);
 // return 1 if same else 0
-BLS256_DLL_API int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs);
-BLS256_DLL_API void blsPublicKeyPut(const blsPublicKey *pub);
-BLS256_DLL_API void blsPublicKeyCopy(blsPublicKey *dst, const blsPublicKey *src);
+BLS_DLL_API int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs);
 // return 0 if success
-BLS256_DLL_API int blsPublicKeySetStr(blsPublicKey *pub, const char *buf, size_t bufSize, int ioMode);
+BLS_DLL_API int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize);
 /*
-	return written byte size if ioMode = BlsIoComp
-	return strlen(buf) if ioMode = 2, 10, 16 ; written byte size = strlen(buf) + 1
-	return 0 otherwise
+	return written byte size if success else 0
 */
-BLS256_DLL_API size_t blsPublicKeyGetStr(const blsPublicKey *pub, char *buf, size_t maxBufSize, int ioMode);
-BLS256_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
+BLS_DLL_API size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub);
+BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, size_t bufSize);
+BLS_DLL_API size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const blsPublicKey *pub);
+BLS_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 // return 0 if success
-BLS256_DLL_API int blsPublicKeySet(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
+BLS_DLL_API int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
 // return 0 if success
-BLS256_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
+BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
 
-BLS256_DLL_API blsSign *blsSignCreate(void);
-BLS256_DLL_API void blsSignDestroy(blsSign *sign);
 // return 1 if same else 0
-BLS256_DLL_API int blsSignIsSame(const blsSign *lhs, const blsSign *rhs);
-BLS256_DLL_API void blsSignPut(const blsSign *sign);
-BLS256_DLL_API void blsSignCopy(blsSign *dst, const blsSign *src);
-// return 0 if success
-BLS256_DLL_API int blsSignSetStr(blsSign *sign, const char *buf, size_t bufSize, int ioMode);
-/*
-	return written byte size if ioMode = BlsIoComp
-	return strlen(buf) if ioMode = 2, 10, 16 ; written byte size = strlen(buf) + 1
-	return 0 otherwise
-*/
-BLS256_DLL_API size_t blsSignGetStr(const blsSign *sign, char *buf, size_t maxBufSize, int ioMode);
-BLS256_DLL_API void blsSignAdd(blsSign *sign, const blsSign *rhs);
-// return 0 if success
-BLS256_DLL_API int blsSignRecover(blsSign *sign, const blsSign *signVec, const blsId *idVec, size_t n);
-BLS256_DLL_API int blsSignVerify(const blsSign *sign, const blsPublicKey *pub, const char *m, size_t size);
+BLS_DLL_API int blsSignatureIsSame(const blsSignature *lhs, const blsSignature *rhs);
 
-BLS256_DLL_API int blsSignVerifyPop(const blsSign *sign, const blsPublicKey *pub);
+// return 0 if success
+BLS_DLL_API int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize);
+/*
+	return written byte size if success else 0
+*/
+BLS_DLL_API size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig);
+BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize);
+BLS_DLL_API size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig);
+BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
+// return 0 if success
+BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *signVec, const blsId *idVec, size_t n);
+BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, size_t size);
+
+BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
 
 #ifdef __cplusplus
 }
