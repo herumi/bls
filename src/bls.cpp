@@ -98,7 +98,7 @@ struct SecretKey {
 	const Fr& get() const { return s; }
 };
 
-struct Sign {
+struct Signature {
 	G1 sHm; // s Hash(m)
 	const G1& get() const { return sHm; }
 };
@@ -190,7 +190,7 @@ void init(int curve, int maxUnitSize)
 	assert(sizeof(Id) == sizeof(impl::Id));
 	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
-	assert(sizeof(Sign) == sizeof(impl::Sign));
+	assert(sizeof(Signature) == sizeof(impl::Signature));
 	static G2 Q;
 	if (curve == bls::CurveFp254BNb) {
 		Q.set(
@@ -263,30 +263,30 @@ void Id::setLittleEndian(const void *buf, size_t bufSize)
 	getInner().v.setArrayMask((const char *)buf, bufSize);
 }
 
-bool Sign::operator==(const Sign& rhs) const
+bool Signature::operator==(const Signature& rhs) const
 {
 	return getInner().sHm == rhs.getInner().sHm;
 }
 
-std::ostream& operator<<(std::ostream& os, const Sign& s)
+std::ostream& operator<<(std::ostream& os, const Signature& s)
 {
 	return writeAsHex(os, s.getInner().sHm);
 }
 
-std::istream& operator>>(std::istream& os, Sign& s)
+std::istream& operator>>(std::istream& os, Signature& s)
 {
 	return os >> s.getInner().sHm;
 }
-void Sign::getStr(std::string& str, int ioMode) const
+void Signature::getStr(std::string& str, int ioMode) const
 {
 	getInner().sHm.getStr(str, ioMode);
 }
-void Sign::setStr(const std::string& str, int ioMode)
+void Signature::setStr(const std::string& str, int ioMode)
 {
 	getInner().sHm.setStr(str, ioMode);
 }
 
-bool Sign::verify(const PublicKey& pub, const std::string& m) const
+bool Signature::verify(const PublicKey& pub, const std::string& m) const
 {
 	G1 Hm;
 	HashAndMapToG1(Hm, m); // Hm = Hash(m)
@@ -312,27 +312,27 @@ bool Sign::verify(const PublicKey& pub, const std::string& m) const
 #endif
 }
 
-bool Sign::verify(const PublicKey& pub) const
+bool Signature::verify(const PublicKey& pub) const
 {
 	std::string str;
 	pub.getInner().sQ.getStr(str);
 	return verify(pub, str);
 }
 
-void Sign::recover(const SignVec& signVec, const IdVec& idVec)
+void Signature::recover(const SignatureVec& sigVec, const IdVec& idVec)
 {
-	if (signVec.size() != idVec.size()) throw cybozu::Exception("Sign:recover:bad size") << signVec.size() << idVec.size();
-	recover(signVec.data(), idVec.data(), signVec.size());
+	if (sigVec.size() != idVec.size()) throw cybozu::Exception("Signature:recover:bad size") << sigVec.size() << idVec.size();
+	recover(sigVec.data(), idVec.data(), sigVec.size());
 }
 
-void Sign::recover(const Sign* signVec, const Id *idVec, size_t n)
+void Signature::recover(const Signature* sigVec, const Id *idVec, size_t n)
 {
-	WrapArray<Sign, G1> signW(signVec, n);
+	WrapArray<Signature, G1> signW(sigVec, n);
 	WrapArray<Id, Fr> idW(idVec, n);
 	LagrangeInterpolation(getInner().sHm, signW, idW);
 }
 
-void Sign::add(const Sign& rhs)
+void Signature::add(const Signature& rhs)
 {
 	getInner().sHm += rhs.getInner().sHm;
 }
@@ -425,15 +425,15 @@ void SecretKey::getPublicKey(PublicKey& pub) const
 	G2::mul(pub.getInner().sQ, getQ(), getInner().s);
 }
 
-void SecretKey::sign(Sign& sign, const std::string& m) const
+void SecretKey::sign(Signature& sig, const std::string& m) const
 {
 	G1 Hm;
 	HashAndMapToG1(Hm, m);
-//	G1::mul(sign.getInner().sHm, Hm, getInner().s);
-	G1::mulCT(sign.getInner().sHm, Hm, getInner().s);
+//	G1::mul(sig.getInner().sHm, Hm, getInner().s);
+	G1::mulCT(sig.getInner().sHm, Hm, getInner().s);
 }
 
-void SecretKey::getPop(Sign& pop) const
+void SecretKey::getPop(Signature& pop) const
 {
 	PublicKey pub;
 	getPublicKey(pub);

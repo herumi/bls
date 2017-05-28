@@ -112,7 +112,7 @@ void recover_sig()
 	size_t k;
 	read(k);
 	if (g_verbose) fprintf(stderr, "k:%d\n", (int)k);
-	bls::SignVec sVec(k);
+	bls::SignatureVec sVec(k);
 	bls::IdVec idVec(k);
 	for (size_t i = 0; i < k; i++) {
 		read(idVec[i]);

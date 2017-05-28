@@ -53,7 +53,7 @@ int sign(const std::string& m, int id)
 	printf("sign message `%s` by id=%d\n", m.c_str(), id);
 	bls::SecretKey sec;
 	load(sec, secFile, id);
-	bls::Sign s;
+	bls::Signature s;
 	sec.sign(s, m);
 	save(signFile, s, id);
 	return 0;
@@ -64,7 +64,7 @@ int verify(const std::string& m, int id)
 	printf("verify message `%s` by id=%d\n", m.c_str(), id);
 	bls::PublicKey pub;
 	load(pub, pubFile, id);
-	bls::Sign s;
+	bls::Signature s;
 	load(s, signFile, id);
 	if (s.verify(pub, m)) {
 		puts("verify ok");
@@ -105,12 +105,12 @@ int recover(const bls::IdVec& ids)
 		std::cout << ' ' << ids[i];
 	}
 	printf("\n");
-	bls::SignVec signVec(ids.size());
-	for (size_t i = 0; i < signVec.size(); i++) {
-		load(signVec[i], signFile, ids[i]);
+	bls::SignatureVec sigVec(ids.size());
+	for (size_t i = 0; i < sigVec.size(); i++) {
+		load(sigVec[i], signFile, ids[i]);
 	}
-	bls::Sign s;
-	s.recover(signVec, ids);
+	bls::Signature s;
+	s.recover(sigVec, ids);
 	save(signFile, s);
 	return 0;
 }

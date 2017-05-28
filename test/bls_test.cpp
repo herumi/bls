@@ -83,13 +83,13 @@ void blsTest()
 	for (int i = 0; i < 5; i++) {
 		std::string m = "hello";
 		m += char('0' + i);
-		bls::Sign s;
-		sec.sign(s, m);
-		CYBOZU_TEST_ASSERT(s.verify(pub, m));
-		CYBOZU_TEST_ASSERT(!s.verify(pub, m + "a"));
-		streamTest(s);
-		CYBOZU_BENCH_C("sign", 100, sec.sign, s, m);
-		CYBOZU_BENCH_C("verify", 100, s.verify, pub, m);
+		bls::Signature sig;
+		sec.sign(sig, m);
+		CYBOZU_TEST_ASSERT(sig.verify(pub, m));
+		CYBOZU_TEST_ASSERT(!sig.verify(pub, m + "a"));
+		streamTest(sig);
+		CYBOZU_BENCH_C("sign", 100, sec.sign, sig, m);
+		CYBOZU_BENCH_C("verify", 100, sig.verify, pub, m);
 	}
 }
 
@@ -100,11 +100,11 @@ void k_of_nTest()
 	const int k = 3;
 	bls::SecretKey sec0;
 	sec0.init();
-	bls::Sign s0;
-	sec0.sign(s0, m);
+	bls::Signature sig0;
+	sec0.sign(sig0, m);
 	bls::PublicKey pub0;
 	sec0.getPublicKey(pub0);
-	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
+	CYBOZU_TEST_ASSERT(sig0.verify(pub0, m));
 
 	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
@@ -121,14 +121,14 @@ void k_of_nTest()
 		CYBOZU_TEST_EQUAL(allPrvVec[i], p);
 	}
 
-	bls::SignVec allSignVec(n);
+	bls::SignatureVec allSigVec(n);
 	for (int i = 0; i < n; i++) {
 		CYBOZU_TEST_ASSERT(allPrvVec[i] != sec0);
-		allPrvVec[i].sign(allSignVec[i], m);
+		allPrvVec[i].sign(allSigVec[i], m);
 		bls::PublicKey pub;
 		allPrvVec[i].getPublicKey(pub);
 		CYBOZU_TEST_ASSERT(pub != pub0);
-		CYBOZU_TEST_ASSERT(allSignVec[i].verify(pub, m));
+		CYBOZU_TEST_ASSERT(allSigVec[i].verify(pub, m));
 	}
 
 	/*
@@ -195,54 +195,54 @@ void k_of_nTest()
 		3-out-of-n
 		can recover
 	*/
-	bls::SignVec signVec(3);
+	bls::SignatureVec sigVec(3);
 	idVec.resize(3);
 	for (int a = 0; a < n; a++) {
-		signVec[0] = allSignVec[a];
+		sigVec[0] = allSigVec[a];
 		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
-			signVec[1] = allSignVec[b];
+			sigVec[1] = allSigVec[b];
 			idVec[1] = allIdVec[b];
 			for (int c = b + 1; c < n; c++) {
-				signVec[2] = allSignVec[c];
+				sigVec[2] = allSigVec[c];
 				idVec[2] = allIdVec[c];
-				bls::Sign s;
-				s.recover(signVec, idVec);
-				CYBOZU_TEST_EQUAL(s, s0);
+				bls::Signature sig;
+				sig.recover(sigVec, idVec);
+				CYBOZU_TEST_EQUAL(sig, sig0);
 			}
 		}
 	}
 	{
-		signVec[0] = allSignVec[1]; idVec[0] = allIdVec[1];
-		signVec[1] = allSignVec[4]; idVec[1] = allIdVec[4];
-		signVec[2] = allSignVec[3]; idVec[2] = allIdVec[3];
-		bls::Sign s;
-		CYBOZU_BENCH_C("s.recover", 100, s.recover, signVec, idVec);
+		sigVec[0] = allSigVec[1]; idVec[0] = allIdVec[1];
+		sigVec[1] = allSigVec[4]; idVec[1] = allIdVec[4];
+		sigVec[2] = allSigVec[3]; idVec[2] = allIdVec[3];
+		bls::Signature sig;
+		CYBOZU_BENCH_C("sig.recover", 100, sig.recover, sigVec, idVec);
 	}
 	{
 		/*
 			n-out-of-n
 			can recover
 		*/
-		bls::Sign s;
-		s.recover(allSignVec, allIdVec);
-		CYBOZU_TEST_EQUAL(s, s0);
+		bls::Signature sig;
+		sig.recover(allSigVec, allIdVec);
+		CYBOZU_TEST_EQUAL(sig, sig0);
 	}
 	/*
 		2-out-of-n
 		can't recover
 	*/
-	signVec.resize(2);
+	sigVec.resize(2);
 	idVec.resize(2);
 	for (int a = 0; a < n; a++) {
-		signVec[0] = allSignVec[a];
+		sigVec[0] = allSigVec[a];
 		idVec[0] = allIdVec[a];
 		for (int b = a + 1; b < n; b++) {
-			signVec[1] = allSignVec[b];
+			sigVec[1] = allSigVec[b];
 			idVec[1] = allIdVec[b];
-			bls::Sign s;
-			s.recover(signVec, idVec);
-			CYBOZU_TEST_ASSERT(s != s0);
+			bls::Signature sig;
+			sig.recover(sigVec, idVec);
+			CYBOZU_TEST_ASSERT(sig != sig0);
 		}
 	}
 	// share and recover publicKey
@@ -272,16 +272,16 @@ void popTest()
 	sec0.init();
 	bls::PublicKey pub0;
 	sec0.getPublicKey(pub0);
-	bls::Sign s0;
-	sec0.sign(s0, m);
-	CYBOZU_TEST_ASSERT(s0.verify(pub0, m));
+	bls::Signature sig0;
+	sec0.sign(sig0, m);
+	CYBOZU_TEST_ASSERT(sig0.verify(pub0, m));
 
 	bls::SecretKeyVec msk;
 	sec0.getMasterSecretKey(msk, k);
 
 	bls::PublicKeyVec mpk;
 	bls::getMasterPublicKey(mpk, msk);
-	bls::SignVec  popVec;
+	bls::SignatureVec  popVec;
 	bls::getPopVec(popVec, msk);
 
 	for (size_t i = 0; i < popVec.size(); i++) {
@@ -293,7 +293,7 @@ void popTest()
 	};
 	bls::SecretKeyVec secVec(n);
 	bls::PublicKeyVec pubVec(n);
-	bls::SignVec sVec(n);
+	bls::SignatureVec sVec(n);
 	for (size_t i = 0; i < n; i++) {
 		int id = idTbl[i];
 		secVec[i].set(msk, id);
@@ -302,7 +302,7 @@ void popTest()
 		pub.set(mpk, id);
 		CYBOZU_TEST_EQUAL(pubVec[i], pub);
 
-		bls::Sign pop;
+		bls::Signature pop;
 		secVec[i].getPop(pop);
 		CYBOZU_TEST_ASSERT(pop.verify(pubVec[i]));
 
@@ -318,12 +318,12 @@ void popTest()
 	bls::SecretKey sec;
 	sec.recover(secVec, idVec);
 	CYBOZU_TEST_EQUAL(sec, sec0);
-	bls::Sign s;
-	s.recover(sVec, idVec);
-	CYBOZU_TEST_EQUAL(s, s0);
-	bls::Sign s2;
-	s2.recover(sVec.data(), idVec.data(), sVec.size());
-	CYBOZU_TEST_EQUAL(s, s2);
+	bls::Signature sig;
+	sig.recover(sVec, idVec);
+	CYBOZU_TEST_EQUAL(sig, sig0);
+	bls::Signature sig2;
+	sig2.recover(sVec.data(), idVec.data(), sVec.size());
+	CYBOZU_TEST_EQUAL(sig, sig2);
 }
 
 void addTest()
@@ -338,10 +338,10 @@ void addTest()
 	sec2.getPublicKey(pub2);
 
 	const std::string m = "doremi";
-	bls::Sign s1, s2;
-	sec1.sign(s1, m);
-	sec2.sign(s2, m);
-	CYBOZU_TEST_ASSERT((s1 + s2).verify(pub1 + pub2, m));
+	bls::Signature sig1, sig2;
+	sec1.sign(sig1, m);
+	sec2.sign(sig2, m);
+	CYBOZU_TEST_ASSERT((sig1 + sig2).verify(pub1 + pub2, m));
 }
 
 void dataTest()
@@ -367,12 +367,12 @@ void dataTest()
 		CYBOZU_TEST_EQUAL(pub, pub2);
 	}
 	std::string m = "abc";
-	bls::Sign sign;
+	bls::Signature sign;
 	sec.sign(sign, m);
 	sign.getStr(str, bls::IoFixedByteSeq);
 	{
 		CYBOZU_TEST_EQUAL(str.size(), size);
-		bls::Sign sign2;
+		bls::Signature sign2;
 		sign2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sign, sign2);
 	}

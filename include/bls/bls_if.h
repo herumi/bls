@@ -150,7 +150,7 @@ BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t
 BLS_DLL_API size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig);
 BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 // return 0 if success
-BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *signVec, const blsId *idVec, size_t n);
+BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n);
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, size_t size);
 
 BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);

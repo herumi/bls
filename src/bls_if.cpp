@@ -170,7 +170,7 @@ void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 }
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const char *m, size_t size)
 {
-	((const bls::SecretKey*)sec)->sign(*(bls::Sign*)sig, std::string(m, size));
+	((const bls::SecretKey*)sec)->sign(*(bls::Signature*)sig, std::string(m, size));
 }
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id)
 	try
@@ -194,7 +194,7 @@ int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const bls
 
 void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 {
-	((const bls::SecretKey*)sec)->getPop(*(bls::Sign*)sig);
+	((const bls::SecretKey*)sec)->getPop(*(bls::Signature*)sig);
 }
 
 int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs)
@@ -259,11 +259,11 @@ int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const bls
 
 int blsSignatureIsSame(const blsSignature *lhs, const blsSignature *rhs)
 {
-	return *(const bls::Sign*)lhs == *(const bls::Sign*)rhs ? 1 : 0;
+	return *(const bls::Signature*)lhs == *(const bls::Signature*)rhs ? 1 : 0;
 }
 int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize)
 {
-	return setStrT<bls::Sign, blsSignature>(sig, (const char *)buf, bufSize, bls::IoFixedByteSeq);
+	return setStrT<bls::Signature, blsSignature>(sig, (const char *)buf, bufSize, bls::IoFixedByteSeq);
 }
 int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize)
 	try
@@ -292,16 +292,16 @@ size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *s
 }
 size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig)
 {
-	return getStrT<bls::Sign, blsSignature>(sig, (char *)buf, maxBufSize, bls::IoFixedByteSeq);
+	return getStrT<bls::Signature, blsSignature>(sig, (char *)buf, maxBufSize, bls::IoFixedByteSeq);
 }
 void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
 {
-	((bls::Sign*)sig)->add(*(const bls::Sign*)rhs);
+	((bls::Signature*)sig)->add(*(const bls::Signature*)rhs);
 }
-int blsSignatureRecover(blsSignature *sig, const blsSignature *signVec, const blsId *idVec, size_t n)
+int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n)
 	try
 {
-	((bls::Sign*)sig)->recover((const bls::Sign*)signVec, (const bls::Id*)idVec, n);
+	((bls::Signature*)sig)->recover((const bls::Signature*)sigVec, (const bls::Id*)idVec, n);
 	return 0;
 } catch (std::exception& e) {
 	fprintf(stderr, "err blsSignatureRecover %s\n", e.what());
@@ -310,11 +310,11 @@ int blsSignatureRecover(blsSignature *sig, const blsSignature *signVec, const bl
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, size_t size)
 {
-	return ((const bls::Sign*)sig)->verify(*(const bls::PublicKey*)pub, std::string(m, size));
+	return ((const bls::Signature*)sig)->verify(*(const bls::PublicKey*)pub, std::string(m, size));
 }
 
 int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 {
-	return ((const bls::Sign*)sig)->verify(*(const bls::PublicKey*)pub);
+	return ((const bls::Signature*)sig)->verify(*(const bls::PublicKey*)pub);
 }
 

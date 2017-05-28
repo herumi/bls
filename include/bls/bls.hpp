@@ -39,7 +39,7 @@ namespace impl {
 
 struct SecretKey;
 struct PublicKey;
-struct Sign;
+struct Signature;
 struct Id;
 
 } // bls::impl
@@ -69,7 +69,7 @@ void getFieldOrder(std::string& str);
 
 class SecretKey;
 class PublicKey;
-class Sign;
+class Signature;
 class Id;
 
 /*
@@ -81,7 +81,7 @@ const size_t keySize = BLS_MAX_OP_UNIT_SIZE;
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
-typedef std::vector<Sign> SignVec;
+typedef std::vector<Signature> SignatureVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
@@ -138,12 +138,12 @@ public:
 	void setLittleEndian(const void *buf, size_t bufSize);
 	void getPublicKey(PublicKey& pub) const;
 	// constant time sign
-	void sign(Sign& sign, const std::string& m) const;
+	void sign(Signature& sig, const std::string& m) const;
 	/*
 		make Pop(Proof of Possesion)
 		pop = prv.sign(pub)
 	*/
-	void getPop(Sign& pop) const;
+	void getPop(Signature& pop) const;
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
@@ -178,7 +178,7 @@ public:
 class PublicKey {
 	uint64_t self_[BLS_MAX_OP_UNIT_SIZE * 2 * 3];
 	friend class SecretKey;
-	friend class Sign;
+	friend class Signature;
 	template<class T, class G> friend struct WrapArray;
 	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(self_); }
 	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(self_); }
@@ -212,20 +212,20 @@ public:
 };
 
 /*
-	s H(m) ; sign
+	s H(m) ; signature
 */
-class Sign {
+class Signature {
 	uint64_t self_[BLS_MAX_OP_UNIT_SIZE * 3];
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
-	impl::Sign& getInner() { return *reinterpret_cast<impl::Sign*>(self_); }
-	const impl::Sign& getInner() const { return *reinterpret_cast<const impl::Sign*>(self_); }
+	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(self_); }
+	const impl::Signature& getInner() const { return *reinterpret_cast<const impl::Signature*>(self_); }
 public:
-	Sign() : self_() {}
-	bool operator==(const Sign& rhs) const;
-	bool operator!=(const Sign& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const Sign& s);
-	friend std::istream& operator>>(std::istream& is, Sign& s);
+	Signature() : self_() {}
+	bool operator==(const Signature& rhs) const;
+	bool operator!=(const Signature& rhs) const { return !(*this == rhs); }
+	friend std::ostream& operator<<(std::ostream& os, const Signature& s);
+	friend std::istream& operator>>(std::istream& is, Signature& s);
 	void getStr(std::string& str, int ioMode = 0) const;
 	void setStr(const std::string& str, int ioMode = 0);
 	bool verify(const PublicKey& pub, const std::string& m) const;
@@ -234,16 +234,16 @@ public:
 	*/
 	bool verify(const PublicKey& pub) const;
 	/*
-		recover sign from k signVec
+		recover sig from k sigVec
 	*/
-	void recover(const SignVec& signVec, const IdVec& idVec);
+	void recover(const SignatureVec& sigVec, const IdVec& idVec);
 	/*
 		add signature
 	*/
-	void add(const Sign& rhs);
+	void add(const Signature& rhs);
 
 	// the following methods are for C api
-	void recover(const Sign* signVec, const Id *idVec, size_t n);
+	void recover(const Signature* sigVec, const Id *idVec, size_t n);
 };
 
 /*
@@ -261,7 +261,7 @@ inline void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk)
 /*
 	make pop from msk and mpk
 */
-inline void getPopVec(SignVec& popVec, const SecretKeyVec& msk)
+inline void getPopVec(SignatureVec& popVec, const SecretKeyVec& msk)
 {
 	const size_t n = msk.size();
 	popVec.resize(n);
@@ -270,7 +270,7 @@ inline void getPopVec(SignVec& popVec, const SecretKeyVec& msk)
 	}
 }
 
-inline Sign operator+(const Sign& a, const Sign& b) { Sign r(a); r.add(b); return r; }
+inline Signature operator+(const Signature& a, const Signature& b) { Signature r(a); r.add(b); return r; }
 inline PublicKey operator+(const PublicKey& a, const PublicKey& b) { PublicKey r(a); r.add(b); return r; }
 inline SecretKey operator+(const SecretKey& a, const SecretKey& b) { SecretKey r(a); r.add(b); return r; }
 

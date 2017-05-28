@@ -26,11 +26,11 @@ void bls_ifDataTest()
 	const size_t fpSize = blsGetOpUnitSize() * sizeof(uint64_t);
 	blsSecretKey sec1, sec2;
 	blsSecretKeySetByCSPRNG(&sec1);
-	char buf[BLS_MAX_OP_UNIT_SIZE * sizeof(uint64_t) * 2];
+	char buf[1024];
 	size_t n;
 	int ret;
 	n = blsSecretKeyGetHexStr(buf, sizeof(buf), &sec1);
-	CYBOZU_TEST_EQUAL(n, fpSize * 2);
+	CYBOZU_TEST_ASSERT(0 < n && n <= fpSize * 2);
 	ret = blsSecretKeySetHexStr(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsSame(&sec1, &sec2));
