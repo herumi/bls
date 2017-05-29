@@ -21,14 +21,14 @@ func testPre(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !id.IsSame(&id2) {
+		if !id.IsEqual(&id2) {
 			t.Errorf("not same id\n%s\n%s", id.GetHexString(), id2.GetHexString())
 		}
 		err = id2.SetDecString(id.GetDecString())
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !id.IsSame(&id2) {
+		if !id.IsEqual(&id2) {
 			t.Errorf("not same id\n%s\n%s", id.GetDecString(), id2.GetDecString())
 		}
 	}
@@ -87,7 +87,7 @@ func testStringConversion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !sec.IsSame(&sec2) {
+	if !sec.IsEqual(&sec2) {
 		t.Error("not equal")
 	}
 }
@@ -122,7 +122,7 @@ func testRecoverSecretKey(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !sec.IsSame(&sec2) {
+	if !sec.IsEqual(&sec2) {
 		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
 	}
 }
@@ -154,7 +154,7 @@ func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]I
 		}
 		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
 
-		if !pubVec[i].IsSame(secVec[i].GetPublicKey()) {
+		if !pubVec[i].IsEqual(secVec[i].GetPublicKey()) {
 			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
 		}
 
@@ -187,7 +187,7 @@ func testSign(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !sec0.IsSame(&sec1) {
+	if !sec0.IsEqual(&sec1) {
 		t.Error("Mismatch in recovered seckey.")
 	}
 	var pub1 PublicKey
@@ -195,7 +195,7 @@ func testSign(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !pub0.IsSame(&pub1) {
+	if !pub0.IsEqual(&pub1) {
 		t.Error("Mismatch in recovered pubkey.")
 	}
 	var s1 Sign
@@ -203,7 +203,7 @@ func testSign(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !s0.IsSame(&s1) {
+	if !s0.IsEqual(&s1) {
 		t.Error("Mismatch in recovered signature.")
 	}
 }
@@ -254,7 +254,7 @@ func testData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !sec1.IsSame(&sec2) {
+	if !sec1.IsEqual(&sec2) {
 		t.Error("SecretKey not same")
 	}
 	pub1 := sec1.GetPublicKey()
@@ -264,7 +264,7 @@ func testData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !pub1.IsSame(&pub2) {
+	if !pub1.IsEqual(&pub2) {
 		t.Error("PublicKey not same")
 	}
 	m := "doremi"
@@ -275,7 +275,7 @@ func testData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !sign1.IsSame(&sign2) {
+	if !sign1.IsEqual(&sign2) {
 		t.Error("Sign not same")
 	}
 }

@@ -33,21 +33,21 @@ void bls_ifDataTest()
 	CYBOZU_TEST_ASSERT(0 < n && n <= fpSize * 2);
 	ret = blsSecretKeySetHexStr(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
-	CYBOZU_TEST_ASSERT(blsSecretKeyIsSame(&sec1, &sec2));
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
 	blsPublicKey pub1, pub2;
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, fpSize * 2);
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
-	CYBOZU_TEST_ASSERT(blsPublicKeyIsSame(&pub1, &pub2));
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 	blsSignature sig1, sig2;
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, fpSize);
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
-	CYBOZU_TEST_ASSERT(blsSignatureIsSame(&sig1, &sig2));
+	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 }
 
 void bls_ifOrderTest(const char *curveOrder, const char *fieldOrder)

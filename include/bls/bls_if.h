@@ -67,8 +67,9 @@ BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
 // return 1 if same else 0
-BLS_DLL_API int blsIdIsSame(const blsId *lhs, const blsId *rhs);
+BLS_DLL_API int blsIdIsEqual(const blsId *lhs, const blsId *rhs);
 
+// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
 // return 0 if success
 BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize);
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);
@@ -86,8 +87,9 @@ BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id)
 BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
 
 // return 1 if same else 0
-BLS_DLL_API int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs);
+BLS_DLL_API int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs);
 
+// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
 // return 0 if success
 BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, size_t bufSize);
 BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, size_t bufSize);
@@ -122,7 +124,7 @@ BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVe
 BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
 
 // return 1 if same else 0
-BLS_DLL_API int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs);
+BLS_DLL_API int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs);
 // return 0 if success
 BLS_DLL_API int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize);
 /*
@@ -138,7 +140,7 @@ BLS_DLL_API int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, si
 BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
 
 // return 1 if same else 0
-BLS_DLL_API int blsSignatureIsSame(const blsSignature *lhs, const blsSignature *rhs);
+BLS_DLL_API int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs);
 
 // return 0 if success
 BLS_DLL_API int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize);

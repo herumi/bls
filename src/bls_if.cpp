@@ -81,7 +81,7 @@ int blsGetFieldOrder(char *buf, size_t maxBufSize)
 	return 0;
 }
 
-int blsIdIsSame(const blsId *lhs, const blsId *rhs)
+int blsIdIsEqual(const blsId *lhs, const blsId *rhs)
 {
 	return *(const bls::Id*)lhs == *(const bls::Id*)rhs ? 1 : 0;
 }
@@ -110,7 +110,7 @@ size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id)
 {
 	return getStrT<bls::Id, blsId>(id, buf, maxBufSize, 16);
 }
-int blsSecretKeyIsSame(const blsSecretKey *lhs, const blsSecretKey *rhs)
+int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs)
 {
 	return *(const bls::SecretKey*)lhs == *(const bls::SecretKey*)rhs ? 1 : 0;
 }
@@ -197,7 +197,7 @@ void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 	((const bls::SecretKey*)sec)->getPop(*(bls::Signature*)sig);
 }
 
-int blsPublicKeyIsSame(const blsPublicKey *lhs, const blsPublicKey *rhs)
+int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs)
 {
 	return *(const bls::PublicKey*)lhs == *(const bls::PublicKey*)rhs ? 1 : 0;
 }
@@ -257,7 +257,7 @@ int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const bls
 	return -1;
 }
 
-int blsSignatureIsSame(const blsSignature *lhs, const blsSignature *rhs)
+int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs)
 {
 	return *(const bls::Signature*)lhs == *(const bls::Signature*)rhs ? 1 : 0;
 }

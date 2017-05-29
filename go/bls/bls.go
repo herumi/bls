@@ -139,9 +139,9 @@ func (id *ID) SetDecString(s string) error {
 	return nil
 }
 
-// IsSame --
-func (id *ID) IsSame(rhs *ID) bool {
-	return C.blsIdIsSame(id.getPointer(), rhs.getPointer()) == 1
+// IsEqual --
+func (id *ID) IsEqual(rhs *ID) bool {
+	return C.blsIdIsEqual(id.getPointer(), rhs.getPointer()) == 1
 }
 
 // SecretKey --
@@ -220,9 +220,9 @@ func (sec *SecretKey) SetDecString(s string) error {
 	return nil
 }
 
-// IsSame --
-func (sec *SecretKey) IsSame(rhs *SecretKey) bool {
-	return C.blsSecretKeyIsSame(sec.getPointer(), rhs.getPointer()) == 1
+// IsEqual --
+func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
+	return C.blsSecretKeyIsEqual(sec.getPointer(), rhs.getPointer()) == 1
 }
 
 // Init --
@@ -334,9 +334,9 @@ func (pub *PublicKey) SetHexString(s string) error {
 	return nil
 }
 
-// IsSame --
-func (pub *PublicKey) IsSame(rhs *PublicKey) bool {
-	return C.blsPublicKeyIsSame(pub.getPointer(), rhs.getPointer()) == 1
+// IsEqual --
+func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
+	return C.blsPublicKeyIsEqual(pub.getPointer(), rhs.getPointer()) == 1
 }
 
 // Add --
@@ -416,9 +416,9 @@ func (sign *Sign) SetHexString(s string) error {
 	return nil
 }
 
-// IsSame --
-func (sign *Sign) IsSame(rhs *Sign) bool {
-	return C.blsSignatureIsSame(sign.getPointer(), rhs.getPointer()) == 1
+// IsEqual --
+func (sign *Sign) IsEqual(rhs *Sign) bool {
+	return C.blsSignatureIsEqual(sign.getPointer(), rhs.getPointer()) == 1
 }
 
 // GetPublicKey --
