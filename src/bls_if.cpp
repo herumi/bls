@@ -140,7 +140,7 @@ size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *s
 	return getStrT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize, 16);
 }
 
-int blsSecretKeySetByHash(blsSecretKey *sec, const void *buf, size_t bufSize)
+int blsSecretKeySetToHashOf(blsSecretKey *sec, const void *buf, size_t bufSize)
 	try
 {
 	std::string s = mcl::fp::hash(384, (const char *)buf, bufSize);
