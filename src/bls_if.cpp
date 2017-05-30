@@ -140,13 +140,13 @@ size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *s
 	return getStrT<bls::SecretKey, blsSecretKey>(sec, buf, maxBufSize, 16);
 }
 
-int blsSecretKeySetToHashOf(blsSecretKey *sec, const void *buf, size_t bufSize)
+int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize)
 	try
 {
 	((bls::SecretKey*)sec)->setHashOf(buf, bufSize);
 	return 0;
 } catch (std::exception& e) {
-	fprintf(stderr, "err blsSecretKeySetByCSPRNG %s\n", e.what());
+	fprintf(stderr, "err blsHashToSecretKey %s\n", e.what());
 	return -1;
 }
 

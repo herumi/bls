@@ -101,7 +101,7 @@ BLS_DLL_API size_t blsSecretKeyGetLittleEndian(void *buf, size_t maxBufSize, con
 /*
 	hash buf and set
 */
-BLS_DLL_API int blsSecretKeySetToHashOf(blsSecretKey *sec, const void *buf, size_t bufSize);
+BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize);
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom
 	return 0 if success else -1
