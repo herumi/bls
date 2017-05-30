@@ -222,9 +222,9 @@ func testAdd(t *testing.T) {
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
-	t.Log("sign1    :", sign1)
+	t.Log("sign1    :", sign1.GetHexString())
 	sign1.Add(sign2)
-	t.Log("sign1 add:", sign1)
+	t.Log("sign1 add:", sign1.GetHexString())
 	pub1.Add(pub2)
 	if !sign1.Verify(pub1, m) {
 		t.Fail()
