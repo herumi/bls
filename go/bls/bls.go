@@ -1,7 +1,8 @@
 package bls
 
 /*
-#cgo pkg-config: bls
+#cgo CFLAGS:-I../../include
+#cgo LDFLAGS:-lbls_if -lbls -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto -L../../lib -L../../../mcl/lib
 #cgo bn256 CFLAGS:-UBLS_MAX_OP_UNIT_SIZE -DBLS_MAX_OP_UNIT_SIZE=4
 #cgo bn384 CFLAGS:-UBLS_MAX_OP_UNIT_SIZE -DBLS_MAX_OP_UNIT_SIZE=6
 #include <bls/bls_if.h>

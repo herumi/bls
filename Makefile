@@ -66,7 +66,8 @@ test: $(TEST_EXE)
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
 run_go: go/bls/bls.go go/bls/bls_test.go $(BLS_LIB) $(BLS_IF_LIB)
-	cd go/bls && env PKG_CONFIG_PATH=./ go test -tags $(GO_TAG) .
+#	cd go/bls && env PKG_CONFIG_PATH=./ go test -tags $(GO_TAG) .
+	cd go/bls && go test -tags $(GO_TAG) .
 #	cd go/bls && go test -tags $(GO_TAG) -v .
 
 clean:
