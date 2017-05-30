@@ -136,6 +136,8 @@ public:
 	void set(const uint64_t *p);
 	// bufSize is truncted/zero extended to keySize
 	void setLittleEndian(const void *buf, size_t bufSize);
+	// set hash of buf
+	void setHashOf(const void *buf, size_t bufSize);
 	void getPublicKey(PublicKey& pub) const;
 	// constant time sign
 	void sign(Signature& sig, const std::string& m) const;

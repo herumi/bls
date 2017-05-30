@@ -143,8 +143,8 @@ size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *s
 int blsSecretKeySetToHashOf(blsSecretKey *sec, const void *buf, size_t bufSize)
 	try
 {
-	std::string s = mcl::fp::hash(384, (const char *)buf, bufSize);
-	return blsSecretKeySetLittleEndian(sec, s.c_str(), s.size());
+	((bls::SecretKey*)sec)->setHashOf(buf, bufSize);
+	return 0;
 } catch (std::exception& e) {
 	fprintf(stderr, "err blsSecretKeySetByCSPRNG %s\n", e.what());
 	return -1;

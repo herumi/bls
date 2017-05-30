@@ -419,6 +419,10 @@ void SecretKey::setLittleEndian(const void *buf, size_t bufSize)
 {
 	getInner().s.setArrayMask((const char *)buf, bufSize);
 }
+void SecretKey::setHashOf(const void *buf, size_t bufSize)
+{
+	getInner().s.setHashOf(buf, bufSize);
+}
 
 void SecretKey::getPublicKey(PublicKey& pub) const
 {
