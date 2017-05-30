@@ -40,7 +40,7 @@ static const std::vector<Fp6>& getQcoeff() { return *g_pQcoeff; }
 static void HashAndMapToG1(G1& P, const std::string& m)
 {
 	Fp t;
-	t.setMsg(m);
+	t.setHashOf(m);
 	BN::mapToG1(P, t);
 }
 
