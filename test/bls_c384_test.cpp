@@ -1,8 +1,8 @@
 #include <cybozu/test.hpp>
-#include <bls/bls_if.h>
+#include <bls/bls.h>
 #include <string.h>
 
-void bls_if_use_stackTest()
+void bls_use_stackTest()
 {
 	blsSecretKey sec;
 	blsPublicKey pub;
@@ -19,7 +19,7 @@ void bls_if_use_stackTest()
 	CYBOZU_TEST_ASSERT(blsVerify(&sig, &pub, msg, msgSize));
 }
 
-void bls_ifDataTest()
+void blsDataTest()
 {
 	const char *msg = "test test";
 	const size_t msgSize = strlen(msg);
@@ -50,7 +50,7 @@ void bls_ifDataTest()
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 }
 
-void bls_ifOrderTest(const char *curveOrder, const char *fieldOrder)
+void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 {
 	char buf[1024];
 	size_t len;
@@ -66,7 +66,7 @@ CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
 		blsCurveFp254BNb,
-#if BLS_MAX_OP_UNIT_SIZE == 6
+#if BLS_FP_UNIT_SIZE == 6
 		blsCurveFp382_1,
 		blsCurveFp382_2
 #endif
@@ -83,9 +83,9 @@ CYBOZU_TEST_AUTO(all)
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
-		blsInit(tbl[i], BLS_MAX_OP_UNIT_SIZE);
-		bls_if_use_stackTest();
-		bls_ifDataTest();
-		bls_ifOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);
+		blsInit(tbl[i], BLS_FP_UNIT_SIZE);
+		bls_use_stackTest();
+		blsDataTest();
+		blsOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);
 	}
 }

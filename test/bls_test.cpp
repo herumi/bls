@@ -403,7 +403,7 @@ CYBOZU_TEST_AUTO(all)
 		const char *name;
 	} tbl[] = {
 		{ bls::CurveFp254BNb, "Fp254" },
-#if BLS_MAX_OP_UNIT_SIZE == 6
+#if BLS_FP_UNIT_SIZE == 6
 		{ bls::CurveFp382_1, "Fp382_1" },
 		{ bls::CurveFp382_2, "Fp382_2" },
 #endif
