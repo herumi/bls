@@ -6,12 +6,7 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
-#ifndef BLS_FP_UNIT_SIZE
-	#error "define BLS_FP_UNIT_SIZE 4(or 6)"
-#endif
-
-#include <stdint.h> // for uint64_t, uint8_t
-#include <stdlib.h> // for size_t
+#include <mcl/bn.h>
 
 #ifdef _MSC_VER
 #ifdef BLS_DLL_EXPORT
@@ -19,7 +14,7 @@
 #else
 #define BLS_DLL_API __declspec(dllimport)
 #ifndef BLS_NO_AUTOLINK
-	#if BLS_FP_UNIT_SIZE == 4
+	#if MBN_FP_UNIT_SIZE == 4
 		#pragma comment(lib, "bls256.lib")
 	#endif
 #endif
@@ -39,19 +34,19 @@ enum {
 };
 
 typedef struct {
-	uint64_t buf[BLS_FP_UNIT_SIZE];
+	uint64_t buf[MBN_FP_UNIT_SIZE];
 } blsId;
 
 typedef struct {
-	uint64_t buf[BLS_FP_UNIT_SIZE];
+	uint64_t buf[MBN_FP_UNIT_SIZE];
 } blsSecretKey;
 
 typedef struct {
-	uint64_t buf[BLS_FP_UNIT_SIZE * 2 * 3];
+	uint64_t buf[MBN_FP_UNIT_SIZE * 2 * 3];
 } blsPublicKey;
 
 typedef struct {
-	uint64_t buf[BLS_FP_UNIT_SIZE * 3];
+	uint64_t buf[MBN_FP_UNIT_SIZE * 3];
 } blsSignature;
 
 /*

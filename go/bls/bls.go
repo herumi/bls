@@ -1,10 +1,8 @@
 package bls
 
 /*
-#cgo CFLAGS:-I../../include
-#cgo LDFLAGS:-lbls384 -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto -L../../lib -L../../../mcl/lib
-#cgo bn256 CFLAGS:-UBLS_FP_UNIT_SIZE -DBLS_FP_UNIT_SIZE=4
-#cgo bn384 CFLAGS:-UBLS_FP_UNIT_SIZE -DBLS_FP_UNIT_SIZE=6
+#cgo CFLAGS:-DMBN_FP_UNIT_SIZE=6
+#cgo LDFLAGS:-lbls384 -lmclbn384 -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto
 #include <bls/bls.h>
 */
 import "C"
@@ -24,7 +22,7 @@ const CurveFp382_2 = 2
 // call this function before calling all the other operations
 // this function is not thread safe
 func Init(curve int) error {
-	err := C.blsInit(C.int(curve), C.BLS_FP_UNIT_SIZE)
+	err := C.blsInit(C.int(curve), C.MBN_FP_UNIT_SIZE)
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
@@ -33,7 +31,7 @@ func Init(curve int) error {
 
 // GetMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
-	return int(C.BLS_FP_UNIT_SIZE)
+	return int(C.MBN_FP_UNIT_SIZE)
 }
 
 // GetOpUnitSize --
@@ -65,7 +63,7 @@ func GetFieldOrder() string {
 
 // ID --
 type ID struct {
-	v [C.BLS_FP_UNIT_SIZE]C.uint64_t
+	v [C.MBN_FP_UNIT_SIZE]C.uint64_t
 }
 
 // getPointer --
@@ -146,7 +144,7 @@ func (id *ID) IsEqual(rhs *ID) bool {
 
 // SecretKey --
 type SecretKey struct {
-	v [C.BLS_FP_UNIT_SIZE]C.uint64_t
+	v [C.MBN_FP_UNIT_SIZE]C.uint64_t
 }
 
 // getPointer --
@@ -282,7 +280,7 @@ func (sec *SecretKey) GetPop() (sign *Sign) {
 
 // PublicKey --
 type PublicKey struct {
-	v [C.BLS_FP_UNIT_SIZE * 2 * 3]C.uint64_t
+	v [C.MBN_FP_UNIT_SIZE * 2 * 3]C.uint64_t
 }
 
 // getPointer --
@@ -364,7 +362,7 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 
 // Sign  --
 type Sign struct {
-	v [C.BLS_FP_UNIT_SIZE * 3]C.uint64_t
+	v [C.MBN_FP_UNIT_SIZE * 3]C.uint64_t
 }
 
 // getPointer --

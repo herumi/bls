@@ -66,7 +66,7 @@ CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
 		blsCurveFp254BNb,
-#if BLS_FP_UNIT_SIZE == 6
+#if MBN_FP_UNIT_SIZE == 6
 		blsCurveFp382_1,
 		blsCurveFp382_2
 #endif
@@ -83,7 +83,7 @@ CYBOZU_TEST_AUTO(all)
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
-		blsInit(tbl[i], BLS_FP_UNIT_SIZE);
+		blsInit(tbl[i], MBN_FP_UNIT_SIZE);
 		bls_use_stackTest();
 		blsDataTest();
 		blsOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);

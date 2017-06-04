@@ -6,8 +6,8 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
-#ifndef BLS_FP_UNIT_SIZE
-	#error "define BLS_FP_UNIT_SIZE 4(or 6)"
+#ifndef MBN_FP_UNIT_SIZE
+	#error "define MBN_FP_UNIT_SIZE 4(or 6)"
 #endif
 #include <vector>
 #include <string>
@@ -62,7 +62,7 @@ struct Id;
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
 	@note init() is not thread safe
 */
-void init(int curve = CurveFp254BNb, int maxUnitSize = BLS_FP_UNIT_SIZE);
+void init(int curve = CurveFp254BNb, int maxUnitSize = MBN_FP_UNIT_SIZE);
 size_t getOpUnitSize();
 void getCurveOrder(std::string& str);
 void getFieldOrder(std::string& str);
@@ -77,7 +77,7 @@ class Id;
 	r = 0x2523648240000001ba344d8000000007ff9f800000000010a10000000000000d
 	sizeof(uint64_t) * keySize byte
 */
-const size_t keySize = BLS_FP_UNIT_SIZE;
+const size_t keySize = MBN_FP_UNIT_SIZE;
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
@@ -85,7 +85,7 @@ typedef std::vector<Signature> SignatureVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
-	uint64_t self_[BLS_FP_UNIT_SIZE];
+	uint64_t self_[MBN_FP_UNIT_SIZE];
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
@@ -113,7 +113,7 @@ public:
 	s ; secret key
 */
 class SecretKey {
-	uint64_t self_[BLS_FP_UNIT_SIZE];
+	uint64_t self_[MBN_FP_UNIT_SIZE];
 	template<class T, class G> friend struct WrapArray;
 	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(self_); }
 	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(self_); }
@@ -178,7 +178,7 @@ public:
 	sQ ; public key
 */
 class PublicKey {
-	uint64_t self_[BLS_FP_UNIT_SIZE * 2 * 3];
+	uint64_t self_[MBN_FP_UNIT_SIZE * 2 * 3];
 	friend class SecretKey;
 	friend class Signature;
 	template<class T, class G> friend struct WrapArray;
@@ -217,7 +217,7 @@ public:
 	s H(m) ; signature
 */
 class Signature {
-	uint64_t self_[BLS_FP_UNIT_SIZE * 3];
+	uint64_t self_[MBN_FP_UNIT_SIZE * 3];
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
 	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(self_); }
