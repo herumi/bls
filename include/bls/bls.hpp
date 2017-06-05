@@ -7,6 +7,7 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 #include <mcl/bn.h>
+#include <bls/bls.h>
 #include <vector>
 #include <string>
 #include <iosfwd>
@@ -76,7 +77,7 @@ typedef std::vector<Signature> SignatureVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
-	mclBnFr self_;
+	blsId self_;
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
@@ -104,7 +105,7 @@ public:
 	s ; secret key
 */
 class SecretKey {
-	mclBnFr self_;
+	blsSecretKey self_;
 	template<class T, class G> friend struct WrapArray;
 	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(this); }
 	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(this); }
@@ -169,7 +170,7 @@ public:
 	sQ ; public key
 */
 class PublicKey {
-	mclBnG2 self_;
+	blsPublicKey self_;
 	friend class SecretKey;
 	friend class Signature;
 	template<class T, class G> friend struct WrapArray;
@@ -208,7 +209,7 @@ public:
 	s H(m) ; signature
 */
 class Signature {
-	mclBnG1 self_;
+	blsSignature self_;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
 	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(this); }
