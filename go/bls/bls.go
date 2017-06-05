@@ -17,7 +17,7 @@ func Init(curve int) error {
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
-	return mclInit(curve) // QQQ
+	return nil
 }
 
 // GetMaxOpUnitSize --

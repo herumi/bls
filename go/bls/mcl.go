@@ -17,17 +17,6 @@ const CurveFp382_1 = C.mclBn_CurveFp382_1
 // CurveFp382_2 -- 382 bit curve 2
 const CurveFp382_2 = C.mclBn_CurveFp382_2
 
-// Init --
-// call this function before calling all the other operations
-// this function is not thread safe
-func mclInit(curve int) error {
-	err := C.mclBn_init(C.int(curve), C.MCLBN_FP_UNIT_SIZE)
-	if err != 0 {
-		return fmt.Errorf("ERR mclBn_init curve=%d", curve)
-	}
-	return nil
-}
-
 ////////////////////////////////////////////////
 // Fr --
 type Fr struct {

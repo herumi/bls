@@ -21,8 +21,6 @@ using namespace mcl::bn384;
 
 typedef std::vector<Fr> FrVec;
 
-#define PUT(x) std::cout << #x << "=" << x << std::endl;
-
 static cybozu::RandomGenerator& getRG()
 {
 	static cybozu::RandomGenerator rg;
