@@ -53,78 +53,6 @@ int blsGetFieldOrder(char *buf, size_t maxBufSize)
 } catch (std::exception&) {
 	return 0;
 }
-
-int blsIdIsEqual(const blsId *lhs, const blsId *rhs)
-{
-	return mclBnFr_isEqual(&lhs->v, &rhs->v);
-}
-int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize)
-{
-	return mclBnFr_setLittleEndian(&id->v, buf, bufSize);
-}
-int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize)
-{
-	return mclBnFr_setStr(&id->v, buf, bufSize, 10);
-}
-int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize)
-{
-	return mclBnFr_setStr(&id->v, buf, bufSize, 16);
-}
-size_t blsIdGetLittleEndian(void *buf, size_t maxBufSize, const blsId *id)
-{
-	return mclBnFr_serialize(buf, maxBufSize, &id->v);
-}
-size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id)
-{
-	return mclBnFr_getStr(buf, maxBufSize, &id->v, 10);
-}
-size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id)
-{
-	return mclBnFr_getStr(buf, maxBufSize, &id->v, 16);
-}
-int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs)
-{
-	return mclBnFr_isEqual(&lhs->v, &rhs->v);
-}
-int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, size_t bufSize)
-{
-	return mclBnFr_setLittleEndian(&sec->v, buf, bufSize);
-}
-int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, size_t bufSize)
-{
-	return mclBnFr_setStr(&sec->v, buf, bufSize, 10);
-}
-int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, size_t bufSize)
-{
-	return mclBnFr_setStr(&sec->v, buf, bufSize, 16);
-}
-size_t blsSecretKeyGetLittleEndian(void *buf, size_t maxBufSize, const blsSecretKey *sec)
-{
-	return mclBnFr_serialize(buf, maxBufSize, &sec->v);
-}
-size_t blsSecretKeyGetDecStr(char *buf, size_t maxBufSize, const blsSecretKey *sec)
-{
-	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 10);
-}
-size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *sec)
-{
-	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 16);
-}
-
-int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize)
-{
-	return mclBnFr_setHashOf(&sec->v, buf, bufSize);
-}
-
-int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
-{
-	return mclBnFr_setByCSPRNG(&sec->v);
-}
-void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs)
-{
-	((bls::SecretKey*)sec)->add(*(const bls::SecretKey*)rhs);
-}
-
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
 	((const bls::SecretKey*)sec)->getPublicKey(*(bls::PublicKey*)pub);
@@ -157,31 +85,6 @@ void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 {
 	((const bls::SecretKey*)sec)->getPop(*(bls::Signature*)sig);
 }
-
-int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs)
-{
-	return mclBnG2_isEqual(&lhs->v, &rhs->v);
-}
-int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize)
-{
-	return mclBnG2_deserialize(&pub->v, buf, bufSize);
-}
-size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub)
-{
-	return mclBnG2_serialize(buf, maxBufSize, &pub->v);
-}
-int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, size_t bufSize)
-{
-	return mclBnG2_setStr(&pub->v, buf, bufSize, 16);
-}
-size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const blsPublicKey *pub)
-{
-	return mclBnG2_getStr(buf, maxBufSize, &pub->v, 16);
-}
-void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
-{
-	((bls::PublicKey*)pub)->add(*(const bls::PublicKey*)rhs);
-}
 int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id)
 	try
 {
@@ -199,31 +102,6 @@ int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const bls
 } catch (std::exception& e) {
 	fprintf(stderr, "err blsPublicKeyRecover %s\n", e.what());
 	return -1;
-}
-
-int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs)
-{
-	return mclBnG1_isEqual(&lhs->v, &rhs->v);
-}
-int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize)
-{
-	return mclBnG1_deserialize(&sig->v, buf, bufSize);
-}
-int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize)
-{
-	return mclBnG1_setStr(&sig->v, buf, bufSize, 16);
-}
-size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig)
-{
-	return mclBnG1_getStr(buf, maxBufSize, &sig->v, 16);
-}
-size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig)
-{
-	return mclBnG1_serialize(buf, maxBufSize, &sig->v);
-}
-void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
-{
-	((bls::Signature*)sig)->add(*(const bls::Signature*)rhs);
 }
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n)
 	try
@@ -243,5 +121,139 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, s
 int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 {
 	return ((const bls::Signature*)sig)->verify(*(const bls::PublicKey*)pub);
+}
+
+size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id)
+{
+	return mclBnFr_serialize(buf, maxBufSize, &id->v);
+}
+size_t blsSecretKeySerialize(void *buf, size_t maxBufSize, const blsSecretKey *sec)
+{
+	return mclBnFr_serialize(buf, maxBufSize, &sec->v);
+}
+size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub)
+{
+	return mclBnG2_serialize(buf, maxBufSize, &pub->v);
+}
+size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig)
+{
+	return mclBnG1_serialize(buf, maxBufSize, &sig->v);
+}
+int blsIdDeserialize(blsId *id, const void *buf, size_t bufSize)
+{
+	return mclBnFr_deserialize(&id->v, buf, bufSize);
+}
+int blsSecretKeyDeserialize(blsSecretKey *sig, const void *buf, size_t bufSize)
+{
+	return mclBnFr_deserialize(&sig->v, buf, bufSize);
+}
+int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize)
+{
+	return mclBnG2_deserialize(&pub->v, buf, bufSize);
+}
+int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize)
+{
+	return mclBnG1_deserialize(&sig->v, buf, bufSize);
+}
+int blsIdIsEqual(const blsId *lhs, const blsId *rhs)
+{
+	return mclBnFr_isEqual(&lhs->v, &rhs->v);
+}
+int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs)
+{
+	return mclBnFr_isEqual(&lhs->v, &rhs->v);
+}
+int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs)
+{
+	return mclBnG2_isEqual(&lhs->v, &rhs->v);
+}
+int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs)
+{
+	return mclBnG1_isEqual(&lhs->v, &rhs->v);
+}
+void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs)
+{
+	mclBnFr_add(&sec->v, &sec->v, &rhs->v);
+}
+void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
+{
+	mclBnG1_add(&sig->v, &sig->v, &rhs->v);
+}
+void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
+{
+	mclBnG2_add(&pub->v, &pub->v, &rhs->v);
+}
+int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize)
+{
+	return mclBnFr_setLittleEndian(&id->v, buf, bufSize);
+}
+int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize)
+{
+	return mclBnFr_setStr(&id->v, buf, bufSize, 10);
+}
+int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize)
+{
+	return mclBnFr_setStr(&id->v, buf, bufSize, 16);
+}
+size_t blsIdGetLittleEndian(void *buf, size_t maxBufSize, const blsId *id)
+{
+	return mclBnFr_serialize(buf, maxBufSize, &id->v);
+}
+size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id)
+{
+	return mclBnFr_getStr(buf, maxBufSize, &id->v, 10);
+}
+size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id)
+{
+	return mclBnFr_getStr(buf, maxBufSize, &id->v, 16);
+}
+int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, size_t bufSize)
+{
+	return mclBnFr_setLittleEndian(&sec->v, buf, bufSize);
+}
+int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, size_t bufSize)
+{
+	return mclBnFr_setStr(&sec->v, buf, bufSize, 10);
+}
+int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, size_t bufSize)
+{
+	return mclBnFr_setStr(&sec->v, buf, bufSize, 16);
+}
+size_t blsSecretKeyGetLittleEndian(void *buf, size_t maxBufSize, const blsSecretKey *sec)
+{
+	return mclBnFr_serialize(buf, maxBufSize, &sec->v);
+}
+size_t blsSecretKeyGetDecStr(char *buf, size_t maxBufSize, const blsSecretKey *sec)
+{
+	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 10);
+}
+size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *sec)
+{
+	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 16);
+}
+int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize)
+{
+	return mclBnFr_setHashOf(&sec->v, buf, bufSize);
+}
+
+int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
+{
+	return mclBnFr_setByCSPRNG(&sec->v);
+}
+int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, size_t bufSize)
+{
+	return mclBnG2_setStr(&pub->v, buf, bufSize, 16);
+}
+size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const blsPublicKey *pub)
+{
+	return mclBnG2_getStr(buf, maxBufSize, &pub->v, 16);
+}
+int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize)
+{
+	return mclBnG1_setStr(&sig->v, buf, bufSize, 16);
+}
+size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig)
+{
+	return mclBnG1_getStr(buf, maxBufSize, &sig->v, 16);
 }
 
