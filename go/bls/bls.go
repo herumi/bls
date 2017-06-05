@@ -2,21 +2,12 @@ package bls
 
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
-#cgo LDFLAGS:-lbls384 -lmclbn384 -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto
+#cgo LDFLAGS:-lbls384 -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto
 #include <bls/bls.h>
 */
 import "C"
 import "fmt"
 import "unsafe"
-
-// CurveFp254BNb -- 254 bit curve
-const CurveFp254BNb = C.mclBn_CurveFp254BNb
-
-// CurveFp382_1 -- 382 bit curve 1
-const CurveFp382_1 = C.mclBn_CurveFp382_1
-
-// CurveFp382_2 -- 382 bit curve 2
-const CurveFp382_2 = C.mclBn_CurveFp382_2
 
 // Init --
 // call this function before calling all the other operations
@@ -26,7 +17,7 @@ func Init(curve int) error {
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
-	return nil
+	return mclInit(curve) // QQQ
 }
 
 // GetMaxOpUnitSize --

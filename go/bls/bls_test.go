@@ -6,6 +6,30 @@ import "strconv"
 var unitN = 0
 
 // Tests (for Benchmarks see below)
+func testPairing(t *testing.T) {
+	return
+//	err := Init(CurveFp254BNb)
+//	if err != nil {
+//		t.Error(err)
+//	}
+	var a, b, ab Fr
+	a.SetString("12345678901", 10)
+	b.SetString("abcdef0abcd", 16)
+	FrMul(&ab, &a, &b)
+	var P, aP G1
+	var Q, bQ G2
+	P.HashAndMapTo([]byte("this"))
+	G1Mul(&aP, &P, &a)
+	Q.HashAndMapTo([]byte("that"))
+	G2Mul(&bQ, &Q, &b)
+	var e1, e2 GT
+	Pairing(&e1, &P, &Q)
+	Pairing(&e2, &aP, &bQ)
+	GTPow(&e2, &e2, &ab)
+	if !e1.IsEqual(&e2) {
+		t.Errorf("not equal pairing\n%s\n%s", e1.GetString(16), e2.GetString(16))
+	}
+}
 
 func testPre(t *testing.T) {
 	t.Log("init")
@@ -312,6 +336,7 @@ func test(t *testing.T, c int) {
 	}
 	unitN = GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
+	testPairing(t)
 	testPre(t)
 	testRecoverSecretKey(t)
 	testAdd(t)

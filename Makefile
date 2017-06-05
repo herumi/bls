@@ -48,7 +48,7 @@ $(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 
 $(BLS384_SLIB): $(BLS384_LIB) $(BN384_LIB)
 #	$(PRE)$(CXX) -shared -o $@ -Wl,--whole-archive $(BLS384_LIB) $(BN384_LIB) $(MCL_LIB) -Wl,--no-whole-archive
-	$(PRE)$(CXX) -shared -o $@ -Wl,--whole-archive $(BLS384_LIB) $(BN384_LIB) -Wl,--no-whole-archive
+	$(PRE)$(CXX) -shared -o $@ -Wl,--whole-archive $(BLS384_LIB) -Wl,--no-whole-archive
 
 VPATH=test sample src
 
