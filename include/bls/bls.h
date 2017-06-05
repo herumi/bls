@@ -14,7 +14,7 @@
 #else
 #define BLS_DLL_API __declspec(dllimport)
 #ifndef BLS_NO_AUTOLINK
-	#if MBN_FP_UNIT_SIZE == 4
+	#if MCLBN_FP_UNIT_SIZE == 4
 		#pragma comment(lib, "bls256.lib")
 	#endif
 #endif
@@ -34,19 +34,19 @@ enum {
 };
 
 typedef struct {
-	uint64_t buf[MBN_FP_UNIT_SIZE];
+	mclBnFr v;
 } blsId;
 
 typedef struct {
-	uint64_t buf[MBN_FP_UNIT_SIZE];
+	mclBnFr v;
 } blsSecretKey;
 
 typedef struct {
-	uint64_t buf[MBN_FP_UNIT_SIZE * 2 * 3];
+	mclBnG2 v;
 } blsPublicKey;
 
 typedef struct {
-	uint64_t buf[MBN_FP_UNIT_SIZE * 3];
+	mclBnG1 v;
 } blsSignature;
 
 /*

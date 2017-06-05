@@ -6,16 +6,13 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
-#ifndef MBN_FP_UNIT_SIZE
-	#error "define MBN_FP_UNIT_SIZE 4(or 6)"
-#endif
+#include <mcl/bn.h>
 #include <vector>
 #include <string>
 #include <iosfwd>
 #include <stdint.h>
 
 #ifdef _MSC_VER
-	#pragma comment(lib, "mcl.lib")
 	#pragma comment(lib, "bls.lib")
 #endif
 
@@ -62,7 +59,7 @@ struct Id;
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
 	@note init() is not thread safe
 */
-void init(int curve = CurveFp254BNb, int maxUnitSize = MBN_FP_UNIT_SIZE);
+void init(int curve = CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE);
 size_t getOpUnitSize();
 void getCurveOrder(std::string& str);
 void getFieldOrder(std::string& str);
@@ -77,7 +74,7 @@ class Id;
 	r = 0x2523648240000001ba344d8000000007ff9f800000000010a10000000000000d
 	sizeof(uint64_t) * keySize byte
 */
-const size_t keySize = MBN_FP_UNIT_SIZE;
+const size_t keySize = MCLBN_FP_UNIT_SIZE;
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
@@ -85,12 +82,12 @@ typedef std::vector<Signature> SignatureVec;
 typedef std::vector<Id> IdVec;
 
 class Id {
-	uint64_t self_[MBN_FP_UNIT_SIZE];
+	mclBnFr self_;
 	friend class PublicKey;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
-	impl::Id& getInner() { return *reinterpret_cast<impl::Id*>(self_); }
-	const impl::Id& getInner() const { return *reinterpret_cast<const impl::Id*>(self_); }
+	impl::Id& getInner() { return *reinterpret_cast<impl::Id*>(this); }
+	const impl::Id& getInner() const { return *reinterpret_cast<const impl::Id*>(this); }
 public:
 	Id(unsigned int id = 0);
 	bool operator==(const Id& rhs) const;
@@ -113,10 +110,10 @@ public:
 	s ; secret key
 */
 class SecretKey {
-	uint64_t self_[MBN_FP_UNIT_SIZE];
+	mclBnFr self_;
 	template<class T, class G> friend struct WrapArray;
-	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(self_); }
-	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(self_); }
+	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(this); }
+	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(this); }
 public:
 	SecretKey() : self_() {}
 	bool operator==(const SecretKey& rhs) const;
@@ -178,12 +175,12 @@ public:
 	sQ ; public key
 */
 class PublicKey {
-	uint64_t self_[MBN_FP_UNIT_SIZE * 2 * 3];
+	mclBnG2 self_;
 	friend class SecretKey;
 	friend class Signature;
 	template<class T, class G> friend struct WrapArray;
-	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(self_); }
-	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(self_); }
+	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(this); }
+	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(this); }
 public:
 	PublicKey() : self_() {}
 	bool operator==(const PublicKey& rhs) const;
@@ -217,11 +214,11 @@ public:
 	s H(m) ; signature
 */
 class Signature {
-	uint64_t self_[MBN_FP_UNIT_SIZE * 3];
+	mclBnG1 self_;
 	friend class SecretKey;
 	template<class T, class G> friend struct WrapArray;
-	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(self_); }
-	const impl::Signature& getInner() const { return *reinterpret_cast<const impl::Signature*>(self_); }
+	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(this); }
+	const impl::Signature& getInner() const { return *reinterpret_cast<const impl::Signature*>(this); }
 public:
 	Signature() : self_() {}
 	bool operator==(const Signature& rhs) const;

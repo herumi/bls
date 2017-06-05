@@ -11,11 +11,11 @@ SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
 CFLAGS+=-I../mcl/include
 UNIT?=6
 ifeq ($(UNIT),4)
-  CFLAGS+=-DMBN_FP_UNIT_SIZE=4
+  CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=4"
   GO_TAG=bn256
 endif
 ifeq ($(UNIT),6)
-  CFLAGS+=-DMBN_FP_UNIT_SIZE=6
+  CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=6"
   GO_TAG=bn384
 endif
 
@@ -72,7 +72,7 @@ test: $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
-run_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
+test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 	cd go/bls && env CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" LD_LIBRARY_PAHT=../../lib go test .
 #	cd go/bls && go test -tags $(GO_TAG) -v .
 

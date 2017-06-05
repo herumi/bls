@@ -9,14 +9,14 @@
 #include <vector>
 #include <string>
 #include <bls/bls.hpp>
-#if MBN_FP_UNIT_SIZE == 4
+#if MCLBN_FP_UNIT_SIZE == 4
 #include <mcl/bn256.hpp>
 using namespace mcl::bn256;
-#elif MBN_FP_UNIT_SIZE == 6
+#elif MCLBN_FP_UNIT_SIZE == 6
 #include <mcl/bn384.hpp>
 using namespace mcl::bn384;
 #else
-	#error "define MBN_FP_UNIT_SIZE 4(or 6)"
+	#error "define MCLBN_FP_UNIT_SIZE 4(or 6)"
 #endif
 
 typedef std::vector<Fr> FrVec;
@@ -165,13 +165,13 @@ std::ostream& writeAsHex(std::ostream& os, const T& t)
 
 void init(int curve, int maxUnitSize)
 {
-	if (maxUnitSize != MBN_FP_UNIT_SIZE) throw cybozu::Exception("bls:init:bad maxUnitSize") << maxUnitSize << MBN_FP_UNIT_SIZE;
+	if (maxUnitSize != MCLBN_FP_UNIT_SIZE) throw cybozu::Exception("bls:init:bad maxUnitSize") << maxUnitSize << MCLBN_FP_UNIT_SIZE;
 	mcl::bn::CurveParam cp;
 	switch (curve) {
 	case bls::CurveFp254BNb:
 		cp = mcl::bn::CurveFp254BNb;
 		break;
-#if MBN_FP_UNIT_SIZE == 6
+#if MCLBN_FP_UNIT_SIZE == 6
 	case bls::CurveFp382_1:
 		cp = mcl::bn::CurveFp382_1;
 		break;

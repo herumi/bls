@@ -1,7 +1,7 @@
 package bls
 
 /*
-#cgo CFLAGS:-DMBN_FP_UNIT_SIZE=6
+#cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #cgo LDFLAGS:-lbls384 -lmclbn384 -lmcl -lgmpxx -lstdc++ -lgmp -lcrypto
 #include <bls/bls.h>
 */
@@ -22,7 +22,7 @@ const CurveFp382_2 = 2
 // call this function before calling all the other operations
 // this function is not thread safe
 func Init(curve int) error {
-	err := C.blsInit(C.int(curve), C.MBN_FP_UNIT_SIZE)
+	err := C.blsInit(C.int(curve), C.MCLBN_FP_UNIT_SIZE)
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
@@ -31,7 +31,7 @@ func Init(curve int) error {
 
 // GetMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
-	return int(C.MBN_FP_UNIT_SIZE)
+	return int(C.MCLBN_FP_UNIT_SIZE)
 }
 
 // GetOpUnitSize --
@@ -63,13 +63,13 @@ func GetFieldOrder() string {
 
 // ID --
 type ID struct {
-	v [C.MBN_FP_UNIT_SIZE]C.uint64_t
+	v C.mclBnFr
 }
 
 // getPointer --
 func (id *ID) getPointer() (p *C.blsId) {
 	// #nosec
-	return (*C.blsId)(unsafe.Pointer(&id.v[0]))
+	return (*C.blsId)(unsafe.Pointer(id))
 }
 
 // GetLittleEndian --
@@ -144,7 +144,7 @@ func (id *ID) IsEqual(rhs *ID) bool {
 
 // SecretKey --
 type SecretKey struct {
-	v [C.MBN_FP_UNIT_SIZE]C.uint64_t
+	v C.mclBnFr
 }
 
 // getPointer --
@@ -280,13 +280,13 @@ func (sec *SecretKey) GetPop() (sign *Sign) {
 
 // PublicKey --
 type PublicKey struct {
-	v [C.MBN_FP_UNIT_SIZE * 2 * 3]C.uint64_t
+	v C.mclBnG2
 }
 
 // getPointer --
 func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 	// #nosec
-	return (*C.blsPublicKey)(unsafe.Pointer(&pub.v[0]))
+	return (*C.blsPublicKey)(unsafe.Pointer(pub))
 }
 
 // Serialize --
@@ -362,13 +362,13 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 
 // Sign  --
 type Sign struct {
-	v [C.MBN_FP_UNIT_SIZE * 3]C.uint64_t
+	v C.mclBnG1
 }
 
 // getPointer --
 func (sign *Sign) getPointer() (p *C.blsSignature) {
 	// #nosec
-	return (*C.blsSignature)(unsafe.Pointer(&sign.v[0]))
+	return (*C.blsSignature)(unsafe.Pointer(sign))
 }
 
 // Serialize --
