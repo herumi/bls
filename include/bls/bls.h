@@ -57,13 +57,13 @@ BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
 //	return written byte size if success else 0
-BLS_DLL_API size_t blsIDSerialize(void *buf, size_t maxBufSize, const blsId *id);
+BLS_DLL_API size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id);
 BLS_DLL_API size_t blsSecretKeySerialize(void *buf, size_t maxBufSize, const blsSecretKey *sec);
 BLS_DLL_API size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub);
 BLS_DLL_API size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig);
 
 // return 1 if same else 0
-BLS_DLL_API int blsIDDeserialize(blsId *id, const void *buf, size_t bufSize);
+BLS_DLL_API int blsIdDeserialize(blsId *id, const void *buf, size_t bufSize);
 BLS_DLL_API int blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, size_t bufSize);
 BLS_DLL_API int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize);
 BLS_DLL_API int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize);
