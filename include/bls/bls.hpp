@@ -18,12 +18,6 @@
 
 namespace bls {
 
-enum {
-	CurveFp254BNb = 0,
-	CurveFp382_1 = 1,
-	CurveFp382_2 = 2
-};
-
 // same value with IoMode of mcl/op.hpp
 enum {
 	IoBin = 2, // binary number
@@ -59,7 +53,7 @@ struct Id;
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
 	@note init() is not thread safe
 */
-void init(int curve = CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE);
+void init(int curve = mclBn_CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE);
 size_t getOpUnitSize();
 void getCurveOrder(std::string& str);
 void getFieldOrder(std::string& str);

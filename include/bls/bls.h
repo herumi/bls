@@ -27,12 +27,6 @@
 extern "C" {
 #endif
 
-enum {
-	blsCurveFp254BNb = 0,
-	blsCurveFp382_1 = 1,
-	blsCurveFp382_2 = 2
-};
-
 typedef struct {
 	mclBnFr v;
 } blsId;

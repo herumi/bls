@@ -66,7 +66,7 @@ void SecretKeyTestBN256()
 
 CYBOZU_TEST_AUTO(bn256)
 {
-	bls::init(bls::CurveFp254BNb);
+	bls::init(mclBn_CurveFp254BNb);
 	IdTestBN256();
 	SecretKeyTestBN256();
 	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
@@ -402,10 +402,10 @@ CYBOZU_TEST_AUTO(all)
 		int type;
 		const char *name;
 	} tbl[] = {
-		{ bls::CurveFp254BNb, "Fp254" },
+		{ mclBn_CurveFp254BNb, "Fp254" },
 #if MCLBN_FP_UNIT_SIZE == 6
-		{ bls::CurveFp382_1, "Fp382_1" },
-		{ bls::CurveFp382_2, "Fp382_2" },
+		{ mclBn_CurveFp382_1, "Fp382_1" },
+		{ mclBn_CurveFp382_2, "Fp382_2" },
 #endif
 	};
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {

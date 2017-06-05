@@ -65,10 +65,10 @@ void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
-		blsCurveFp254BNb,
+		mclBn_CurveFp254BNb,
 #if MCLBN_FP_UNIT_SIZE == 6
-		blsCurveFp382_1,
-		blsCurveFp382_2
+		mclBn_CurveFp382_1,
+		mclBn_CurveFp382_2
 #endif
 	};
 	const char *curveOrderTbl[] = {

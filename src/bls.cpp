@@ -168,14 +168,14 @@ void init(int curve, int maxUnitSize)
 	if (maxUnitSize != MCLBN_FP_UNIT_SIZE) throw cybozu::Exception("bls:init:bad maxUnitSize") << maxUnitSize << MCLBN_FP_UNIT_SIZE;
 	mcl::bn::CurveParam cp;
 	switch (curve) {
-	case bls::CurveFp254BNb:
+	case mclBn_CurveFp254BNb:
 		cp = mcl::bn::CurveFp254BNb;
 		break;
 #if MCLBN_FP_UNIT_SIZE == 6
-	case bls::CurveFp382_1:
+	case mclBn_CurveFp382_1:
 		cp = mcl::bn::CurveFp382_1;
 		break;
-	case bls::CurveFp382_2:
+	case mclBn_CurveFp382_2:
 		cp = mcl::bn::CurveFp382_2;
 		break;
 #endif
@@ -192,7 +192,7 @@ void init(int curve, int maxUnitSize)
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
 	assert(sizeof(Signature) == sizeof(impl::Signature));
 	static G2 Q;
-	if (curve == bls::CurveFp254BNb) {
+	if (curve == mclBn_CurveFp254BNb) {
 		Q.set(
 			Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
 			Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
