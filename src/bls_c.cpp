@@ -1,10 +1,14 @@
-#include "../mcl/src/bn_c_impl.hpp"
-#include "bls/bls.hpp"
-#define BLS_DLL_EXPORT
-#include "bls/bls.h"
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <string>
+#include <iosfwd>
+#include <stdint.h>
 #include <memory.h>
+#include "../mcl/src/bn_c_impl.hpp"
+#define BLS_DLL_EXPORT
+#include <bls/bls.h>
+#include <bls/bls.hpp>
 
 size_t checkAndCopy(char *buf, size_t maxBufSize, const std::string& s)
 {

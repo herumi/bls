@@ -186,7 +186,6 @@ void init(int curve, int maxUnitSize)
 	G1::setCompressedExpression();
 	G2::setCompressedExpression();
 	Fr::init(BN::param.r);
-//	mcl::setIoMode(mcl::IoHeximal);
 	assert(sizeof(Id) == sizeof(impl::Id));
 	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
