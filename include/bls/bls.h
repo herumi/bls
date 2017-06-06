@@ -56,6 +56,19 @@ BLS_DLL_API size_t blsGetOpUnitSize(void);
 BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
+BLS_DLL_API void blsIdSetInt(blsId *id, int x);
+// return 0 if success
+BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);
+BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize);
+
+/*
+	return strlen(buf) if success else 0
+	buf is '\0' terminated
+*/
+BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id);
+BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
+
+
 //	return written byte size if success else 0
 BLS_DLL_API size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id);
 BLS_DLL_API size_t blsSecretKeySerialize(void *buf, size_t maxBufSize, const blsSecretKey *sec);
@@ -114,17 +127,6 @@ BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize)
 	return written byte size if success else 0
 */
 BLS_DLL_API size_t blsIdGetLittleEndian(void *buf, size_t maxBufSize, const blsId *id);
-
-// return 0 if success
-BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);
-BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize);
-
-/*
-	return strlen(buf) if success else 0
-	buf is '\0' terminated
-*/
-BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id);
-BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
 
 // return 0 if success
 // mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r

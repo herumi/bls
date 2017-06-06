@@ -783,6 +783,10 @@ int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 	return ((const bls2::Signature*)sig)->verify(*(const bls2::PublicKey*)pub);
 }
 
+void blsIdSetInt(blsId *id, int x)
+{
+	mclBnFr_setInt(&id->v, x);
+}
 size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id)
 {
 	return mclBnFr_serialize(buf, maxBufSize, &id->v);
