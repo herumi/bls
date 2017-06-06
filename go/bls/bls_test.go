@@ -2,30 +2,41 @@ package bls
 
 import "testing"
 import "strconv"
+import "fmt"
 
 var unitN = 0
 
 // Tests (for Benchmarks see below)
 func testPairing(t *testing.T) {
-	return
-//	err := Init(CurveFp254BNb)
-//	if err != nil {
-//		t.Error(err)
-//	}
 	var a, b, ab Fr
-	a.SetString("12345678901", 10)
-	b.SetString("abcdef0abcd", 16)
+	a.SetString("123", 10)
+	b.SetString("456", 10)
 	FrMul(&ab, &a, &b)
 	var P, aP G1
 	var Q, bQ G2
-	P.HashAndMapTo([]byte("this"))
+	err := P.HashAndMapTo([]byte("this"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	fmt.Printf("P=%s\n", P.GetString(16))
 	G1Mul(&aP, &P, &a)
-	Q.HashAndMapTo([]byte("that"))
+	fmt.Printf("aP=%s\n", aP.GetString(16))
+	err = Q.HashAndMapTo([]byte("that"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	fmt.Printf("Q=%s\n", Q.GetString(16))
 	G2Mul(&bQ, &Q, &b)
+	fmt.Printf("bQ=%s\n", bQ.GetString(16))
 	var e1, e2 GT
 	Pairing(&e1, &P, &Q)
+	fmt.Printf("e1=%s\n", e1.GetString(16))
 	Pairing(&e2, &aP, &bQ)
-	GTPow(&e2, &e2, &ab)
+	fmt.Printf("e2=%s\n", e1.GetString(16))
+	GTPow(&e1, &e1, &ab)
+	fmt.Printf("e1=%s\n", e1.GetString(16))
 	if !e1.IsEqual(&e2) {
 		t.Errorf("not equal pairing\n%s\n%s", e1.GetString(16), e2.GetString(16))
 	}

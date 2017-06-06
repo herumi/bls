@@ -103,7 +103,7 @@ func (x *Fr) SetHashOf(buf []byte) bool {
 
 // GetString --
 func (x *Fr) GetString(base int) string {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnFr_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
 	if n == 0 {
@@ -114,7 +114,7 @@ func (x *Fr) GetString(base int) string {
 
 // Serialize --
 func (x *Fr) Serialize() []byte {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnFr_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
 	if n == 0 {
@@ -214,7 +214,7 @@ func (x *G1) HashAndMapTo(buf []byte) error {
 
 // GetString --
 func (x *G1) GetString(base int) string {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG1_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
 	if n == 0 {
@@ -225,7 +225,7 @@ func (x *G1) GetString(base int) string {
 
 // Serialize --
 func (x *G1) Serialize() []byte {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG1_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
 	if n == 0 {
@@ -262,7 +262,7 @@ func G1Mul(out *G1, x *G1, y *Fr) {
 ////////////////////////////////////////////
 // G2 --
 type G2 struct {
-	v C.mclBnG1
+	v C.mclBnG2
 }
 
 // getPointer --
@@ -320,7 +320,7 @@ func (x *G2) HashAndMapTo(buf []byte) error {
 
 // GetString --
 func (x *G2) GetString(base int) string {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG2_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
 	if n == 0 {
@@ -331,7 +331,7 @@ func (x *G2) GetString(base int) string {
 
 // Serialize --
 func (x *G2) Serialize() []byte {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnG2_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
 	if n == 0 {
@@ -421,7 +421,7 @@ func (x *GT) IsOne(rhs *GT) bool {
 
 // GetString --
 func (x *GT) GetString(base int) string {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnGT_getStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), x.getPointer(), C.int(base))
 	if n == 0 {
@@ -432,7 +432,7 @@ func (x *GT) GetString(base int) string {
 
 // Serialize --
 func (x *GT) Serialize() []byte {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 	// #nosec
 	n := C.mclBnGT_serialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), x.getPointer())
 	if n == 0 {
@@ -483,13 +483,13 @@ func Pairing(out *GT, x *G1, y *G2) {
 }
 
 // FinalExp --
-func FinalExp(out *GT, x *G1, y *G2) {
-	C.mclBn_pairing(out.getPointer(), x.getPointer(), y.getPointer())
+func FinalExp(out *GT, x *GT) {
+	C.mclBn_finalExp(out.getPointer(), x.getPointer())
 }
 
 // MillerLoop --
 func MillerLoop(out *GT, x *G1, y *G2) {
-	C.mclBn_pairing(out.getPointer(), x.getPointer(), y.getPointer())
+	C.mclBn_millerLoop(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
 // GetUint64NumToPrecompute --
