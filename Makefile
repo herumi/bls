@@ -47,7 +47,6 @@ $(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 
 $(BLS384_SLIB): $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
-#	$(PRE)$(CXX) -shared -o $@ -Wl,--whole-archive $(BLS384_LIB) $(BN384_LIB) $(MCL_LIB) -Wl,--no-whole-archive
 	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
 
 VPATH=test sample src
@@ -73,7 +72,7 @@ test: $(TEST_EXE)
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
 test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
-	cd go/bls && env CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" LD_LIBRARY_PAHT=../../lib go test .
+	cd go/bls && env CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" LD_LIBRARY_PATH=../../lib go test .
 #	cd go/bls && go test -tags $(GO_TAG) -v .
 
 clean:
