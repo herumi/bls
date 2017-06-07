@@ -8,92 +8,91 @@ namespace mcl {
 		public const int maxUnitSize = 4;
 		[DllImport("bls256.dll")]
 		public static extern int blsInit(int curve, int maxUnitSize);
-		[DllImport("bls256.dll")]
-		public static extern int blsIdIsSame(ref Id lhs, ref Id rhs);
 
-		[DllImport("bls256.dll")]
-		public static extern int blsIdSetStr(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern ulong blsIdGetStr(ref Id id, [Out]StringBuilder buf, ulong maxBufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern void blsIdSet(ref Id id, ref ulong p);
-		[DllImport("bls256.dll")]
-		public static extern int blsSecretKeyIsSame(ref SecretKey lhs, ref SecretKey rhs);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeySetArray(ref SecretKey sec, ref ulong p);
-		[DllImport("bls256.dll")]
-		public static extern int blsSecretKeySetStr(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern ulong blsSecretKeyGetStr(ref SecretKey sec, [Out]StringBuilder buf, ulong maxBufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeyAdd(ref SecretKey sec, ref SecretKey rhs);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeyInit(ref SecretKey sec);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeyGetPublicKey(ref SecretKey sec, ref PublicKey pub);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeySign(ref SecretKey sec, ref Sign sign, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
-		[DllImport("bls256.dll")]
-		public static extern int blsSecretKeySet(ref SecretKey sec, ref SecretKey msk, ulong k, ref Id id);
-		[DllImport("bls256.dll")]
-		public static extern int blsSecretKeyRecover(ref SecretKey sec, ref SecretKey secVec, ref Id idVec, ulong n);
-		[DllImport("bls256.dll")]
-		public static extern void blsSecretKeyGetPop(ref SecretKey sec, ref Sign sign);
-		[DllImport("bls256.dll")]
-		public static extern int blsPublicKeyIsSame(ref PublicKey lhs, ref PublicKey rhs);
-		[DllImport("bls256.dll")]
-		public static extern void blsPublicKeyPut(ref PublicKey pub);
-		[DllImport("bls256.dll")]
-		public static extern void blsPublicKeyCopy(ref PublicKey dst, ref PublicKey src);
-		[DllImport("bls256.dll")]
-		public static extern int blsPublicKeySetStr(ref PublicKey pub, ref byte buf, int bufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern ulong blsPublicKeyGetStr(ref PublicKey pub, ref byte buf, int maxBufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern void blsPublicKeyAdd(ref PublicKey pub, ref PublicKey rhs);
-		[DllImport("bls256.dll")]
-		public static extern int blsPublicKeySet(ref PublicKey pub, ref PublicKey mpk, ulong k, ref Id id);
-		[DllImport("bls256.dll")]
-		public static extern int blsPublicKeyRecover(ref PublicKey pub, ref PublicKey pubVec, ref Id idVec, ulong n);
-		[DllImport("bls256.dll")]
-		public static extern int blsSignIsSame(ref Sign lhs, ref Sign rhs);
-		[DllImport("bls256.dll")]
-		public static extern int blsSignSetStr(ref Sign sign, ref byte buf, int bufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern ulong blsSignGetStr(ref Sign sign, ref byte buf, int maxBufSize, int ioMode);
-		[DllImport("bls256.dll")]
-		public static extern void blsSignAdd(ref Sign sign, ref Sign rhs);
-		[DllImport("bls256.dll")]
-		public static extern int blsSignRecover(ref Sign sign, ref Sign signVec, ref Id idVec, ulong n);
-		[DllImport("bls256.dll")]
-		public static extern int blsSignVerify(ref Sign sign, ref PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
-		[DllImport("bls256.dll")]
-		public static extern int blsSignVerifyPop(ref Sign sign, ref PublicKey pub);
-
-		static string ConvertByteToHexStr(byte[] b, int size)
-		{
-			String s = "";
-			for (int i = 0; i < size; i++) {
-				s += Buffer.GetByte(b, i).ToString("x2");
-			}
-			return s;
-		}
-		static byte[] ConvertHexStrToByte(string s)
-		{
-			if ((s.Length & 1) == 1) {
-				throw new ArgumentException("ConvertHexStrToByte odd length");
-			}
-			int n = s.Length / 2;
-			byte[] b = new byte[n];
-			for (int i = 0; i < n; i++) {
-				int x = Convert.ToInt32(s.Substring(i * 2, 2), 16);
-				b[i] = (byte)x;
-			}
-			return b;
-		}
+		[DllImport("bls256.dll")] public static extern void blsIdSetInt(ref Id id, int x);
+		[DllImport("bls256.dll")] public static extern int blsIdSetDecStr(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsIdSetHexStr(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern ulong blsIdGetDecStr([Out]StringBuilder buf, ulong maxBufSize, ref Id id);
+		[DllImport("bls256.dll")] public static extern ulong blsIdGetHexStr([Out]StringBuilder buf, ulong maxBufSize, ref Id id);
 
 
-	public static void Init()
+		[DllImport("bls256.dll")] public static extern ulong blsIdSerialize([Out]StringBuilder buf, ulong maxBufSize, ref Id id);
+		[DllImport("bls256.dll")] public static extern ulong blsSecretKeySerialize([Out]StringBuilder buf, ulong maxBufSize, ref SecretKey sec);
+		[DllImport("bls256.dll")] public static extern ulong blsPublicKeySerialize([Out]StringBuilder buf, ulong maxBufSize, ref PublicKey pub);
+		[DllImport("bls256.dll")] public static extern ulong blsSignatureSerialize([Out]StringBuilder buf, ulong maxBufSize, ref Signature sig);
+
+		[DllImport("bls256.dll")] public static extern int blsIdDeserialize(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsSecretKeyDeserialize(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsPublicKeyDeserialize(ref PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsSignatureDeserialize(ref Signature sig, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+
+		[DllImport("bls256.dll")] public static extern int blsIdIsEqual(ref Id lhs, ref Id rhs);
+		[DllImport("bls256.dll")] public static extern int blsSecretKeyIsEqual(ref SecretKey lhs, ref SecretKey rhs);
+		[DllImport("bls256.dll")] public static extern int blsPublicKeyIsEqual(ref PublicKey lhs, ref PublicKey rhs);
+		[DllImport("bls256.dll")] public static extern int blsSignatureIsEqual(ref Signature lhs, ref Signature rhs);
+
+		// add
+		[DllImport("bls256.dll")] public static extern void blsSecretKeyAdd(ref SecretKey sec, ref SecretKey rhs);
+		[DllImport("bls256.dll")] public static extern void blsPublicKeyAdd(ref PublicKey pub, ref PublicKey rhs);
+		[DllImport("bls256.dll")] public static extern void blsSignatureAdd(ref Signature sig, ref Signature rhs);
+
+		//	hash buf and set
+		[DllImport("bls256.dll")] public static extern int blsHashToSecretKey(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		/*
+			set secretKey if system has /dev/urandom or CryptGenRandom
+			return 0 if success else -1
+		*/
+		[DllImport("bls256.dll")] public static extern int blsSecretKeySetByCSPRNG(ref SecretKey sec);
+
+		[DllImport("bls256.dll")] public static extern void blsGetPublicKey(ref PublicKey pub, ref SecretKey sec);
+		[DllImport("bls256.dll")] public static extern void blsGetPop(ref Signature sig, ref SecretKey sec);
+
+		// return 0 if success
+		[DllImport("bls256.dll")] public static extern int blsSecretKeyShare(ref SecretKey sec, ref SecretKey msk, ulong k, ref Id id);
+		[DllImport("bls256.dll")] public static extern int blsPublicKeyShare(ref PublicKey pub, ref PublicKey mpk, ulong k, ref Id id);
+
+
+		[DllImport("bls256.dll")] public static extern int blsSecretKeyRecover(ref SecretKey sec, ref SecretKey secVec, ref Id idVec, ulong n);
+		[DllImport("bls256.dll")] public static extern int blsPublicKeyRecover(ref PublicKey pub, ref PublicKey pubVec, ref Id idVec, ulong n);
+		[DllImport("bls256.dll")] public static extern int blsSignatureRecover(ref Signature sig, ref Signature sigVec, ref Id idVec, ulong n);
+
+		[DllImport("bls256.dll")] public static extern void blsSign(ref Signature sig, ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
+
+		// return 1 if valid
+		[DllImport("bls256.dll")] public static extern int blsVerify(ref Signature sig, ref PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
+		[DllImport("bls256.dll")] public static extern int blsVerifyPop(ref Signature sig, ref PublicKey pub);
+
+		//////////////////////////////////////////////////////////////////////////
+		// the following apis will be removed
+
+		// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
+		[DllImport("bls256.dll")] public static extern int blsIdSetLittleEndian(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		/*
+			return written byte size if success else 0
+		*/
+		[DllImport("bls256.dll")] public static extern ulong blsIdGetLittleEndian([Out]StringBuilder buf, ulong maxBufSize, ref Id id);
+
+		// return 0 if success
+		// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
+		[DllImport("bls256.dll")] public static extern int blsSecretKeySetLittleEndian(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsSecretKeySetDecStr(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern int blsSecretKeySetHexStr(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		/*
+			return written byte size if success else 0
+		*/
+		[DllImport("bls256.dll")] public static extern ulong blsSecretKeyGetLittleEndian([Out]StringBuilder buf, ulong maxBufSize, ref SecretKey sec);
+		/*
+			return strlen(buf) if success else 0
+			buf is '\0' terminated
+		*/
+		[DllImport("bls256.dll")] public static extern ulong blsSecretKeyGetDecStr([Out]StringBuilder buf, ulong maxBufSize, ref SecretKey sec);
+		[DllImport("bls256.dll")] public static extern ulong blsSecretKeyGetHexStr([Out]StringBuilder buf, ulong maxBufSize, ref SecretKey sec);
+		[DllImport("bls256.dll")] public static extern int blsPublicKeySetHexStr(ref PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern ulong blsPublicKeyGetHexStr([Out]StringBuilder buf, ulong maxBufSize, ref PublicKey pub);
+		[DllImport("bls256.dll")] public static extern int blsSignatureSetHexStr(ref Signature sig, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+		[DllImport("bls256.dll")] public static extern ulong blsSignatureGetHexStr([Out]StringBuilder buf, ulong maxBufSize, ref Signature sig);
+
+		public static void Init()
 		{
 			const int CurveFp254BNb = 0;
 			if (!System.Environment.Is64BitProcess) {
@@ -107,102 +106,98 @@ namespace mcl {
 
 		public struct Id {
 			private ulong v0, v1, v2, v3;
-			public bool IsSame(Id rhs)
+			public bool IsEqual(Id rhs)
 			{
-				return blsIdIsSame(ref this, ref rhs) != 0;
+				return blsIdIsEqual(ref this, ref rhs) != 0;
 			}
-			public void SetStr(String s, int ioMode)
+			public void SetDecStr(String s)
 			{
-				if (blsIdSetStr(ref this, s, (ulong)s.Length, ioMode) != 0) {
-					throw new ArgumentException("blsIdSetStr:" + s);
+				if (blsIdSetDecStr(ref this, s, (ulong)s.Length) != 0) {
+					throw new ArgumentException("blsIdSetDecSt:" + s);
+				}
+			}
+			public void SetHexStr(String s)
+			{
+				if (blsIdSetHexStr(ref this, s, (ulong)s.Length) != 0) {
+					throw new ArgumentException("blsIdSetHexStr:" + s);
 				}
 			}
 			public void SetInt(int x)
 			{
-				v0 = (uint)x;
-				v1 = v2 = v3 = 0;
+				blsIdSetInt(ref this, x);
 			}
-			public string GetStr(int ioMode)
+			public string GetDecStr()
 			{
 				StringBuilder sb = new StringBuilder(1024);
-				ulong size = blsIdGetStr(ref this, sb, (ulong)sb.Capacity, ioMode);
+				ulong size = blsIdGetDecStr(sb, (ulong)sb.Capacity, ref this);
 				if (size == 0) {
-					throw new ArgumentException("blsIdGetStr");
+					throw new ArgumentException("blsIdGetDecStr");
 				}
 				return sb.ToString(0, (int)size);
 			}
-			public override string ToString()
+			public string GetHexStr()
 			{
-				return GetStr(16);
-			}
-			public void SetArray(ulong[] p)
-			{
-				int n = p.Length;
-				if (n != maxUnitSize) {
-					throw new ArgumentException("SetArray:" + n.ToString());
+				StringBuilder sb = new StringBuilder(1024);
+				ulong size = blsIdGetHexStr(sb, (ulong)sb.Capacity, ref this);
+				if (size == 0) {
+					throw new ArgumentException("blsIdGetHexStr");
 				}
-				blsIdSet(ref this, ref p[0]);
+				return sb.ToString(0, (int)size);
 			}
 		}
 		public struct SecretKey {
 			private ulong v0, v1, v2, v3;
-			public bool IsSame(SecretKey rhs)
+			public bool IsEqual(SecretKey rhs)
 			{
-				return blsSecretKeyIsSame(ref this, ref rhs) != 0;
+				return blsSecretKeyIsEqual(ref this, ref rhs) != 0;
 			}
-			public void SetStr(String s, int ioMode)
+			public void SetHexStr(String s)
 			{
-				if (blsSecretKeySetStr(ref this, s, (ulong)s.Length, ioMode) != 0) {
-					throw new ArgumentException("blsSecretKeySetStr:" + s);
+				if (blsSecretKeySetHexStr(ref this, s, (ulong)s.Length) != 0) {
+					throw new ArgumentException("blsSecretKeySetHexStr:" + s);
 				}
 			}
-			public string GetStr(int ioMode)
+			public string GetHexStr()
 			{
 				StringBuilder sb = new StringBuilder(1024);
-				ulong size = blsSecretKeyGetStr(ref this, sb, (ulong)sb.Capacity, ioMode);
+				ulong size = blsSecretKeyGetHexStr(sb, (ulong)sb.Capacity, ref this);
 				if (size == 0) {
-					throw new ArgumentException("blsSecretKeyGetStr");
+					throw new ArgumentException("mclBnFr_getStr");
 				}
 				return sb.ToString(0, (int)size);
-			}
-			public override string ToString()
-			{
-				return GetStr(16);
-			}
-			public void SetArray(ulong[] p)
-			{
-				int n = p.Length;
-				if (n != maxUnitSize) {
-					throw new ArgumentException("SetArray:" + n.ToString());
-				}
-				blsSecretKeySetArray(ref this, ref p[0]);
 			}
 			public void Add(SecretKey rhs)
 			{
 				blsSecretKeyAdd(ref this, ref rhs);
 			}
-			public void Init()
+			public void SetByCSPRNG()
 			{
-				blsSecretKeyInit(ref this);
+				blsSecretKeySetByCSPRNG(ref this);
+			}
+			public void SetHashOf(string s)
+			{
+				if (blsHashToSecretKey(ref this, s, (ulong)s.Length) != 0) {
+					throw new ArgumentException("blsHashToSecretKey");
+				}
 			}
 			public PublicKey GetPublicKey()
 			{
 				PublicKey pub = new PublicKey();
-				blsSecretKeyGetPublicKey(ref this, ref pub);
+				blsGetPublicKey(ref pub, ref this);
 				return pub;
 			}
-			public Sign Sign(String m)
+			public Signature Signature(String m)
 			{
-				Sign sign = new Sign();
-				blsSecretKeySign(ref this, ref sign, m, (ulong)m.Length);
-				return sign;
+				Signature Signature = new Signature();
+				blsSign(ref Signature, ref this, m, (ulong)m.Length);
+				return Signature;
 			}
 		}
 		// secretKey = sum_{i=0}^{msk.Length - 1} msk[i] * id^i
 		public static SecretKey ShareSecretKey(SecretKey[] msk, Id id)
 		{
 			SecretKey sec = new SecretKey();
-			if (blsSecretKeySet(ref sec, ref msk[0], (ulong)msk.Length, ref id) != 0) {
+			if (blsSecretKeyShare(ref sec, ref msk[0], (ulong)msk.Length, ref id) != 0) {
 				throw new ArgumentException("GetSecretKeyForId:" + id.ToString());
 			}
 			return sec;
@@ -218,40 +213,39 @@ namespace mcl {
 		public struct PublicKey {
 			private ulong v00, v01, v02, v03, v04, v05, v06, v07, v08, v09, v10, v11;
 			private ulong v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23;
-			public bool IsSame(PublicKey rhs)
+			public bool IsEqual(PublicKey rhs)
 			{
-				return blsPublicKeyIsSame(ref this, ref rhs) != 0;
+				return blsPublicKeyIsEqual(ref this, ref rhs) != 0;
 			}
 			public void SetStr(String s)
 			{
-				byte[] b = ConvertHexStrToByte(s);
-				if (blsPublicKeySetStr(ref this, ref b[0], b.Length, IoEcComp) != 0) {
+				if (blsPublicKeySetHexStr(ref this, s, (ulong)s.Length) != 0) {
 					throw new ArgumentException("blsPublicKeySetStr:" + s);
 				}
 			}
-			public override string ToString()
+			public string GetHexStr()
 			{
-				byte[] b = new byte[1024];
-				int size = (int)blsPublicKeyGetStr(ref this, ref b[0], b.Length, IoEcComp);
+				StringBuilder sb = new StringBuilder(1024);
+				ulong size = blsPublicKeyGetHexStr(sb, (ulong)sb.Capacity, ref this);
 				if (size == 0) {
 					throw new ArgumentException("blsPublicKeyGetStr");
 				}
-				return ConvertByteToHexStr(b, size);
+				return sb.ToString(0, (int)size);
 			}
 			public void Add(PublicKey rhs)
 			{
 				blsPublicKeyAdd(ref this, ref rhs);
 			}
-            public bool Verify(Sign sign, string m)
-            {
-                return blsSignVerify(ref sign, ref this, m, (ulong)m.Length) == 1;
-            }
-        }
-        // publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
-        public static PublicKey SharePublicKey(PublicKey[] mpk, Id id)
+			public bool Verify(Signature Signature, string m)
+			{
+				return blsVerify(ref Signature, ref this, m, (ulong)m.Length) == 1;
+			}
+		}
+		// publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
+		public static PublicKey SharePublicKey(PublicKey[] mpk, Id id)
 		{
 			PublicKey pub = new PublicKey();
-			if (blsPublicKeySet(ref pub, ref mpk[0], (ulong)mpk.Length, ref id) != 0) {
+			if (blsPublicKeyShare(ref pub, ref mpk[0], (ulong)mpk.Length, ref id) != 0) {
 				throw new ArgumentException("GetPublicKeyForId:" + id.ToString());
 			}
 			return pub;
@@ -264,40 +258,39 @@ namespace mcl {
 			}
 			return pub;
 		}
-		public struct Sign {
+		public struct Signature {
 			private ulong v00, v01, v02, v03, v04, v05, v06, v07, v08, v09, v10, v11;
-			public bool IsSame(Sign rhs)
+			public bool IsEqual(Signature rhs)
 			{
-				return blsSignIsSame(ref this, ref rhs) != 0;
+				return blsSignatureIsEqual(ref this, ref rhs) != 0;
 			}
 			public void SetStr(String s)
 			{
-				byte[] b = ConvertHexStrToByte(s);
-				if (blsSignSetStr(ref this, ref b[0], b.Length, IoEcComp) != 0) {
-					throw new ArgumentException("blsSignSetStr:" + s);
+				if (blsSignatureSetHexStr(ref this, s, (ulong)s.Length) != 0) {
+					throw new ArgumentException("blsSignatureSetStr:" + s);
 				}
 			}
-			public override string ToString()
+			public string GetHexStr()
 			{
-				byte[] b = new byte[1024];
-				int size = (int)blsSignGetStr(ref this, ref b[0], b.Length, IoEcComp);
+				StringBuilder sb = new StringBuilder(1024);
+				ulong size = blsSignatureGetHexStr(sb, (ulong)sb.Capacity, ref this);
 				if (size == 0) {
-					throw new ArgumentException("blsSignGetStr");
+					throw new ArgumentException("blsSignatureGetStr");
 				}
-				return ConvertByteToHexStr(b, size);
+				return sb.ToString(0, (int)size);
 			}
-			public void Add(Sign rhs)
+			public void Add(Signature rhs)
 			{
-				blsSignAdd(ref this, ref rhs);
+				blsSignatureAdd(ref this, ref rhs);
 			}
 		}
-        public static Sign RecoverSign(Sign[] signs, Id[] ids)
+		public static Signature RecoverSign(Signature[] signs, Id[] ids)
 		{
-			Sign sign = new Sign();
-			if (blsSignRecover(ref sign, ref signs[0], ref ids[0], (ulong)signs.Length) != 0) {
+			Signature Signature = new Signature();
+			if (blsSignatureRecover(ref Signature, ref signs[0], ref ids[0], (ulong)signs.Length) != 0) {
 				throw new ArgumentException("Recover");
 			}
-			return sign;
+			return Signature;
 		}
 	}
 }
