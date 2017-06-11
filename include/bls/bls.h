@@ -121,6 +121,14 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const char 
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, size_t size);
 BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
 
+/*
+	recover out = y(0) by { (xVec[i], yVec[i]) }
+	return 0 if success else -1
+*/
+BLS_DLL_API int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *yVec, const mclBnFr *xVec, size_t k);
+BLS_DLL_API int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnG1 *yVec, const mclBnFr *xVec, size_t k);
+BLS_DLL_API int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnG2 *yVec, const mclBnFr *xVec, size_t k);
+
 //////////////////////////////////////////////////////////////////////////
 // the following apis will be removed
 

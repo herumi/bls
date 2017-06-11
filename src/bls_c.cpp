@@ -9,28 +9,39 @@
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
+
+static inline Fr *cast(blsId* x) { return (Fr *)x; }
+static inline Fr *cast(blsSecretKey* x) { return (Fr *)x; }
+static inline G1 *cast(blsSignature* x) { return (G1 *)x; }
+static inline G2 *cast(blsPublicKey* x) { return (G2 *)x; }
+static inline const Fr *cast(const blsId* x) { return (const Fr *)x; }
+static inline const Fr *cast(const blsSecretKey* x) { return (const Fr *)x; }
+static inline const G1 *cast(const blsSignature* x) { return (const G1 *)x; }
+static inline const G2 *cast(const blsPublicKey* x) { return (const G2 *)x; }
+
 /*
 	recover f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
 */
 template<class G, class F>
-void LagrangeInterpolation(G& r, const G *vec, const F *S, size_t k)
+int LagrangeInterpolation(G& r, const G *vec, const F *S, size_t k)
 {
 	/*
 		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
 		where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
 	*/
-	if (k < 2) throw cybozu::Exception("bls:LagrangeInterpolation:too small size") << k;
+	if (k < 2) return -1;
 	std::vector<F> delta(k);
 	F a = S[0];
 	for (size_t i = 1; i < k; i++) {
 		a *= S[i];
 	}
+	if (a.isZero()) return -1;
 	for (size_t i = 0; i < k; i++) {
 		F b = S[i];
 		for (size_t j = 0; j < k; j++) {
 			if (j != i) {
 				F v = S[j] - S[i];
-				if (v.isZero()) throw cybozu::Exception("bls:LagrangeInterpolation:S has same id") << i << j;
+				if (v.isZero()) return -1;
 				b *= v;
 			}
 		}
@@ -46,6 +57,19 @@ void LagrangeInterpolation(G& r, const G *vec, const F *S, size_t k)
 		G::mul(t, vec[i], delta[i]);
 		r += t;
 	}
+	return 0;
+}
+int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *yVec, const mclBnFr *xVec, size_t k)
+{
+	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
+}
+int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnG1 *yVec, const mclBnFr *xVec, size_t k)
+{
+	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
+}
+int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnG2 *yVec, const mclBnFr *xVec, size_t k)
+{
+	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
 }
 /////////////////////////////////////////////////////////////
 namespace bls2 {
@@ -169,10 +193,6 @@ public:
 		set(msk.data(), msk.size(), id);
 	}
 	/*
-		recover secretKey from k secVec
-	*/
-	void recover(const SecretKeyVec& secVec, const IdVec& idVec);
-	/*
 		add secret key
 	*/
 	void add(const SecretKey& rhs);
@@ -182,7 +202,6 @@ public:
 		the size of msk must be k
 	*/
 	void set(const SecretKey *msk, size_t k, const Id& id);
-	void recover(const SecretKey *secVec, const Id *idVec, size_t n);
 };
 
 /*
@@ -211,17 +230,12 @@ public:
 		set(mpk.data(), mpk.size(), id);
 	}
 	/*
-		recover publicKey from k pubVec
-	*/
-	void recover(const PublicKeyVec& pubVec, const IdVec& idVec);
-	/*
 		add public key
 	*/
 	void add(const PublicKey& rhs);
 
 	// the following methods are for C api
 	void set(const PublicKey *mpk, size_t k, const Id& id);
-	void recover(const PublicKey *pubVec, const Id *idVec, size_t n);
 };
 
 /*
@@ -247,16 +261,9 @@ public:
 	*/
 	bool verify(const PublicKey& pub) const;
 	/*
-		recover sig from k sigVec
-	*/
-	void recover(const SignatureVec& sigVec, const IdVec& idVec);
-	/*
 		add signature
 	*/
 	void add(const Signature& rhs);
-
-	// the following methods are for C api
-	void recover(const Signature* sigVec, const Id *idVec, size_t n);
 };
 
 /*
@@ -489,17 +496,6 @@ bool Signature::verify(const PublicKey& pub) const
 	return verify(pub, str);
 }
 
-void Signature::recover(const SignatureVec& sigVec, const IdVec& idVec)
-{
-	if (sigVec.size() != idVec.size()) throw cybozu::Exception("Signature:recover:bad size") << sigVec.size() << idVec.size();
-	recover(sigVec.data(), idVec.data(), sigVec.size());
-}
-
-void Signature::recover(const Signature* sigVec, const Id *idVec, size_t n)
-{
-	LagrangeInterpolation(*(G1*)this, (const G1*)sigVec, (const Fr*)idVec, n);
-}
-
 void Signature::add(const Signature& rhs)
 {
 	getInner().sHm += rhs.getInner().sHm;
@@ -532,16 +528,6 @@ void PublicKey::set(const PublicKey *mpk, size_t k, const Id& id)
 {
 	WrapArray<PublicKey, G2> w(mpk, k);
 	evalPoly(getInner().sQ, id.getInner().v, w);
-}
-
-void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
-{
-	if (pubVec.size() != idVec.size()) throw cybozu::Exception("PublicKey:recover:bad size") << pubVec.size() << idVec.size();
-	recover(pubVec.data(), idVec.data(), pubVec.size());
-}
-void PublicKey::recover(const PublicKey *pubVec, const Id *idVec, size_t n)
-{
-	LagrangeInterpolation(*(G2*)this, (const G2*)pubVec, (const Fr*)idVec, n);
 }
 
 void PublicKey::add(const PublicKey& rhs)
@@ -626,16 +612,6 @@ void SecretKey::set(const SecretKey *msk, size_t k, const Id& id)
 {
 	WrapArray<SecretKey, Fr> w(msk, k);
 	evalPoly(getInner().s, id.getInner().v, w);
-}
-
-void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
-{
-	if (secVec.size() != idVec.size()) throw cybozu::Exception("SecretKey:recover:bad size") << secVec.size() << idVec.size();
-	recover(secVec.data(), idVec.data(), secVec.size());
-}
-void SecretKey::recover(const SecretKey *secVec, const Id *idVec, size_t n)
-{
-	LagrangeInterpolation(*(Fr*)this, (const Fr*)secVec, (const Fr*)idVec, n);
 }
 
 void SecretKey::add(const SecretKey& rhs)
@@ -727,13 +703,8 @@ int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, size_t k, cons
 }
 
 int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n)
-	try
 {
-	((bls2::SecretKey*)sec)->recover((const bls2::SecretKey *)secVec, (const bls2::Id *)idVec, n);
-	return 0;
-} catch (std::exception& e) {
-	fprintf(stderr, "err blsSecretKeyRecover %s\n", e.what());
-	return -1;
+	return mclBn_FrLagrangeInterpolation(&sec->v, &secVec->v, &idVec->v, n);
 }
 
 void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
@@ -750,22 +721,12 @@ int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, cons
 	return -1;
 }
 int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n)
-	try
 {
-	((bls2::PublicKey*)pub)->recover((const bls2::PublicKey*)pubVec, (const bls2::Id*)idVec, n);
-	return 0;
-} catch (std::exception& e) {
-	fprintf(stderr, "err blsPublicKeyRecover %s\n", e.what());
-	return -1;
+	return mclBn_G2LagrangeInterpolation(&pub->v, &pubVec->v, &idVec->v, n);
 }
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n)
-	try
 {
-	((bls2::Signature*)sig)->recover((const bls2::Signature*)sigVec, (const bls2::Id*)idVec, n);
-	return 0;
-} catch (std::exception& e) {
-	fprintf(stderr, "err blsSignatureRecover %s\n", e.what());
-	return -1;
+	return mclBn_G1LagrangeInterpolation(&sig->v, &sigVec->v, &idVec->v, n);
 }
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const char *m, size_t size)
