@@ -9,6 +9,44 @@
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
+/*
+	recover f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
+*/
+template<class G, class F>
+void LagrangeInterpolation(G& r, const G *vec, const F *S, size_t k)
+{
+	/*
+		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
+		where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
+	*/
+	if (k < 2) throw cybozu::Exception("bls:LagrangeInterpolation:too small size") << k;
+	std::vector<F> delta(k);
+	F a = S[0];
+	for (size_t i = 1; i < k; i++) {
+		a *= S[i];
+	}
+	for (size_t i = 0; i < k; i++) {
+		F b = S[i];
+		for (size_t j = 0; j < k; j++) {
+			if (j != i) {
+				F v = S[j] - S[i];
+				if (v.isZero()) throw cybozu::Exception("bls:LagrangeInterpolation:S has same id") << i << j;
+				b *= v;
+			}
+		}
+		delta[i] = a / b;
+	}
+
+	/*
+		f(0) = sum_i f(S[i]) delta_{i,S}(0)
+	*/
+	r.clear();
+	G t;
+	for (size_t i = 0; i < delta.size(); i++) {
+		G::mul(t, vec[i], delta[i]);
+		r += t;
+	}
+}
 /////////////////////////////////////////////////////////////
 namespace bls2 {
 
@@ -344,47 +382,6 @@ struct PublicKey {
 
 } // mcl::bls::impl
 
-/*
-	recover f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
-*/
-template<class G, class V1, class V2>
-void LagrangeInterpolation(G& r, const V1& vec, const V2& S)
-{
-	/*
-		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
-		where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
-	*/
-	const size_t k = S.size();
-	if (vec.size() != k) throw cybozu::Exception("bls:LagrangeInterpolation:bad size") << vec.size() << k;
-	if (k < 2) throw cybozu::Exception("bls:LagrangeInterpolation:too small size") << k;
-	FrVec delta(k);
-	Fr a = S[0];
-	for (size_t i = 1; i < k; i++) {
-		a *= S[i];
-	}
-	for (size_t i = 0; i < k; i++) {
-		Fr b = S[i];
-		for (size_t j = 0; j < k; j++) {
-			if (j != i) {
-				Fr v = S[j] - S[i];
-				if (v.isZero()) throw cybozu::Exception("bls:LagrangeInterpolation:S has same id") << i << j;
-				b *= v;
-			}
-		}
-		delta[i] = a / b;
-	}
-
-	/*
-		f(0) = sum_i f(S[i]) delta_{i,S}(0)
-	*/
-	r.clear();
-	G t;
-	for (size_t i = 0; i < delta.size(); i++) {
-		G::mul(t, vec[i], delta[i]);
-		r += t;
-	}
-}
-
 template<class T>
 std::ostream& writeAsHex(std::ostream& os, const T& t)
 {
@@ -500,9 +497,7 @@ void Signature::recover(const SignatureVec& sigVec, const IdVec& idVec)
 
 void Signature::recover(const Signature* sigVec, const Id *idVec, size_t n)
 {
-	WrapArray<Signature, G1> signW(sigVec, n);
-	WrapArray<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(getInner().sHm, signW, idW);
+	LagrangeInterpolation(*(G1*)this, (const G1*)sigVec, (const Fr*)idVec, n);
 }
 
 void Signature::add(const Signature& rhs)
@@ -546,9 +541,7 @@ void PublicKey::recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 }
 void PublicKey::recover(const PublicKey *pubVec, const Id *idVec, size_t n)
 {
-	WrapArray<PublicKey, G2> pubW(pubVec, n);
-	WrapArray<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(getInner().sQ, pubW, idW);
+	LagrangeInterpolation(*(G2*)this, (const G2*)pubVec, (const Fr*)idVec, n);
 }
 
 void PublicKey::add(const PublicKey& rhs)
@@ -642,9 +635,7 @@ void SecretKey::recover(const SecretKeyVec& secVec, const IdVec& idVec)
 }
 void SecretKey::recover(const SecretKey *secVec, const Id *idVec, size_t n)
 {
-	WrapArray<SecretKey, Fr> secW(secVec, n);
-	WrapArray<Id, Fr> idW(idVec, n);
-	LagrangeInterpolation(getInner().s, secW, idW);
+	LagrangeInterpolation(*(Fr*)this, (const Fr*)secVec, (const Fr*)idVec, n);
 }
 
 void SecretKey::add(const SecretKey& rhs)
