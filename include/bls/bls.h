@@ -56,6 +56,9 @@ BLS_DLL_API size_t blsGetOpUnitSize(void);
 BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
 
+// get a generator of G2
+BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
+
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);

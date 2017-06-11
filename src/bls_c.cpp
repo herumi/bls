@@ -712,6 +712,10 @@ int blsGetFieldOrder(char *buf, size_t maxBufSize)
 	return 0;
 }
 
+void blsGetGeneratorOfG2(blsPublicKey *pub)
+{
+	*(G2*)pub = bls2::getQ();
+}
 
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
