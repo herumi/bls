@@ -2,45 +2,10 @@ package bls
 
 import "testing"
 import "strconv"
-import "fmt"
 
 var unitN = 0
 
 // Tests (for Benchmarks see below)
-func testPairing(t *testing.T) {
-	var a, b, ab Fr
-	a.SetString("123", 10)
-	b.SetString("456", 10)
-	FrMul(&ab, &a, &b)
-	var P, aP G1
-	var Q, bQ G2
-	err := P.HashAndMapTo([]byte("this"))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	fmt.Printf("P=%s\n", P.GetString(16))
-	G1Mul(&aP, &P, &a)
-	fmt.Printf("aP=%s\n", aP.GetString(16))
-	err = Q.HashAndMapTo([]byte("that"))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	fmt.Printf("Q=%s\n", Q.GetString(16))
-	G2Mul(&bQ, &Q, &b)
-	fmt.Printf("bQ=%s\n", bQ.GetString(16))
-	var e1, e2 GT
-	Pairing(&e1, &P, &Q)
-	fmt.Printf("e1=%s\n", e1.GetString(16))
-	Pairing(&e2, &aP, &bQ)
-	fmt.Printf("e2=%s\n", e1.GetString(16))
-	GTPow(&e1, &e1, &ab)
-	fmt.Printf("e1=%s\n", e1.GetString(16))
-	if !e1.IsEqual(&e2) {
-		t.Errorf("not equal pairing\n%s\n%s", e1.GetString(16), e2.GetString(16))
-	}
-}
 
 func testPre(t *testing.T) {
 	t.Log("init")
@@ -79,7 +44,7 @@ func testPre(t *testing.T) {
 	t.Log("create secret key")
 	m := "this is a bls sample for go"
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	t.Log("sec:", sec.GetHexString())
 	t.Log("create public key")
 	pub := sec.GetPublicKey()
@@ -94,7 +59,7 @@ func testPre(t *testing.T) {
 	{
 		sec := make([]SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
-			sec[i].Init()
+			sec[i].SetByCSPRNG()
 			t.Log("sec=", sec[i].GetHexString())
 		}
 	}
@@ -131,7 +96,7 @@ func testRecoverSecretKey(t *testing.T) {
 	t.Log("testRecoverSecretKey")
 	k := 3000
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	t.Logf("sec=%s\n", sec.GetHexString())
 
 	// make master secret key
@@ -205,7 +170,7 @@ func testSign(t *testing.T) {
 	t.Log(m)
 
 	var sec0 SecretKey
-	sec0.Init()
+	sec0.SetByCSPRNG()
 	pub0 := sec0.GetPublicKey()
 	s0 := sec0.Sign(m)
 	if !s0.Verify(pub0, m) {
@@ -247,8 +212,8 @@ func testAdd(t *testing.T) {
 	t.Log("testAdd")
 	var sec1 SecretKey
 	var sec2 SecretKey
-	sec1.Init()
-	sec2.Init()
+	sec1.SetByCSPRNG()
+	sec2.SetByCSPRNG()
 
 	pub1 := sec1.GetPublicKey()
 	pub2 := sec2.GetPublicKey()
@@ -269,12 +234,12 @@ func testAdd(t *testing.T) {
 func testPop(t *testing.T) {
 	t.Log("testPop")
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	pop := sec.GetPop()
 	if !pop.VerifyPop(sec.GetPublicKey()) {
 		t.Errorf("Valid Pop does not verify")
 	}
-	sec.Init()
+	sec.SetByCSPRNG()
 	if pop.VerifyPop(sec.GetPublicKey()) {
 		t.Errorf("Invalid Pop verifies")
 	}
@@ -283,7 +248,7 @@ func testPop(t *testing.T) {
 func testData(t *testing.T) {
 	t.Log("testData")
 	var sec1, sec2 SecretKey
-	sec1.Init()
+	sec1.SetByCSPRNG()
 	b := sec1.GetLittleEndian()
 	err := sec2.SetLittleEndian(b)
 	if err != nil {
@@ -384,7 +349,7 @@ func BenchmarkPubkeyFromSeckey(b *testing.B) {
 	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
-		sec.Init()
+		sec.SetByCSPRNG()
 		b.StartTimer()
 		sec.GetPublicKey()
 		b.StopTimer()
@@ -399,7 +364,7 @@ func BenchmarkSigning(b *testing.B) {
 	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
-		sec.Init()
+		sec.SetByCSPRNG()
 		b.StartTimer()
 		sec.Sign(strconv.Itoa(n))
 		b.StopTimer()
@@ -414,7 +379,7 @@ func BenchmarkValidation(b *testing.B) {
 	}
 	var sec SecretKey
 	for n := 0; n < b.N; n++ {
-		sec.Init()
+		sec.SetByCSPRNG()
 		pub := sec.GetPublicKey()
 		m := strconv.Itoa(n)
 		sig := sec.Sign(m)
@@ -431,7 +396,7 @@ func benchmarkDeriveSeckeyShare(k int, b *testing.B) {
 		b.Fatal(err)
 	}
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	msk := sec.GetMasterSecretKey(k)
 	var id ID
 	for n := 0; n < b.N; n++ {
@@ -461,7 +426,7 @@ func benchmarkRecoverSeckey(k int, b *testing.B) {
 		b.Fatal(err)
 	}
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	msk := sec.GetMasterSecretKey(k)
 
 	// derive n shares
@@ -502,7 +467,7 @@ func benchmarkRecoverSignature(k int, b *testing.B) {
 		b.Fatal(err)
 	}
 	var sec SecretKey
-	sec.Init()
+	sec.SetByCSPRNG()
 	msk := sec.GetMasterSecretKey(k)
 
 	// derive n shares

@@ -20,41 +20,9 @@ func Init(curve int) error {
 	return nil
 }
 
-// GetMaxOpUnitSize --
-func GetMaxOpUnitSize() int {
-	return int(C.MCLBN_FP_UNIT_SIZE)
-}
-
-// GetOpUnitSize --
-func GetOpUnitSize() int {
-	return int(C.blsGetOpUnitSize())
-}
-
-// GetCurveOrder --
-func GetCurveOrder() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsGetCurveOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if n == 0 {
-		panic("implementation err. size of buf is small")
-	}
-	return string(buf[:n])
-}
-
-// GetFieldOrder --
-func GetFieldOrder() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsGetFieldOrder((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if n == 0 {
-		panic("implementation err. size of buf is small")
-	}
-	return string(buf[:n])
-}
-
 // ID --
 type ID struct {
-	v C.mclBnFr
+	v Fr
 }
 
 // getPointer --
@@ -65,77 +33,42 @@ func (id *ID) getPointer() (p *C.blsId) {
 
 // GetLittleEndian --
 func (id *ID) GetLittleEndian() []byte {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsIdGetLittleEndian(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), id.getPointer())
-	if n == 0 {
-		panic("err blsIdGetLittleEndian")
-	}
-	return buf[:n]
+	return id.v.Serialize()
 }
 
 // SetLittleEndian --
 func (id *ID) SetLittleEndian(buf []byte) error {
-	// #nosec
-	err := C.blsIdSetLittleEndian(id.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsIdSetLittleEndian %x", err)
-	}
-	return nil
+	return id.v.SetLittleEndian(buf)
 }
 
 // GetHexString --
 func (id *ID) GetHexString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsIdGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), id.getPointer())
-	if n == 0 {
-		panic("err blsIdGetHexStr")
-	}
-	return string(buf[:n])
+	return id.v.GetString(16)
 }
 
 // GetDecString --
 func (id *ID) GetDecString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsIdGetDecStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), id.getPointer())
-	if n == 0 {
-		panic("err blsIdGetDecStr")
-	}
-	return string(buf[:n])
+	return id.v.GetString(10)
 }
 
 // SetHexString --
 func (id *ID) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsIdSetHexStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsIdSetHexStr %x", err)
-	}
-	return nil
+	return id.v.SetString(s, 16)
 }
 
 // SetDecString --
 func (id *ID) SetDecString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsIdSetDecStr(id.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsIdSetDecStr %x", buf)
-	}
-	return nil
+	return id.v.SetString(s, 10)
 }
 
 // IsEqual --
 func (id *ID) IsEqual(rhs *ID) bool {
-	return C.blsIdIsEqual(id.getPointer(), rhs.getPointer()) == 1
+	return id.v.IsEqual(&rhs.v)
 }
 
 // SecretKey --
 type SecretKey struct {
-	v C.mclBnFr
+	v Fr
 }
 
 // getPointer --
@@ -146,82 +79,47 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 
 // GetLittleEndian --
 func (sec *SecretKey) GetLittleEndian() []byte {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsSecretKeyGetLittleEndian(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), sec.getPointer())
-	if n == 0 {
-		panic("err blsSecretKeyGetLittleEndian")
-	}
-	return buf[:n]
+	return sec.v.Serialize()
 }
 
 // SetLittleEndian --
 func (sec *SecretKey) SetLittleEndian(buf []byte) error {
-	// #nosec
-	err := C.blsSecretKeySetLittleEndian(sec.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSecretKeySetLittleEndian %x", buf)
-	}
-	return nil
+	return sec.v.SetLittleEndian(buf)
 }
 
 // GetHexString --
 func (sec *SecretKey) GetHexString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsSecretKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), sec.getPointer())
-	if n == 0 {
-		panic("err blsSecretKeyGetHexStr")
-	}
-	return string(buf[:n])
+	return sec.v.GetString(16)
 }
 
 // GetDecString --
 func (sec *SecretKey) GetDecString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsSecretKeyGetDecStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), sec.getPointer())
-	if n == 0 {
-		panic("err blsSecretKeyGetDecStr")
-	}
-	return string(buf[:n])
+	return sec.v.GetString(10)
 }
 
 // SetHexString --
 func (sec *SecretKey) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSecretKeySetHexStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("erre blsSecretKeySetHexStr %s", s)
-	}
-	return nil
+	return sec.v.SetString(s, 16)
 }
 
 // SetDecString --
 func (sec *SecretKey) SetDecString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSecretKeySetDecStr(sec.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("erre blsSecretKeySetDecStr %s", s)
-	}
-	return nil
+	return sec.v.SetString(s, 10)
 }
 
 // IsEqual --
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
-	return C.blsSecretKeyIsEqual(sec.getPointer(), rhs.getPointer()) == 1
+	return sec.v.IsEqual(&rhs.v)
 }
 
-// Init --
-func (sec *SecretKey) Init() {
-	C.blsSecretKeySetByCSPRNG(sec.getPointer())
+// SetByCSPRNG --
+func (sec *SecretKey) SetByCSPRNG() {
+	sec.v.SetByCSPRNG()
 }
 
 // Add --
 func (sec *SecretKey) Add(rhs *SecretKey) {
-	C.blsSecretKeyAdd(sec.getPointer(), rhs.getPointer())
+	FrAdd(&sec.v, &sec.v, &rhs.v)
 }
 
 // GetMasterSecretKey --
@@ -229,7 +127,7 @@ func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	msk = make([]SecretKey, k)
 	msk[0] = *sec
 	for i := 1; i < k; i++ {
-		msk[i].Init()
+		msk[i].SetByCSPRNG()
 	}
 	return msk
 }
@@ -246,20 +144,14 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 
 // Set --
 func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
-	err := C.blsSecretKeyShare(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
-	if err != 0 {
-		return fmt.Errorf("err blsSecretKeyShare id %s", id.GetHexString())
-	}
-	return nil
+	// #nosec
+	return FrEvaluatePolynomial(&sec.v, *(*[]Fr)(unsafe.Pointer(&msk)), &id.v)
 }
 
 // Recover --
 func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
-	err := C.blsSecretKeyRecover(sec.getPointer(), secVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(secVec)))
-	if err != 0 {
-		return fmt.Errorf("SecretKey.Recover")
-	}
-	return nil
+	// #nosec
+	return FrLagrangeInterpolation(&sec.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]Fr)(unsafe.Pointer(&secVec)))
 }
 
 // GetPop --
@@ -271,7 +163,7 @@ func (sec *SecretKey) GetPop() (sign *Sign) {
 
 // PublicKey --
 type PublicKey struct {
-	v C.mclBnG2
+	v G2
 }
 
 // getPointer --
@@ -282,78 +174,49 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 
 // Serialize --
 func (pub *PublicKey) Serialize() []byte {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsPublicKeySerialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), pub.getPointer())
-	if n == 0 {
-		panic("err blsPublicKeySerialize")
-	}
-	return buf[:n]
+	return pub.v.Serialize()
 }
 
 // Deserialize --
 func (pub *PublicKey) Deserialize(buf []byte) error {
-	// #nosec
-	err := C.blsPublicKeyDeserialize(pub.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsPublicKeyDeserialize %x", buf)
-	}
-	return nil
+	return pub.v.Deserialize(buf)
 }
 
 // GetHexString --
 func (pub *PublicKey) GetHexString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsPublicKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), pub.getPointer())
-	if n == 0 {
-		panic("err blsPublicKeyGetHexStr")
-	}
-	return string(buf[:n])
+	return pub.v.GetString(16)
 }
 
 // SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsPublicKeySetHexStr(pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsPublicKeySetHexStr %x", buf)
-	}
-	return nil
+	return pub.v.SetString(s, 16)
 }
 
 // IsEqual --
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
-	return C.blsPublicKeyIsEqual(pub.getPointer(), rhs.getPointer()) == 1
+	return pub.v.IsEqual(&rhs.v)
 }
 
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
-	C.blsPublicKeyAdd(pub.getPointer(), rhs.getPointer())
+	G2Add(&pub.v, &pub.v, &rhs.v)
 }
 
 // Set --
 func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
-	err := C.blsPublicKeyShare(pub.getPointer(), mpk[0].getPointer(), C.size_t(len(mpk)), id.getPointer())
-	if err != 0 {
-		return fmt.Errorf("PublicKey.set")
-	}
-	return nil
+	// #nosec
+	return G2EvaluatePolynomial(&pub.v, *(*[]G2)(unsafe.Pointer(&mpk)), &id.v)
 }
 
 // Recover --
 func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
-	err := C.blsPublicKeyRecover(pub.getPointer(), pubVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(pubVec)))
-	if err != 0 {
-		return fmt.Errorf("PublicKey.Recover")
-	}
-	return nil
+	// #nosec
+	return G2LagrangeInterpolation(&pub.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G2)(unsafe.Pointer(&pubVec)))
 }
 
 // Sign  --
 type Sign struct {
-	v C.mclBnG1
+	v G1
 }
 
 // getPointer --
@@ -364,50 +227,27 @@ func (sign *Sign) getPointer() (p *C.blsSignature) {
 
 // Serialize --
 func (sign *Sign) Serialize() []byte {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsSignatureSerialize(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), sign.getPointer())
-	if n == 0 {
-		panic("err blsSignatureSerialize")
-	}
-	return buf[:n]
+	return sign.v.Serialize()
 }
 
 // Deserialize --
 func (sign *Sign) Deserialize(buf []byte) error {
-	// #nosec
-	err := C.blsSignatureDeserialize(sign.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSignatureDeserialize %x", buf)
-	}
-	return nil
+	return sign.v.Deserialize(buf)
 }
 
 // GetHexString --
 func (sign *Sign) GetHexString() string {
-	buf := make([]byte, 1024)
-	// #nosec
-	n := C.blsSignatureGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)), sign.getPointer())
-	if n == 0 {
-		panic("err blsSignatureGetHexStr")
-	}
-	return string(buf[:n])
+	return sign.v.GetString(16)
 }
 
 // SetHexString --
 func (sign *Sign) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSignatureSetHexStr(sign.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSignatureSetHexStr %x", buf)
-	}
-	return nil
+	return sign.v.SetString(s, 16)
 }
 
 // IsEqual --
 func (sign *Sign) IsEqual(rhs *Sign) bool {
-	return C.blsSignatureIsEqual(sign.getPointer(), rhs.getPointer()) == 1
+	return sign.v.IsEqual(&rhs.v)
 }
 
 // GetPublicKey --
@@ -433,11 +273,8 @@ func (sign *Sign) Add(rhs *Sign) {
 
 // Recover --
 func (sign *Sign) Recover(signVec []Sign, idVec []ID) error {
-	err := C.blsSignatureRecover(sign.getPointer(), signVec[0].getPointer(), idVec[0].getPointer(), C.size_t(len(signVec)))
-	if err != 0 {
-		return fmt.Errorf("Sign.Recover")
-	}
-	return nil
+	// #nosec
+	return G1LagrangeInterpolation(&sign.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G1)(unsafe.Pointer(&signVec)))
 }
 
 // Verify --
