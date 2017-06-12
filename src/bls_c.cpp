@@ -58,7 +58,7 @@ static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 	recover out = f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
 */
 template<class G, class F>
-int LagrangeInterpolation(G& out, const G *vec, const F *S, size_t k)
+int LagrangeInterpolation(G& out, const F *S, const G *vec, size_t k)
 {
 	/*
 		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
@@ -129,17 +129,17 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 	return e.isOne();
 }
 
-int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *yVec, const mclBnFr *xVec, size_t k)
+int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *xVec, const mclBnFr *yVec, size_t k)
 {
-	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
+	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
 }
-int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnG1 *yVec, const mclBnFr *xVec, size_t k)
+int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnFr *xVec, const mclBnG1 *yVec, size_t k)
 {
-	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
+	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
 }
-int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnG2 *yVec, const mclBnFr *xVec, size_t k)
+int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnFr *xVec, const mclBnG2 *yVec, size_t k)
 {
-	return LagrangeInterpolation(*cast(out), cast(yVec), cast(xVec), k);
+	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
 }
 int mclBn_FrEvaluatePolynomial(mclBnFr *out, const mclBnFr *cVec, size_t cSize, const mclBnFr *x)
 {
@@ -211,7 +211,7 @@ int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, size_t k, cons
 
 int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n)
 {
-	return mclBn_FrLagrangeInterpolation(&sec->v, &secVec->v, &idVec->v, n);
+	return mclBn_FrLagrangeInterpolation(&sec->v, &idVec->v, &secVec->v, n);
 }
 
 void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
@@ -229,11 +229,11 @@ int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, cons
 }
 int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n)
 {
-	return mclBn_G2LagrangeInterpolation(&pub->v, &pubVec->v, &idVec->v, n);
+	return mclBn_G2LagrangeInterpolation(&pub->v, &idVec->v, &pubVec->v, n);
 }
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n)
 {
-	return mclBn_G1LagrangeInterpolation(&sig->v, &sigVec->v, &idVec->v, n);
+	return mclBn_G1LagrangeInterpolation(&sig->v, &idVec->v, &sigVec->v, n);
 }
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, size_t size)

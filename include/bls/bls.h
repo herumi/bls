@@ -127,9 +127,9 @@ BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
 	return 0 if success else -1
 	@note k >= 2, xVec[i] != 0, xVec[i] != xVec[j] for i != j
 */
-BLS_DLL_API int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *yVec, const mclBnFr *xVec, size_t k);
-BLS_DLL_API int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnG1 *yVec, const mclBnFr *xVec, size_t k);
-BLS_DLL_API int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnG2 *yVec, const mclBnFr *xVec, size_t k);
+BLS_DLL_API int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *xVec, const mclBnFr *yVec, size_t k);
+BLS_DLL_API int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnFr *xVec, const mclBnG1 *yVec, size_t k);
+BLS_DLL_API int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnFr *xVec, const mclBnG2 *yVec, size_t k);
 
 /*
 	evaluate polynomial
