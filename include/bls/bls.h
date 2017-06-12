@@ -115,7 +115,7 @@ BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVe
 BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
 BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n);
 
-BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const char *m, size_t size);
+BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, size_t size);
 
 // return 1 if valid
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, size_t size);

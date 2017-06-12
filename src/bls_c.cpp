@@ -198,7 +198,7 @@ void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
 	mclBnG2_mul(&pub->v, cast(&getQ()), &sec->v);
 }
-void blsSign(blsSignature *sig, const blsSecretKey *sec, const char *m, size_t size)
+void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, size_t size)
 {
 	G1 Hm;
 	BN::hashAndMapToG1(Hm, m, size);
