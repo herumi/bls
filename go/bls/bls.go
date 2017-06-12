@@ -444,7 +444,7 @@ func (sign *Sign) Recover(signVec []Sign, idVec []ID) error {
 func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
 	// #nosec
-	return C.blsVerify(sign.getPointer(), pub.getPointer(), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))) == 1
+	return C.blsVerify(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf))) == 1
 }
 
 // VerifyPop --
