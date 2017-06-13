@@ -170,6 +170,11 @@ BLS_DLL_API size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const bls
 BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize);
 BLS_DLL_API size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig);
 
+/*
+	Diffie Hellman key exchange
+	out = sec * pub
+*/
+BLS_DLL_API void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub);
 #ifdef __cplusplus
 }
 #endif

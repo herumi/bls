@@ -305,6 +305,19 @@ func testOrder(t *testing.T, c int) {
 	}
 }
 
+func testDHKeyExchange(t *testing.T) {
+	var sec1, sec2 SecretKey
+	sec1.SetByCSPRNG()
+	sec2.SetByCSPRNG()
+	pub1 := sec1.GetPublicKey()
+	pub2 := sec2.GetPublicKey()
+	out1 := DHKeyExchange(&sec1, pub2)
+	out2 := DHKeyExchange(&sec2, pub1)
+	if !out1.IsEqual(&out2) {
+		t.Errorf("DH key is not equal")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -321,6 +334,7 @@ func test(t *testing.T, c int) {
 	testData(t)
 	testStringConversion(t)
 	testOrder(t, c)
+	testDHKeyExchange(t)
 }
 
 func TestMain(t *testing.T) {

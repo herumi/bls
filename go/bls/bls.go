@@ -288,3 +288,9 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
 	return C.blsVerifyPop(sign.getPointer(), pub.getPointer()) == 1
 }
+
+// DHKeyExchange --
+func DHKeyExchange(sec *SecretKey, pub *PublicKey) (out PublicKey) {
+	C.blsDHKeyExchange(out.getPointer(), sec.getPointer(), pub.getPointer())
+	return out
+}

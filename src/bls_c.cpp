@@ -391,3 +391,8 @@ size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *s
 {
 	return mclBnG1_getStr(buf, maxBufSize, &sig->v, 16);
 }
+void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub)
+{
+	mclBnG2_mul(&out->v, &pub->v, &sec->v);
+}
+
