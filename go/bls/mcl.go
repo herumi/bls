@@ -118,7 +118,7 @@ func (x *Fr) IsZero() bool {
 }
 
 // IsOne --
-func (x *Fr) IsOne(rhs *Fr) bool {
+func (x *Fr) IsOne() bool {
 	return C.mclBnFr_isOne(x.getPointer()) == 1
 }
 
@@ -452,7 +452,7 @@ func (x *GT) IsZero() bool {
 }
 
 // IsOne --
-func (x *GT) IsOne(rhs *GT) bool {
+func (x *GT) IsOne() bool {
 	return C.mclBnGT_isOne(x.getPointer()) == 1
 }
 
