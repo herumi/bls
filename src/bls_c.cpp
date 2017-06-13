@@ -11,7 +11,7 @@
 #include <bls/bls.h>
 /*
 	BLS signature
-	e : G2 x G1 -> Fp12
+	e : G1 x G2 -> Fp12
 	Q in G2 ; fixed global parameter
 	H : {str} -> G1
 	s : secret key
@@ -29,14 +29,7 @@ int blsInit(int curve, int maxUnitSize)
 	try
 {
 	if (mclBn_init(curve, maxUnitSize) != 0) return -1;
-	if (curve == mclBn_CurveFp254BNb) {
-		g_Q.set(
-			Fp2("12723517038133731887338407189719511622662176727675373276651903807414909099441", "4168783608814932154536427934509895782246573715297911553964171371032945126671"),
-			Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
-		);
-	} else {
-		BN::mapToG2(g_Q, 1);
-	}
+	BN::mapToG2(g_Q, 1);
 	BN::precomputeG2(g_Qcoeff, getQ());
 	return 0;
 } catch (std::exception&) {
