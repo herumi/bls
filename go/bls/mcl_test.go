@@ -3,6 +3,31 @@ package bls
 import "testing"
 import "fmt"
 
+func TestBadPointOfG2(t *testing.T) {
+	err := Init(CurveFp382_2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var Q G2
+	// this value is not in G2 so should return an error
+	err = Q.SetString("1 18d3d8c085a5a5e7553c3a4eb628e88b8465bf4de2612e35a0a4eb018fb0c82e9698896031e62fd7633ffd824a859474 1dc6edfcf33e29575d4791faed8e7203832217423bf7f7fbf1f6b36625b12e7132c15fbc15562ce93362a322fb83dd0d 65836963b1f7b6959030ddfa15ab38ce056097e91dedffd996c1808624fa7e2644a77be606290aa555cda8481cfb3cb 1b77b708d3d4f65aeedf54b58393463a42f0dc5856baadb5ce608036baeca398c5d9e6b169473a8838098fd72fd28b50", 16)
+	if err == nil {
+		t.Error(err)
+	}
+}
+
+func TestGT(t *testing.T) {
+	var x GT
+	x.Clear()
+	if !x.IsZero() {
+		t.Errorf("not zero")
+	}
+	x.SetInt64(1)
+	if !x.IsOne() {
+		t.Errorf("not one")
+	}
+}
+
 func testNegAdd(t *testing.T) {
 	var x Fr
 	var P1, P2, P3 G1

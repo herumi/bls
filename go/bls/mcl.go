@@ -420,6 +420,12 @@ func (x *GT) Clear() {
 	C.mclBnGT_clear(x.getPointer())
 }
 
+// SetInt64 --
+func (x *GT) SetInt64(v int64) {
+	// #nosec
+	C.mclBnGT_setInt(x.getPointer(), C.int64_t(v))
+}
+
 // SetString --
 func (x *GT) SetString(s string, base int) error {
 	buf := []byte(s)
