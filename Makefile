@@ -18,6 +18,9 @@ ifeq ($(UNIT),6)
   CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=6"
   GO_TAG=bn384
 endif
+ifneq ($(MCL_MAX_BIT_SIZE),)
+  CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
+endif
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
 	python bls_smpl.py
