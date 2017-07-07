@@ -47,63 +47,6 @@ static inline const G2 *cast(const blsPublicKey* x) { return (const G2 *)x; }
 
 static inline const mclBnG1 *cast(const G1* x) { return (const mclBnG1*)x; }
 static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
-/*
-	recover out = f(0) by { (x, y) | x = S[i], y = f(x) = vec[i] }
-*/
-template<class G, class F>
-int LagrangeInterpolation(G& out, const F *S, const G *vec, size_t k)
-{
-	/*
-		delta_{i,S}(0) = prod_{j != i} S[j] / (S[j] - S[i]) = a / b
-		where a = prod S[j], b = S[i] * prod_{j != i} (S[j] - S[i])
-	*/
-	if (k < 2) return -1;
-	std::vector<F> delta(k);
-	F a = S[0];
-	for (size_t i = 1; i < k; i++) {
-		a *= S[i];
-	}
-	if (a.isZero()) return -1;
-	for (size_t i = 0; i < k; i++) {
-		F b = S[i];
-		for (size_t j = 0; j < k; j++) {
-			if (j != i) {
-				F v = S[j] - S[i];
-				if (v.isZero()) return -1;
-				b *= v;
-			}
-		}
-		delta[i] = a / b;
-	}
-
-	/*
-		f(0) = sum_i f(S[i]) delta_{i,S}(0)
-	*/
-	G r, t;
-	r.clear();
-	for (size_t i = 0; i < delta.size(); i++) {
-		G::mul(t, vec[i], delta[i]);
-		r += t;
-	}
-	out = r;
-	return 0;
-}
-
-/*
-	out = f(x) = c[0] + c[1] * x + c[2] * x^2 + ... + c[cSize - 1] * x^(cSize - 1)
-*/
-template<class G, class T>
-int evalPoly(G& out, const G *c, size_t cSize, const T& x)
-{
-	if (cSize < 2) return -1;
-	G y = c[cSize - 1];
-	for (int i = (int)cSize - 2; i >= 0; i--) {
-		G::mul(y, y, x);
-		G::add(y, y, c[i]);
-	}
-	out = y;
-	return 0;
-}
 
 /*
 	e(P1, Q1) == e(P2, Q2)
@@ -120,31 +63,6 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 	BN::precomputedMillerLoop2(e, P1, Q1coeff, -P2, Q2coeff.data());
 	BN::finalExp(e, e);
 	return e.isOne();
-}
-
-int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *xVec, const mclBnFr *yVec, size_t k)
-{
-	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
-}
-int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnFr *xVec, const mclBnG1 *yVec, size_t k)
-{
-	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
-}
-int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnFr *xVec, const mclBnG2 *yVec, size_t k)
-{
-	return LagrangeInterpolation(*cast(out), cast(xVec), cast(yVec), k);
-}
-int mclBn_FrEvaluatePolynomial(mclBnFr *out, const mclBnFr *cVec, size_t cSize, const mclBnFr *x)
-{
-	return evalPoly(*cast(out), cast(cVec), cSize, *cast(x));
-}
-int mclBn_G1EvaluatePolynomial(mclBnG1 *out, const mclBnG1 *cVec, size_t cSize, const mclBnFr *x)
-{
-	return evalPoly(*cast(out), cast(cVec), cSize, *cast(x));
-}
-int mclBn_G2EvaluatePolynomial(mclBnG2 *out, const mclBnG2 *cVec, size_t cSize, const mclBnFr *x)
-{
-	return evalPoly(*cast(out), cast(cVec), cSize, *cast(x));
 }
 
 size_t checkAndCopy(char *buf, size_t maxBufSize, const std::string& s)

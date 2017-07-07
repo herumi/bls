@@ -121,25 +121,6 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void 
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, size_t size);
 BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
 
-/*
-	Lagrange interpolation
-	recover out = y(0) by { (xVec[i], yVec[i]) }
-	return 0 if success else -1
-	@note k >= 2, xVec[i] != 0, xVec[i] != xVec[j] for i != j
-*/
-BLS_DLL_API int mclBn_FrLagrangeInterpolation(mclBnFr *out, const mclBnFr *xVec, const mclBnFr *yVec, size_t k);
-BLS_DLL_API int mclBn_G1LagrangeInterpolation(mclBnG1 *out, const mclBnFr *xVec, const mclBnG1 *yVec, size_t k);
-BLS_DLL_API int mclBn_G2LagrangeInterpolation(mclBnG2 *out, const mclBnFr *xVec, const mclBnG2 *yVec, size_t k);
-
-/*
-	evaluate polynomial
-	out = f(x) = c[0] + c[1] * x + c[2] * x^2 + ... + c[cSize - 1] * x^(cSize - 1)
-	@note cSize >= 2
-*/
-BLS_DLL_API int mclBn_FrEvaluatePolynomial(mclBnFr *out, const mclBnFr *cVec, size_t cSize, const mclBnFr *x);
-BLS_DLL_API int mclBn_G1EvaluatePolynomial(mclBnG1 *out, const mclBnG1 *cVec, size_t cSize, const mclBnFr *x);
-BLS_DLL_API int mclBn_G2EvaluatePolynomial(mclBnG2 *out, const mclBnG2 *cVec, size_t cSize, const mclBnFr *x);
-
 //////////////////////////////////////////////////////////////////////////
 // the following apis will be removed
 
