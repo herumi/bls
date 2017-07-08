@@ -36,15 +36,6 @@ int blsInit(int curve, int maxUnitSize)
 	return -1;
 }
 
-static inline Fr *cast(blsId* x) { return (Fr *)x; }
-static inline Fr *cast(blsSecretKey* x) { return (Fr *)x; }
-static inline G1 *cast(blsSignature* x) { return (G1 *)x; }
-static inline G2 *cast(blsPublicKey* x) { return (G2 *)x; }
-static inline const Fr *cast(const blsId* x) { return (const Fr *)x; }
-static inline const Fr *cast(const blsSecretKey* x) { return (const Fr *)x; }
-static inline const G1 *cast(const blsSignature* x) { return (const G1 *)x; }
-static inline const G2 *cast(const blsPublicKey* x) { return (const G2 *)x; }
-
 static inline const mclBnG1 *cast(const G1* x) { return (const mclBnG1*)x; }
 static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 
