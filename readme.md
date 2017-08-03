@@ -127,7 +127,7 @@ Verify a public key by pop.
 
 # Go
 ```
-make run_go
+make test_go
 ```
 
 # License
