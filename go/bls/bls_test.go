@@ -325,7 +325,6 @@ func test(t *testing.T, c int) {
 	}
 	unitN = GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
-	testPairing(t)
 	testPre(t)
 	testRecoverSecretKey(t)
 	testAdd(t)

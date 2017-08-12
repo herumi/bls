@@ -43,14 +43,18 @@ $(MCL_LIB):
 ##################################################################
 
 BLS384_LIB=$(LIB_DIR)/libbls384.a
-BLS384_SLIB=$(LIB_DIR)/libbls384$(SHARE_BASENAME_SUF).$(LIB_SUF)
+BLS384_SNAME=bls384$(SHARE_BASENAME_SUF)
+BLS384_SLIB=$(LIB_DIR)/lib$(BLS384_SNAME).$(LIB_SUF)
 lib: $(BLS_LIB) $(BLS384_SLIB)
 
 $(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 
+ifeq ($(OS),mac)
+  MAC_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
+endif
 $(BLS384_SLIB): $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
+	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB) $(MAC_LDFLAGS)
 
 VPATH=test sample src
 
@@ -74,9 +78,11 @@ test: $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 
+ifeq ($(OS),mac)
+  MAC_GO_LDFLAGS="-ldflags=-s"
+endif
 test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
-	cd go/bls && env CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" LD_LIBRARY_PATH=../../lib go test .
-#	cd go/bls && go test -tags $(GO_TAG) -v .
+	cd go/bls && ln -sf ../../lib . && env LD_RUN_PATH="../../lib" CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB)
