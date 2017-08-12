@@ -3,6 +3,7 @@ LIB_DIR=lib
 OBJ_DIR=obj
 EXE_DIR=bin
 CFLAGS += -std=c++11
+LDFLAGS += -lpthread
 
 SRC_SRC=bls.cpp bls_c.cpp
 TEST_SRC=bls_test.cpp bls_c384_test.cpp

@@ -50,6 +50,10 @@ typedef struct {
 	@note init() is not thread safe
 */
 BLS_DLL_API int blsInit(int curve, int maxUnitSize);
+/*
+	wait for the finish of the first call blsInit() and do nothing
+*/
+BLS_DLL_API int blsInitThreadSafe(int curve, int maxUnitSize);
 
 BLS_DLL_API size_t blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0

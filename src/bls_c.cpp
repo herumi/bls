@@ -36,6 +36,23 @@ int blsInit(int curve, int maxUnitSize)
 	return -1;
 }
 
+#if CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
+#include <mutex>
+static std::mutex g_mutex;
+static int g_curve = -1;
+
+int blsInitThreadSafe(int curve, int maxUnitSize)
+{
+	int ret = 0;
+	std::lock_guard<std::mutex> lock(g_mutex);
+	if (g_curve != curve) {
+		ret = blsInit(curve, maxUnitSize);
+		g_curve = curve;
+	}
+	return ret;
+}
+#endif
+
 static inline const mclBnG1 *cast(const G1* x) { return (const mclBnG1*)x; }
 static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 

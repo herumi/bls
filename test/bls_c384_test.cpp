@@ -62,6 +62,46 @@ void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 	CYBOZU_TEST_EQUAL(buf, fieldOrder);
 }
 
+#if CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
+#include <thread>
+#include <vector>
+struct Thread {
+	std::unique_ptr<std::thread> t;
+	Thread() : t() {}
+	~Thread()
+	{
+		if (t) {
+			t->join();
+		}
+	}
+	template<class F>
+	void run(F func, int p1, int p2)
+	{
+		t.reset(new std::thread(func, p1, p2));
+	}
+};
+CYBOZU_TEST_AUTO(multipleInit)
+{
+	const size_t n = 100;
+	{
+		std::vector<Thread> vt(n);
+		for (size_t i = 0; i < n; i++) {
+			vt[i].run(blsInitThreadSafe, mclBn_CurveFp254BNb, MCLBN_FP_UNIT_SIZE);
+		}
+	}
+	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 4u);
+#if MCLBN_FP_UNIT_SIZE == 6
+	{
+		std::vector<Thread> vt(n);
+		for (size_t i = 0; i < n; i++) {
+			vt[i].run(blsInitThreadSafe, mclBn_CurveFp382_1, MCLBN_FP_UNIT_SIZE);
+		}
+	}
+	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 6u);
+#endif
+}
+#endif
+
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
