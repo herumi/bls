@@ -45,15 +45,17 @@ typedef struct {
 
 /*
 	initialize this library
-	call this once before using the other method
+	call this once before using the other functions
+	@param curve [in] enum value defined in mcl/bn.h
+	@param maxUnitSize [in] MCLBN_FP_UNIT_SIZE (fixed)
 	return 0 if success
-	@note init() is not thread safe
+	@note blsInit() is thread safe and serialized if it is called simultaneously
+	but don't call it while using other functions.
 */
 BLS_DLL_API int blsInit(int curve, int maxUnitSize);
-/*
-	wait for the finish of the first call blsInit() and do nothing
-*/
-BLS_DLL_API int blsInitThreadSafe(int curve, int maxUnitSize);
+
+// not thread safe version (old blsInit)
+BLS_DLL_API int blsInitNotThreadSafe(int curve, int maxUnitSize);
 
 BLS_DLL_API size_t blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0
