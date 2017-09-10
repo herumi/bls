@@ -1,0 +1,43 @@
+<!DOCTYPE html> 
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>BLS signature sample</title>
+<script type='text/javascript' src="./bls.js"></script>
+<script type='text/javascript' src="./exported-bls.js"></script>
+<script type='text/javascript' src="./bls-demo.js"></script>
+</script>
+</head>
+<body>
+<div>
+library status <span name="status">initializing...</span>
+</div>
+<h2>init</h2>
+<button type="text" onclick="TestPairing()">test Pairing</button>
+<div>pairing time : <span name="time_pairing">0</span>msec</div>
+<div>G1 scalar mul : <span name="time_g1mul">0</span>msec</div>
+<div>G2 scalar mul : <span name="time_g2mul">0</span>msec</div>
+<hr>
+<div>
+a = <input type="text" name="a" value="3"><br>
+b = <input type="text" name="b" value="4"><br>
+ab = <span name="ab">0</span><br>
+</div>
+<div>
+P = hashAndMapToG1(<input type="text" name="hash_P" value="abc">) = <span name="P">0</span><br>
+Q = hashAndMapToG2(<input type="text" name="hash_Q" value="def">) = <span name="Q">0</span><br>
+aP = <span name="aP">0</span><br>
+bQ = <span name="bQ">0</span><br>
+</div>
+<hr>
+<div>
+e(P, Q) = <span name="ePQ">0</span><br>
+e(aP, bQ) = <span name="eaPbQ">0</span><br>
+e(P, Q)^ab = <span name="ePQab">0</span><br>
+</div>
+<hr>
+<div>
+e(aP, bQ) == e(P, Q)^ab is <span name="verify_pairing"></span>
+</div>
+</body>
+</html>
