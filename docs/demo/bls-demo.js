@@ -22,7 +22,7 @@ function setupWasm(fileName, nameSpace, setupFct) {
 
 var MCLBN_FP_UNIT_SIZE = 6
 
-var module = setupWasm('bls.wasm', null, function(mod, ns) {
+var module = setupWasm('bls_c.wasm', null, function(mod, ns) {
 	define_exported_bls(mod)
 	define_extra_functions(mod)
 	var r = blsInit(0, MCLBN_FP_UNIT_SIZE)
