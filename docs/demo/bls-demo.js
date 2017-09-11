@@ -20,12 +20,16 @@ function setupWasm(fileName, nameSpace, setupFct) {
 	return mod
 }
 
+const MCLBN_CURVE_FP254BNB = 0
+const MCLBN_CURVE_FP382_1 = 1
+const MCLBN_CURVE_FP382_2 = 2
+
 var MCLBN_FP_UNIT_SIZE = 6
 
 var module = setupWasm('bls_c.wasm', null, function(mod, ns) {
 	define_exported_bls(mod)
 	define_extra_functions(mod)
-	var r = blsInit(0, MCLBN_FP_UNIT_SIZE)
+	var r = blsInit(MCLBN_CURVE_FP382_1, MCLBN_FP_UNIT_SIZE)
 	setText('status', r ? 'err:' + r : 'ok')
 })
 
@@ -150,6 +154,15 @@ function define_extra_functions(mod) {
 	mclBnGT_getStr = gen_getStr(_mclBnGT_getStr)
 }
 
+function onChangeSelectCurve() {
+	let obj = document.selectCurve.curveType
+	let idx = obj.selectedIndex
+	let curve = obj.options[idx].value
+	console.log('idx=' + idx)
+	var r = blsInit(idx, MCLBN_FP_UNIT_SIZE)
+	setText('status', r ? 'err:' + r : 'ok')
+}
+
 function rand(val) {
 	var x = mclBnFr_malloc()
 	mclBnFr_setByCSPRNG(x)
@@ -167,7 +180,8 @@ function bench(label, count, func) {
 	setText(label, t)
 }
 
-function TestPairing() {
+function onClickTestPairing() {
+	document.getElementById('testPairing').disabled = true
 	var a = mclBnFr_malloc()
 	var b = mclBnFr_malloc()
 	var ab = mclBnFr_malloc()
@@ -214,4 +228,5 @@ function TestPairing() {
 	mclBnFr_free(ab)
 	mclBnFr_free(b)
 	mclBnFr_free(a)
+	document.getElementById('testPairing').disabled = false
 }

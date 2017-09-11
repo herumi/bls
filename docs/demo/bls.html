@@ -9,11 +9,18 @@
 </script>
 </head>
 <body>
-<div>
+<p>
+<form name="selectCurve">
+<select name="curveType" onChange="onChangeSelectCurve()">
+<option value="0" selected>Fp254BNb</option>
+<option value="1">Fp382_1</option>
+<option value="2">Fp382_2</option>
+</select>
 library status <span name="status">initializing...</span>
-</div>
+</form>
+</p>
 <h2>init</h2>
-<button type="text" onclick="TestPairing()">test Pairing</button>
+<button type="text" id="testPairing" onclick="onClickTestPairing()">test Pairing</button>
 <div>pairing time : <span name="time_pairing">0</span>msec</div>
 <div>G1 scalar mul : <span name="time_g1mul">0</span>msec</div>
 <div>G2 scalar mul : <span name="time_g2mul">0</span>msec</div>
