@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>BLS signature sample</title>
+<link rel="stylesheet" href="style.css" type="text/css">
 <script type='text/javascript' src="./bls_c.js"></script>
 <script type='text/javascript' src="./exported-bls.js"></script>
 <script type='text/javascript' src="./bls-demo.js"></script>
@@ -11,20 +12,52 @@
 <body>
 <p>
 <form name="selectCurve">
-<select name="curveType" onChange="onChangeSelectCurve()">
+pairing parameter : <select name="curveType" onChange="onChangeSelectCurve()">
 <option value="0" selected>Fp254BNb</option>
 <option value="1">Fp382_1</option>
 <option value="2">Fp382_2</option>
 </select>
 library status <span name="status">initializing...</span>
 </form>
+<div>group order : <span name="curveOrder">0</span></div>
+<div>Remark : This version uses SHA-1, which will be replaced with SHA-2 later.</div>
 </p>
-<h2>init</h2>
-<button type="text" id="testPairing" onclick="onClickTestPairing()">test Pairing</button>
+<button type="text" id="benchmark" onclick="onClickBenchmark()">benchmark</button>
 <div>pairing time : <span name="time_pairing">0</span>msec</div>
 <div>G1 scalar mul : <span name="time_g1mul">0</span>msec</div>
 <div>G2 scalar mul : <span name="time_g2mul">0</span>msec</div>
+<div>Hash and map to G1 : <span name="time_mapToG1">0</span>msec</div>
+<div>sign : <span name="time_sign">0</span>msec</div>
+<div>verify : <span name="time_verify">0</span>msec</div>
 <hr>
+<button type="text" id="testBls" onclick="onClickTestSignature()">test basic signature</button>
+<div>
+secretKey : <span name="secretKey"></span><br>
+publicKey : <span name="publicKey"></span><br>
+msg : <input type="text" name="msg" value=""><br>
+signature : <span name="signature"></span><br>
+verify : <span name="verifyResult"></span><br>
+</div>
+<button type="text" id="testBls" onclick="onClickTestShare()">test sharing</button>
+<div>
+threshold(k)         : <input type="text" name="ss_k" value="3"><br>
+number of players(n) : <input type="text" name="ss_n" value="5"><br>
+master secret key : <span name="msk"></span><br>
+master public key : <span name="mpk"></span><br>
+msg : <input type="text" name="msg2" value="abc"><br>
+signature : <span name="signature2"></span><br>
+</div>
+<h2>key sharing</h2>
+<div id="idlist"> <ol> </ol> </div>
+<h2>key recover</h2>
+<div>
+selected index of id : <span name="idxVec"></span><br>
+recover secret key : <span name="recoverSec"></span><br>
+recover public key : <span name="recoverPub"></span><br>
+recover signature : <span name="recoverSig"></span><br>
+</div>
+<hr>
+<button type="text" id="testPairing" onclick="onClickTestPairing()">test Pairing</button>
 <div>
 a = <input type="text" name="a" value="3"><br>
 b = <input type="text" name="b" value="4"><br>
