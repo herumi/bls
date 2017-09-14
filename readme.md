@@ -130,6 +130,12 @@ Verify a public key by pop.
 make test_go
 ```
 
+# WASM(WebAssembly)
+```
+make demo
+```
+see [BLS signature demo on browser](https://herumi.github.io/bls/demo/bls.html)
+
 # License
 
 modified new BSD License
