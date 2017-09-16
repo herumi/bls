@@ -2,7 +2,140 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>demo</title>
+<h2>demo</h2>
 <a href="demo/bls.html">bls demo</a>
+<h2>API</h2>
+
+<h3>curveType</h3>
+<ul>
+<li>MCLBN_CURVE_FP254BNB = 0
+<li>MCLBN_CURVE_FP382_1 = 1
+<li>MCLBN_CURVE_FP382_2 = 2
+</ul>
+
+<h3>object</h3>
+<dl>
+<dt>blsId
+<dd>equal to mclBnFr ; create by blsId_malloc()
+
+<dt>blsSecretKey
+<dd>equal to mclBnFr ; create by blsSecretKey_malloc()
+
+<dt>blsPrivateKey
+<dd>equal to mclBnG1 ; create by blsPrivateKeyKey_malloc()
+
+<dt>blsPublicKey
+<dd>equal to mclBnG2 ; create by blsPublicKey_malloc()
+
+<dt>blsSignature     ; create by blsSignatureKey_malloc()
+<dd>equal to mclG1
+</dl>
+all objects are deleted by bls_free()
+
+<h3>api</h3>
+<dl>
+<dt>int blsInit(int curve, int maxUnitSize)
+<dd>curve = curveType, maxUnitSize = 6
+
+<dt>string blsGetCurveOrder()
+<dd>return the order of a group
+
+<dt>string blsGetFieldOrder()
+<dd>return the order of an finite field
+
+<dt>blsGetGeneratorOfG2(blsPublicKey pub)
+<dd>set pub to a generator of G2
+
+<dt>blsIdSetInt(blsId id, int x)
+<dd>set id by x
+
+<dt>blsIdSetDecStr(blsId id, string s)
+<dd>set id by decimal string s
+
+<dt>blsIdSetHexStr(blsId id, string s)
+<dd>set id by hexagonal string s
+
+<dt>string blsIdGetDecStr(blsId id)
+<dd>get decimal string of id
+
+<dt>string blsIdGetHexStr(blsId id)
+<dd>return hexiagonal string of id
+
+<dt>Uint8Array blsIdSerialize(blsId id)
+<dd>return Uint8Array of serialized id
+
+<dt>Uint8Array blsSecretKeySerialize(blsSecretKey sec)
+<dd>return Uint8Array of serialized sec
+
+<dt>Uint8Array blsPublicKeySerialize(blsPublicKey pub)
+<dd>return Uint8Array of serialized pub
+
+<dt>Uint8Array blsSignatureSerialize(blsSignature sig)
+<dd>return Uint8Array of serialized sig
+
+<dt>blsIdDeserialize(blsId id, Uint8Array a)
+<dd>set id by a
+
+<dt>blsSecretKeyDeserialize(blsSecretKey sec, Uint8Array a)
+<dd>set sec by a
+
+<dt>blsPublicKeyDeserialize(blsPublicKey pub, Uint8Array a)
+<dd>set pub by a
+
+<dt>blsSignatureDeserialize(blsSignature sig, Uint8Array a)
+<dd>set sig by a
+
+<dt>blsIdIsEqual(blsId lhs, blsId rhs)
+<dd>return 1 if lhs == rhs
+
+<dt>blsSecretKeyIsEqual(blsSecretKey lhs, blsSecretKey rhs)
+<dd>return 1 if lhs == rhs
+
+<dt>blsPublicKeyIsEqual(blsPublicKey lhs, blsPublicKey rhs)
+<dd>return 1 if lhs == rhs
+
+<dt>blsSignatureIsEqual(blsSignature lhs, blsSignature rhs)
+<dd>return 1 if lhs == rhs
+
+
+<dt>blsSecretKeyAdd(blsSecretKey sec, blsSecretKey rhs)
+<dt>sec += rhs
+
+<dt>blsPublicKeyAdd(blsPublicKey pub, blsPublicKey rhs)
+<dt>sec += rhs
+
+<dt>blsSignatureAdd(blsSignature sig, blsSignature rhs)
+<dt>sec += rhs
+
+
+<dt>blsHashToSecretKey(blsSecretKey sec, (string|Uint8Array) s)
+<dd>set sec by hash(s)
+
+<dt>blsSecretKeySetByCSPRNG(blsSecretKey sec)
+<dd>set sec by random number generator
+
+<dt>blsGetPublicKey(blsPublicKey pub, blsSecretKey sec)
+<dd>set public key pub by secret key sec
+
+<dt>blsSecretKeyShare(blsSecretKey sec, array of blsSecretKey msk, blsId id)
+<dd>share secret key sec by array of blsSecretKey msk with id
+
+<dt>blsPublicKeyShare(blsPublicKey pub, array of blsPublicKey mpk, blsId id)
+<dd>share public key pub by array of blsPublicKey mpk with id
+
+<dt>blsSecretKeyRecover(blsSecretKey sec, array of blsSecretKey secVec, array of blsId idVec)
+<dd>recover sec by n array of secVec and idVec
+
+<dt>blsPublicKeyRecover(blsPublicKey pub, array of blsPublicKey pubVec, array of blsId idVec)
+<dd>recover pub by n array of pubVec and idVec
+
+<dt>blsSignatureRecover(blsSignature sig, array of blsSignature sigVec, array of blsId idVec)
+<dd>recover sig by n array of sigVec and idVec
+
+<dt>blsSign(blsSignature sig, blsSecretKey sec, (string|Uint8Array) m)
+<dd>set sig by signing message m with sec
+
+<dt>blsVerify(blsSignature sig, blsPublicKey pub, (string|Uint8Array) m)
+<dd>verify sig by pub and message m
 </body>
 </html>
