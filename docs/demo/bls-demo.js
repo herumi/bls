@@ -34,7 +34,7 @@ function onChangeSelectCurve() {
 	if (curve == prevSelectedCurve) return
 	prevSelectedCurve = curve
 	console.log('idx=' + idx)
-	let r = blsInit(idx, MCLBN_FP_UNIT_SIZE)
+	let r = blsInit(idx)
 	setText('status', r ? 'err:' + r : 'ok')
 	setText('curveOrder', blsGetCurveOrder())
 }

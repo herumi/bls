@@ -1,6 +1,6 @@
 function define_exported_bls(mod) {
-blsInit = mod.cwrap('blsInit', 'number', ['number', 'number', ])
-blsInitNotThreadSafe = mod.cwrap('blsInitNotThreadSafe', 'number', ['number', 'number', ])
+_blsInit = mod.cwrap('blsInit', 'number', ['number', 'number', ])
+_blsInitNotThreadSafe = mod.cwrap('blsInitNotThreadSafe', 'number', ['number', 'number', ])
 blsGetOpUnitSize = mod.cwrap('blsGetOpUnitSize', 'number', [])
 _blsGetCurveOrder = mod.cwrap('blsGetCurveOrder', 'number', ['number', 'number', ])
 _blsGetFieldOrder = mod.cwrap('blsGetFieldOrder', 'number', ['number', 'number', ])
@@ -51,7 +51,7 @@ _blsSignatureSetHexStr = mod.cwrap('blsSignatureSetHexStr', 'number', ['number',
 _blsSignatureGetHexStr = mod.cwrap('blsSignatureGetHexStr', 'number', ['number', 'number', 'number', ])
 blsDHKeyExchange = mod.cwrap('blsDHKeyExchange', 'null', ['number', 'number', 'number', ])
 mclBn_setErrFile = mod.cwrap('mclBn_setErrFile', 'number', ['number', ])
-mclBn_init = mod.cwrap('mclBn_init', 'number', ['number', 'number', ])
+_mclBn_init = mod.cwrap('mclBn_init', 'number', ['number', 'number', ])
 mclBn_getOpUnitSize = mod.cwrap('mclBn_getOpUnitSize', 'number', [])
 mclBn_getCurveOrder = mod.cwrap('mclBn_getCurveOrder', 'number', ['number', 'number', ])
 mclBn_getFieldOrder = mod.cwrap('mclBn_getFieldOrder', 'number', ['number', 'number', ])

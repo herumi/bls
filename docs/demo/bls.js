@@ -193,6 +193,10 @@ function define_bls_extra_functions(mod) {
 	blsPublicKey_malloc = mclBnG2_malloc
 	blsSignature_malloc = mclBnG1_malloc
 
+	blsInit = function(curveType) {
+		return _blsInit(curveType, MCLBN_FP_UNIT_SIZE)
+	}
+
 	blsGetCurveOrder = wrap_outputString(_blsGetCurveOrder)
 	blsGetFieldOrder = wrap_outputString(_blsGetFieldOrder)
 
