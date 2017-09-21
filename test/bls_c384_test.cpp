@@ -123,44 +123,93 @@ void blsSerializeTest()
 	size_t n;
 	size_t expectSize;
 	int ret;
+	const char dummyChar = '1';
 
+	// Id
 	expectSize = opUnitSize * 8;
 	blsIdSetInt(&id1, -1);
 	n = blsIdSerialize(buf, sizeof(buf), &id1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
+
 	ret = blsIdDeserialize(&id2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsIdIsEqual(&id1, &id2));
+
+	ret = blsIdDeserialize(&id2, buf, n - 1);
+	CYBOZU_TEST_ASSERT(ret != 0);
+
+	memset(&id2, 0, sizeof(id2));
+	buf[n] = dummyChar;
+	ret = blsIdDeserialize(&id2, buf, n + 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsIdIsEqual(&id1, &id2));
+
 	n = blsIdSerialize(buf, expectSize, &id1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
+	// SecretKey
 	expectSize = opUnitSize * 8;
 	blsSecretKeySetDecStr(&sec1, "-1", 2);
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
+
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
+
+	ret = blsSecretKeyDeserialize(&sec2, buf, n - 1);
+	CYBOZU_TEST_ASSERT(ret != 0);
+
+	memset(&sec2, 0, sizeof(sec2));
+	buf[n] = dummyChar;
+	ret = blsSecretKeyDeserialize(&sec2, buf, n + 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
+
 	n = blsSecretKeySerialize(buf, expectSize, &sec1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
+	// PublicKey
 	expectSize = opUnitSize * 8 * 2;
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
+
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
+
+	ret = blsPublicKeyDeserialize(&pub2, buf, n - 1);
+	CYBOZU_TEST_ASSERT(ret != 0);
+
+	memset(&pub2, 0, sizeof(pub2));
+	buf[n] = dummyChar;
+	ret = blsPublicKeyDeserialize(&pub2, buf, n + 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
+
 	n = blsPublicKeySerialize(buf, expectSize, &pub1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
+	// Signature
 	expectSize = opUnitSize * 8;
 	blsSign(&sig1, &sec1, "abc", 3);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
+
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
+
+	ret = blsSignatureDeserialize(&sig2, buf, n - 1);
+	CYBOZU_TEST_ASSERT(ret != 0);
+
+	memset(&sig2, 0, sizeof(sig2));
+	buf[n] = dummyChar;
+	ret = blsSignatureDeserialize(&sig2, buf, n + 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
+
 	n = blsSignatureSerialize(buf, expectSize, &sig1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
 }
