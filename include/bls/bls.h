@@ -78,13 +78,13 @@ BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id)
 BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
 
 
-//	return written byte size if success else 0
+// return written byte size if success else 0
 BLS_DLL_API size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id);
 BLS_DLL_API size_t blsSecretKeySerialize(void *buf, size_t maxBufSize, const blsSecretKey *sec);
 BLS_DLL_API size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub);
 BLS_DLL_API size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig);
 
-// return 1 if same else 0
+// return 0 if success else -1
 BLS_DLL_API int blsIdDeserialize(blsId *id, const void *buf, size_t bufSize);
 BLS_DLL_API int blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, size_t bufSize);
 BLS_DLL_API int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize);
@@ -101,7 +101,7 @@ BLS_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 BLS_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 
-//	hash buf and set
+// hash buf and set
 BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize);
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom
