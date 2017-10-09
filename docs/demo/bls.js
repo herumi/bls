@@ -144,7 +144,6 @@ function define_bls_extra_functions(mod) {
 	const G2_SIZE = FR_SIZE * 3 * 2
 	const GT_SIZE = FR_SIZE * 12
 
-	const ID_SIZE = FR_SIZE
 	const SECRETKEY_SIZE = FR_SIZE
 	const PUBLICKEY_SIZE = G2_SIZE
 	const SIGNATURE_SIZE = G1_SIZE
@@ -225,9 +224,9 @@ function define_bls_extra_functions(mod) {
 	blsSecretKeyShare = wrap_keyShare(_blsSecretKeyShare, SECRETKEY_SIZE)
 	blsPublicKeyShare = wrap_keyShare(_blsPublicKeyShare, PUBLICKEY_SIZE)
 
-	blsSecretKeyRecover = wrap_recover(_blsSecretKeyRecover, SECRETKEY_SIZE, ID_SIZE)
-	blsPublicKeyRecover = wrap_recover(_blsPublicKeyRecover, PUBLICKEY_SIZE, ID_SIZE)
-	blsSignatureRecover = wrap_recover(_blsSignatureRecover, SIGNATURE_SIZE, ID_SIZE)
+	blsSecretKeyRecover = wrap_recover(_blsSecretKeyRecover, SECRETKEY_SIZE, BLS_ID_SIZE)
+	blsPublicKeyRecover = wrap_recover(_blsPublicKeyRecover, PUBLICKEY_SIZE, BLS_ID_SIZE)
+	blsSignatureRecover = wrap_recover(_blsSignatureRecover, SIGNATURE_SIZE, BLS_ID_SIZE)
 
 	var mallocAndCopyFromUint32Array = function(a) {
 		let pos = mod._malloc(a.length * 4)
@@ -243,31 +242,44 @@ function define_bls_extra_functions(mod) {
 		}
 		mod._free(pos)
 	}
-	var callSetter1 = function(func, a, s) {
+	var callSetter1 = function(func, v, p1) {
 		let pos = blsId_malloc()
-		func(pos, s)
-		copyToUint32ArrayAndFree(a, pos)
+		func(pos, p1)
+		copyToUint32ArrayAndFree(v, pos)
 	}
-	var callGetter0 = function(func, a) {
-		let pos = mallocAndCopyFromUint32Array(a)
+	var callGetter0 = function(func, v) {
+		let pos = mallocAndCopyFromUint32Array(v)
 		let s = func(pos)
 		bls_free(pos)
 		return s
 	}
-	BlsId.prototype.setDecStr = function(s) {
-		callSetter1(blsIdSetDecStr, this.v_, s)
+	BlsId.prototype.setInt = function(x) {
+		callSetter1(blsIdSetInt, this.v_, x)
 	}
-	BlsId.prototype.setHexStr = function(s) {
-		callSetter1(blsIdSetHexStr, this.v_, s)
+	BlsId.prototype.setStr = function(s, base = 10) {
+		switch (base) {
+		case 10:
+			callSetter1(blsIdSetDecStr, this.v_, s)
+			return
+		case 16:
+			callSetter1(blsIdSetHexStr, this.v_, s)
+			return
+		default:
+			throw('BlsId.setStr:bad base:' + base)
+		}
 	}
 	BlsId.prototype.deserialize = function(s) {
 		callSetter1(blsIdDeserialize, this.v_, s)
 	}
-	BlsId.prototype.getDecStr = function() {
-		return callGetter0(blsIdGetDecStr, this.v_)
-	}
-	BlsId.prototype.getHexStr = function() {
-		return callGetter0(blsIdGetHexStr, this.v_)
+	BlsId.prototype.getStr = function(base = 10) {
+		switch (base) {
+		case 10:
+			return callGetter0(blsIdGetDecStr, this.v_)
+		case 16:
+			return callGetter0(blsIdGetHexStr, this.v_)
+		default:
+			throw('BlsId.getStr:bad base:' + base)
+		}
 	}
 	BlsId.prototype.serialize = function() {
 		return callGetter0(blsIdSerialize, this.v_)
