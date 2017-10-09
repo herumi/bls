@@ -32,10 +32,11 @@ function define_bls_extra_functions(mod) {
 				throw('err gen_str:' + x)
 			}
 			if (doesReturnString) {
-				let s = ''
-				for (let i = 0; i < n; i++) {
-					s += String.fromCharCode(mod.HEAP8[pos + i])
-				}
+//				let s = ''
+//					for (let i = 0; i < n; i++) {
+//					s += String.fromCharCode(mod.HEAP8[pos + i])
+//				}
+				let s = mod.Pointer_stringify(pos, n)
 				mod.Runtime.stackRestore(stack)
 				return s
 			} else {
@@ -56,13 +57,9 @@ function define_bls_extra_functions(mod) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
 			if (typeof(buf) == "string") {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf.charCodeAt(i)
-				}
+				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf[i]
-				}
+				mod.writeArrayToMemory(pos, buf)
 			}
 			let r = func(pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
@@ -75,13 +72,9 @@ function define_bls_extra_functions(mod) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
 			if (typeof(buf) == "string") {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf.charCodeAt(i)
-				}
+				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf[i]
-				}
+				mod.writeArrayToMemory(pos, buf)
 			}
 			let r = func(x1, pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
@@ -94,13 +87,9 @@ function define_bls_extra_functions(mod) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
 			if (typeof(buf) == "string") {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf.charCodeAt(i)
-				}
+				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				for (let i = 0; i < buf.length; i++) {
-					mod.HEAP8[pos + i] = buf[i]
-				}
+				mod.writeArrayToMemory(pos, buf)
 			}
 			let r = func(x1, x2, pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
