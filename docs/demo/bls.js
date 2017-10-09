@@ -28,6 +28,18 @@ BlsId = function() {
 }
 
 function define_bls_extra_functions(mod) {
+	ptrToStr = function(pos, n) {
+		let s = ''
+			for (let i = 0; i < n; i++) {
+			s += String.fromCharCode(mod.HEAP8[pos + i])
+		}
+		// let s = mod.Pointer_stringify(pos, n)
+		return s
+	}
+	Uint8ArrayToMem = function(a, buf) {
+		mod.HEAP8.set(a, buf)
+		// mod.writeArrayToMemory(a, buf)
+	}
 	wrap_outputString = function(func, doesReturnString = true) {
 		return function(x, ioMode = 0) {
 			let maxBufSize = 2048
@@ -38,11 +50,7 @@ function define_bls_extra_functions(mod) {
 				throw('err gen_str:' + x)
 			}
 			if (doesReturnString) {
-//				let s = ''
-//					for (let i = 0; i < n; i++) {
-//					s += String.fromCharCode(mod.HEAP8[pos + i])
-//				}
-				let s = mod.Pointer_stringify(pos, n)
+				let s = ptrToStr(pos, n)
 				mod.Runtime.stackRestore(stack)
 				return s
 			} else {
@@ -65,7 +73,7 @@ function define_bls_extra_functions(mod) {
 			if (typeof(buf) == "string") {
 				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				mod.writeArrayToMemory(pos, buf)
+				Uint8ArrayToMem(pos, buf)
 			}
 			let r = func(pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
@@ -80,7 +88,7 @@ function define_bls_extra_functions(mod) {
 			if (typeof(buf) == "string") {
 				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				mod.writeArrayToMemory(pos, buf)
+				Uint8ArrayToMem(pos, buf)
 			}
 			let r = func(x1, pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
@@ -95,7 +103,7 @@ function define_bls_extra_functions(mod) {
 			if (typeof(buf) == "string") {
 				mod.writeAsciiToMemory(buf, pos)
 			} else {
-				mod.writeArrayToMemory(pos, buf)
+				Uint8ArrayToMem(pos, buf)
 			}
 			let r = func(x1, x2, pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
@@ -222,52 +230,47 @@ function define_bls_extra_functions(mod) {
 	blsSignatureRecover = wrap_recover(_blsSignatureRecover, SIGNATURE_SIZE, ID_SIZE)
 
 	var mallocAndCopyFromUint32Array = function(a) {
-		let p = mod._malloc(a.length * 4)
-		mod.writeArrayToMemory(a, p / 4)
+		let pos = mod._malloc(a.length * 4)
+		mod.HEAP32.set(a, pos / 4)
 //		for (let i = 0; i < a.length; i++) {
-//			mod.HEAP32[p / 4 + i] = a[i]
+//			mod.HEAP32[pos / 4 + i] = a[i]
 //		}
-		return p
+		return pos
 	}
-	var copyToUint32ArrayAndFree = function(a, p) {
+	var copyToUint32ArrayAndFree = function(a, pos) {
 		for (let i = 0; i < a.length; i++) {
-			a[i] = mod.HEAP32[p / 4 + i]
+			a[i] = mod.HEAP32[pos / 4 + i]
 		}
-		mod._free(p)
+		mod._free(pos)
+	}
+	var callSetter1 = function(func, a, s) {
+		let pos = blsId_malloc()
+		func(pos, s)
+		copyToUint32ArrayAndFree(a, pos)
+	}
+	var callGetter0 = function(func, a) {
+		let pos = mallocAndCopyFromUint32Array(a)
+		let s = func(pos)
+		bls_free(pos)
+		return s
 	}
 	BlsId.prototype.setDecStr = function(s) {
-		let p = blsId_malloc()
-		blsIdSetDecStr(p, s)
-		copyToUint32ArrayAndFree(this.v_, p)
+		callSetter1(blsIdSetDecStr, this.v_, s)
 	}
 	BlsId.prototype.setHexStr = function(s) {
-		let p = blsId_malloc()
-		blsIdSetHexStr(p, s)
-		copyToUint32ArrayAndFree(this.v_, p)
+		callSetter1(blsIdSetHexStr, this.v_, s)
 	}
-	BlsId.prototype.deserialize = function(a) {
-		let p = mallocAndCopyFromUint32Array(this.v_)
-		blsIdDeserialize(p, a)
-		bls_free(p)
-		return s
+	BlsId.prototype.deserialize = function(s) {
+		callSetter1(blsIdDeserialize, this.v_, s)
 	}
 	BlsId.prototype.getDecStr = function() {
-		let p = mallocAndCopyFromUint32Array(this.v_)
-		let s = blsIdGetDecStr(p)
-		bls_free(p)
-		return s
+		return callGetter0(blsIdGetDecStr, this.v_)
 	}
 	BlsId.prototype.getHexStr = function() {
-		let p = mallocAndCopyFromUint32Array(this.v_)
-		let s = blsIdGetHexStr(p)
-		bls_free(p)
-		return s
+		return callGetter0(blsIdGetHexStr, this.v_)
 	}
 	BlsId.prototype.serialize = function() {
-		let p = mallocAndCopyFromUint32Array(this.v_)
-		let s = blsIdSerialize(p)
-		bls_free(p)
-		return s
+		return callGetter0(blsIdSerialize, this.v_)
 	}
 }
 
