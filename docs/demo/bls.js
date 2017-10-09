@@ -21,6 +21,12 @@ const MCLBN_CURVE_FP382_2 = 2
 
 const MCLBN_FP_UNIT_SIZE = 6
 
+const BLS_ID_SIZE = MCLBN_FP_UNIT_SIZE * 8
+
+BlsId = function() {
+	this.v_ = new Uint32Array(BLS_ID_SIZE / 4)
+}
+
 function define_bls_extra_functions(mod) {
 	wrap_outputString = function(func, doesReturnString = true) {
 		return function(x, ioMode = 0) {
@@ -214,5 +220,54 @@ function define_bls_extra_functions(mod) {
 	blsSecretKeyRecover = wrap_recover(_blsSecretKeyRecover, SECRETKEY_SIZE, ID_SIZE)
 	blsPublicKeyRecover = wrap_recover(_blsPublicKeyRecover, PUBLICKEY_SIZE, ID_SIZE)
 	blsSignatureRecover = wrap_recover(_blsSignatureRecover, SIGNATURE_SIZE, ID_SIZE)
+
+	var mallocAndCopyFromUint32Array = function(a) {
+		let p = mod._malloc(a.length * 4)
+		mod.writeArrayToMemory(a, p / 4)
+//		for (let i = 0; i < a.length; i++) {
+//			mod.HEAP32[p / 4 + i] = a[i]
+//		}
+		return p
+	}
+	var copyToUint32ArrayAndFree = function(a, p) {
+		for (let i = 0; i < a.length; i++) {
+			a[i] = mod.HEAP32[p / 4 + i]
+		}
+		mod._free(p)
+	}
+	BlsId.prototype.setDecStr = function(s) {
+		let p = blsId_malloc()
+		blsIdSetDecStr(p, s)
+		copyToUint32ArrayAndFree(this.v_, p)
+	}
+	BlsId.prototype.setHexStr = function(s) {
+		let p = blsId_malloc()
+		blsIdSetHexStr(p, s)
+		copyToUint32ArrayAndFree(this.v_, p)
+	}
+	BlsId.prototype.deserialize = function(a) {
+		let p = mallocAndCopyFromUint32Array(this.v_)
+		blsIdDeserialize(p, a)
+		bls_free(p)
+		return s
+	}
+	BlsId.prototype.getDecStr = function() {
+		let p = mallocAndCopyFromUint32Array(this.v_)
+		let s = blsIdGetDecStr(p)
+		bls_free(p)
+		return s
+	}
+	BlsId.prototype.getHexStr = function() {
+		let p = mallocAndCopyFromUint32Array(this.v_)
+		let s = blsIdGetHexStr(p)
+		bls_free(p)
+		return s
+	}
+	BlsId.prototype.serialize = function() {
+		let p = mallocAndCopyFromUint32Array(this.v_)
+		let s = blsIdSerialize(p)
+		bls_free(p)
+		return s
+	}
 }
 

@@ -351,3 +351,12 @@ function onClickTestShare()
 	}
 }
 
+function onClickTestMisc()
+{
+	let idDec = getValue('idDec')
+	console.log('idDec=' + idDec)
+	var id = new BlsId()
+	id.setDecStr(idDec)
+	setText('idHex', id.getHexStr())
+	setText('idDec2', id.getDecStr())
+}
