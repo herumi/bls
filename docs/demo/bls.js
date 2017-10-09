@@ -202,8 +202,8 @@ function define_bls_extra_functions(mod) {
 
 	blsIdSetDecStr = wrap_input1(_blsIdSetDecStr)
 	blsIdSetHexStr = wrap_input1(_blsIdSetHexStr)
-	blsIdGetDecStr = wrap_outputArray(_blsIdGetDecStr)
-	blsIdGetHexStr = wrap_outputArray(_blsIdGetHexStr)
+	blsIdGetDecStr = wrap_outputString(_blsIdGetDecStr)
+	blsIdGetHexStr = wrap_outputString(_blsIdGetHexStr)
 
 	blsIdSerialize = wrap_outputArray(_blsIdSerialize)
 	blsSecretKeySerialize = wrap_outputArray(_blsSecretKeySerialize)
