@@ -155,9 +155,13 @@ function Uint8ArrayToHexString(a) {
 }
 
 function HexStringToUint8Array(s) {
-	let a = new Uint8Array(s.length / 2)
+	let n = (s.length + 1) / 2
+	let a = new Uint8Array(n)
 	for (let i = 0; i < s.length / 2; i++) {
 		a[i] = parseInt(s.slice(i * 2, i * 2 + 2), 16)
+	}
+	if ((s.length & 1) != 0) {
+		a[n - 1] = parseInt(s[s.length - 1] + '0', 16)
 	}
 	return a
 }
@@ -359,4 +363,8 @@ function onClickTestMisc()
 	id.setStr(idDec)
 	setText('idDec2', id.getStr())
 	setText('idHex', id.getStr(16))
+	var sec = new BlsSecretKey()
+	sec.setLittleEndian(HexStringToUint8Array(getValue('sec1')))
+	var a = sec.serialize()
+	setText('secSerialize', Uint8ArrayToHexString(a))
 }

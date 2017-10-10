@@ -87,11 +87,12 @@ test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 
 EXPORTED_TXT=ffi/js/exported-bls.txt
 EXPORTED_JS=docs/demo/exported-bls.js
+EXPORT_OPT=-re ffi/js/bls-re.txt
 $(EXPORTED_TXT): ./include/bls/bls.h ../mcl/include/mcl/bn.h
-	python ../mcl/ffi/js/export-functions.py $^ > $@
+	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) $^ > $@
 
 $(EXPORTED_JS): ./include/bls/bls.h ../mcl/include/mcl/bn.h
-	python ../mcl/ffi/js/export-functions.py -js bls $^ > $@
+	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) -js bls $^ > $@
 
 EXPORTED_BLS=$(shell cat $(EXPORTED_TXT))
 
