@@ -79,6 +79,9 @@ function benchPairing() {
 	mcl_free(Q)
 	mcl_free(P)
 	mcl_free(a)
+
+	let sec = new BlsSecretKey()
+	bench('time_setByCSPRNG', 50, () => sec.setByCSPRNG())
 }
 
 function benchBls() {
