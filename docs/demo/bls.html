@@ -30,6 +30,9 @@ library status <span name="status">initializing...</span>
 <div>Hash and map to G1 : <span name="time_mapToG1">0</span>msec</div>
 <div>sign : <span name="time_sign">0</span>msec</div>
 <div>verify : <span name="time_verify">0</span>msec</div>
+class<br>
+<div>sign : <span name="time_sign_class">0</span>msec</div>
+<div>verify : <span name="time_verify_class">0</span>msec</div>
 <hr>
 <button type="text" id="testBls" onclick="onClickTestSignature()">test basic signature</button>
 <div>
@@ -40,6 +43,7 @@ signature : <span name="signature"></span><br>
 verify : <span name="verifyResult"></span><br>
 </div>
 <button type="text" id="testBls" onclick="onClickTestShare()">test sharing</button>
+<button type="text" id="testBls" onclick="onClickTestShareClass()">test sharing class</button>
 <div>
 threshold(k)         : <input type="text" name="ss_k" value="3"><br>
 number of players(n) : <input type="text" name="ss_n" value="5"><br>

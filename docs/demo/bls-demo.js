@@ -97,6 +97,12 @@ function benchBls() {
 	bls_free(sec)
 	bls_free(pub)
 	bls_free(sig)
+	sec = new BlsSecretKey()
+	sec.setByCSPRNG()
+	pub = sec.getPublicKey()
+	bench('time_sign_class', 50, () => sec.sign(msg))
+	sig = sec.sign(msg)
+	bench('time_verify_class', 50, () => pub.verify(sig, msg))
 }
 function onClickBenchmark() {
 	benchPairing()
@@ -370,4 +376,116 @@ function onClickTestMisc()
 	sec.setLittleEndian(HexStringToUint8Array(getValue('sec1')))
 	var a = sec.serialize()
 	setText('secSerialize', Uint8ArrayToHexString(a))
+}
+
+function onClickTestShareClass()
+{
+	let k = parseInt(getValue('ss_k'))
+	let n = parseInt(getValue('ss_n'))
+	let msg = getValue('msg2')
+	console.log('k = ' + k)
+	console.log('n = ' + n)
+	console.log('msg = ' + msg)
+	if (n < k) {
+		alert('err : n is smaller than k')
+		return
+	}
+	let msk = []
+	let mpk = []
+	let idVec = []
+	let secVec = []
+	let pubVec = []
+	let sigVec = []
+
+	/*
+		setup master secret key
+	*/
+	for (let i = 0; i < k; i++) {
+		let sk = new BlsSecretKey()
+		sk.setByCSPRNG()
+		msk.push(sk)
+
+		let pk = sk.getPublicKey()
+		mpk.push(pk)
+	}
+	setText('msk', Uint8ArrayToHexString(msk[0].serialize()))
+	setText('mpk', Uint8ArrayToHexString(mpk[0].serialize()))
+	{
+		let sig = msk[0].sign(msg)
+		setText('signature2', Uint8ArrayToHexString(sig.serialize()))
+		console.log('mpk[0] verify ' + mpk[0].verify(sig, msg))
+	}
+
+	/*
+		key sharing
+	*/
+	for (let i = 0; i < n; i++) {
+		let id = new BlsId()
+//		blsIdSetInt(id, i + 1)
+		id.setByCSPRNG()
+		idVec.push(id)
+		let sk = new BlsSecretKey()
+		sk.share(msk, idVec[i])
+		secVec.push(sk)
+
+		let pk = new BlsPublicKey()
+		pk.share(mpk, idVec[i])
+		pubVec.push(pk)
+
+		let sig = sk.sign(msg)
+		sigVec.push(sig)
+		console.log(i + ' : verify msg : ' + pk.verify(sig, msg))
+	}
+
+	let o = document.getElementById('idlist')
+	let ol = document.createElement('ol')
+	let t = ''
+	for (let i = 0; i < n; i++) {
+		let id = Uint8ArrayToHexString(idVec[i].serialize())
+		let sk = Uint8ArrayToHexString(secVec[i].serialize())
+		let pk = Uint8ArrayToHexString(pubVec[i].serialize())
+		let sig = Uint8ArrayToHexString(sigVec[i].serialize())
+		t += '<li id="ui"' + i + '"> '
+		t += 'id : <span id="id"' + i + '">' + id + '</span><br>'
+		t += 'pk : <span id="pk"' + i + '">' + pk + '</span><br>'
+		t += 'sk : <span id="sk"' + i + '">' + sk + '</span><br>'
+		t += 'sig: <span id="sig"' + i + '">' + sig + '</span><br>'
+	}
+	ol.innerHTML = t
+	o.firstElementChild.innerHTML = ol.innerHTML
+
+	/*
+		recover
+	*/
+	let idxVec = randSelect(k, n)
+	setText('idxVec', idxVec.toString())
+	let subIdVec = []
+	let subSecVec = []
+	let subPubVec = []
+	let subSigVec = []
+	for (let i = 0; i < idxVec.length; i++) {
+		let idx = idxVec[i]
+		subIdVec.push(idVec[idx])
+		subSecVec.push(secVec[idx])
+		subPubVec.push(pubVec[idx])
+		subSigVec.push(sigVec[idx])
+	}
+	{
+		let sec = new BlsSecretKey()
+		let pub = new BlsPublicKey()
+		let sig = new BlsSignature()
+
+		sec.recover(subSecVec, subIdVec)
+		pub.recover(subPubVec, subIdVec)
+		sig.recover(subSigVec, subIdVec)
+		let s = Uint8ArrayToHexString(sec.serialize())
+		s += s == getText('msk') ? ' :ok' : ' :ng'
+		setText('recoverSec', s)
+		s = Uint8ArrayToHexString(pub.serialize())
+		s += s == getText('mpk') ? ' :ok' : ' :ng'
+		setText('recoverPub', s)
+		s = Uint8ArrayToHexString(sig.serialize())
+		s += s == getText('signature2') ? ' :ok' : ' :ng'
+		setText('recoverSig', s)
+	}
 }
