@@ -26,38 +26,25 @@ const BLS_SECRETKEY_SIZE = BLS_ID_SIZE
 const BLS_PUBLICKEY_SIZE = BLS_ID_SIZE * 3 * 2
 const BLS_SIGNATURE_SIZE = BLS_ID_SIZE * 3
 
-BlsId = function() {
-	this.a_ = new Uint32Array(BLS_ID_SIZE / 4)
-}
-BlsSecretKey = function() {
-	this.a_ = new Uint32Array(BLS_SECRETKEY_SIZE / 4)
-}
-BlsPublicKey = function() {
-	this.a_ = new Uint32Array(BLS_PUBLICKEY_SIZE / 4)
-}
-BlsSignature = function() {
-	this.a_ = new Uint32Array(BLS_SIGNATURE_SIZE / 4)
-}
-
 function define_bls_extra_functions(mod) {
-	ptrToStr = function(pos, n) {
+	const ptrToStr = function(pos, n) {
 		let s = ''
 			for (let i = 0; i < n; i++) {
 			s += String.fromCharCode(mod.HEAP8[pos + i])
 		}
 		return s
 	}
-	Uint8ArrayToMem = function(pos, buf) {
+	const Uint8ArrayToMem = function(pos, buf) {
 		for (let i = 0; i < buf.length; i++) {
 			mod.HEAP8[pos + i] = buf[i]
 		}
 	}
-	AsciiStrToMem = function(pos, s) {
+	const AsciiStrToMem = function(pos, s) {
 		for (let i = 0; i < s.length; i++) {
 			mod.HEAP8[pos + i] = s.charCodeAt(i)
 		}
 	}
-	wrap_outputString = function(func, doesReturnString = true) {
+	const wrap_outputString = function(func, doesReturnString = true) {
 		return function(x, ioMode = 0) {
 			let maxBufSize = 2048
 			let stack = mod.Runtime.stackSave()
@@ -80,10 +67,10 @@ function define_bls_extra_functions(mod) {
 			}
 		}
 	}
-	wrap_outputArray = function(func) {
+	const wrap_outputArray = function(func) {
 		return wrap_outputString(func, false)
 	}
-	wrap_input0 = function(func, returnValue = false) {
+	const wrap_input0 = function(func, returnValue = false) {
 		return function(buf, ioMode = 0) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
@@ -98,7 +85,7 @@ function define_bls_extra_functions(mod) {
 			if (r) throw('err wrap_input0 ' + buf)
 		}
 	}
-	wrap_input1 = function(func, returnValue = false) {
+	const wrap_input1 = function(func, returnValue = false) {
 		return function(x1, buf, ioMode = 0) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
@@ -113,7 +100,7 @@ function define_bls_extra_functions(mod) {
 			if (r) throw('err wrap_input1 ' + buf)
 		}
 	}
-	wrap_input2 = function(func, returnValue = false) {
+	const wrap_input2 = function(func, returnValue = false) {
 		return function(x1, x2, buf, ioMode = 0) {
 			let stack = mod.Runtime.stackSave()
 			let pos = mod.Runtime.stackAlloc(buf.length)
@@ -128,7 +115,7 @@ function define_bls_extra_functions(mod) {
 			if (r) throw('err wrap_input2 ' + buf)
 		}
 	}
-	wrap_keyShare = function(func, dataSize) {
+	const wrap_keyShare = function(func, dataSize) {
 		return function(x, vec, id) {
 			let k = vec.length
 			let p = mod._malloc(dataSize * k)
@@ -140,7 +127,7 @@ function define_bls_extra_functions(mod) {
 			if (r) throw('keyShare ' + k)
 		}
 	}
-	wrap_recover = function(func, dataSize, idDataSize) {
+	const wrap_recover = function(func, dataSize, idDataSize) {
 		return function(x, vec, idVec) {
 			let n = vec.length
 			let p = mod._malloc(dataSize * n)
@@ -154,6 +141,39 @@ function define_bls_extra_functions(mod) {
 			mod._free(p)
 			if (r) throw('recover ' + n)
 		}
+	}
+
+	let crypto = window.crypto || window.msCrypto
+
+	let copyToUint32Array = function(a, pos) {
+		for (let i = 0; i < a.length; i++) {
+			a[i] = mod.HEAP32[pos / 4 + i]
+		}
+	}
+	let copyFromUint32Array = function(pos, a) {
+		for (let i = 0; i < a.length; i++) {
+			mod.HEAP32[pos / 4 + i] = a[i]
+		}
+	}
+	let callSetter = function(func, a, p1, p2) {
+		let pos = mod._malloc(a.length * 4)
+		func(pos, p1, p2) // p1, p2 may be undefined
+		copyToUint32Array(a, pos)
+		mod._free(pos)
+	}
+	let callGetter = function(func, a, p1, p2) {
+		let pos = mod._malloc(a.length * 4)
+		mod.HEAP32.set(a, pos / 4)
+		let s = func(pos, p1, p2)
+		mod._free(pos)
+		return s
+	}
+	let callModifier = function(func, a, p1, p2) {
+		let pos = mod._malloc(a.length * 4)
+		mod.HEAP32.set(a, pos / 4)
+		func(pos, p1, p2) // p1, p2 may be undefined
+		copyToUint32Array(a, pos)
+		mod._free(pos)
 	}
 	///////////////////////////////////////////////////////////////
 	const FR_SIZE = MCLBN_FP_UNIT_SIZE * 8
@@ -247,39 +267,10 @@ function define_bls_extra_functions(mod) {
 	blsPublicKeyRecover = wrap_recover(_blsPublicKeyRecover, BLS_PUBLICKEY_SIZE, BLS_ID_SIZE)
 	blsSignatureRecover = wrap_recover(_blsSignatureRecover, BLS_SIGNATURE_SIZE, BLS_ID_SIZE)
 
-	let crypto = window.crypto || window.msCrypto
-
-	let copyToUint32Array = function(a, pos) {
-		for (let i = 0; i < a.length; i++) {
-			a[i] = mod.HEAP32[pos / 4 + i]
-		}
-	}
-	let copyFromUint32Array = function(pos, a) {
-		for (let i = 0; i < a.length; i++) {
-			mod.HEAP32[pos / 4 + i] = a[i]
-		}
-	}
-	let callSetter = function(func, a, p1, p2) {
-		let pos = mod._malloc(a.length * 4)
-		func(pos, p1, p2) // p1, p2 may be undefined
-		copyToUint32Array(a, pos)
-		mod._free(pos)
-	}
-	let callGetter = function(func, a, p1, p2) {
-		let pos = mod._malloc(a.length * 4)
-		mod.HEAP32.set(a, pos / 4)
-		let s = func(pos, p1, p2)
-		mod._free(pos)
-		return s
-	}
-	let callModifier = function(func, a, p1, p2) {
-		let pos = mod._malloc(a.length * 4)
-		mod.HEAP32.set(a, pos / 4)
-		func(pos, p1, p2) // p1, p2 may be undefined
-		copyToUint32Array(a, pos)
-		mod._free(pos)
-	}
 	/// BlsId
+	BlsId = function() {
+		this.a_ = new Uint32Array(BLS_ID_SIZE / 4)
+	}
 	BlsId.prototype.setInt = function(x) {
 		callSetter(blsIdSetInt, this.a_, x)
 	}
@@ -315,6 +306,9 @@ function define_bls_extra_functions(mod) {
 		return callGetter(blsIdSerialize, this.a_)
 	}
 	/// BlsSecretKey
+	BlsSecretKey = function() {
+		this.a_ = new Uint32Array(BLS_SECRETKEY_SIZE / 4)
+	}
 	BlsSecretKey.prototype.setInt = function(x) {
 		callSetter(blsIdSetInt, this.a_, x) // same as Id
 	}
@@ -365,7 +359,40 @@ function define_bls_extra_functions(mod) {
 		mod.Runtime.stackRestore(stack)
 		return sig
 	}
-	let share = function(func, a, size, vec, id) {
+
+	/// BlsPublicKey
+	BlsPublicKey = function() {
+		this.a_ = new Uint32Array(BLS_PUBLICKEY_SIZE / 4)
+	}
+	BlsPublicKey.prototype.deserialize = function(s) {
+		callSetter(blsPublicKeyDeserialize, this.a_, s)
+	}
+	BlsPublicKey.prototype.serialize = function() {
+		return callGetter(blsPublicKeySerialize, this.a_)
+	}
+	BlsPublicKey.prototype.verify = function(sig, m) {
+		let stack = mod.Runtime.stackSave()
+		let pubPos = mod.Runtime.stackAlloc(this.a_.length * 4)
+		let sigPos = mod.Runtime.stackAlloc(sig.a_.length * 4)
+		mod.HEAP32.set(this.a_, pubPos / 4)
+		mod.HEAP32.set(sig.a_, sigPos / 4)
+		let r = blsVerify(sigPos, pubPos, m)
+		mod.Runtime.stackRestore(stack)
+		return r != 0
+	}
+
+	/// BlsSignature
+	BlsSignature = function() {
+		this.a_ = new Uint32Array(BLS_SIGNATURE_SIZE / 4)
+	}
+	BlsSignature.prototype.deserialize = function(s) {
+		callSetter(blsSignatureDeserialize, this.a_, s)
+	}
+	BlsSignature.prototype.serialize = function() {
+		return callGetter(blsSignatureSerialize, this.a_)
+	}
+
+	const share = function(func, a, size, vec, id) {
 		let stack = mod.Runtime.stackSave()
 		let pos = mod.Runtime.stackAlloc(a.length * 4)
 		let idPos = mod.Runtime.stackAlloc(id.a_.length * 4)
@@ -380,7 +407,20 @@ function define_bls_extra_functions(mod) {
 		copyToUint32Array(a, pos)
 		mod.Runtime.stackRestore(stack)
 	}
-	let recover = function(func, a, size, vec, idVec) {
+	/*
+		set shared BlsSecretKey by msk and id
+		input
+		msk : master secret key(array of BlsSecretKey)
+		id : BlsId
+	*/
+	BlsSecretKey.prototype.share = function(msk, id) {
+		share(_blsSecretKeyShare, this.a_, BLS_SECRETKEY_SIZE, msk, id)
+	}
+	BlsPublicKey.prototype.share = function(msk, id) {
+		share(_blsPublicKeyShare, this.a_, BLS_PUBLICKEY_SIZE, msk, id)
+	}
+
+	const recover = function(func, a, size, vec, idVec) {
 		let n = vec.length
 		if (n != idVec.length) throw('recover:bad length')
 		let stack = mod.Runtime.stackSave()
@@ -398,18 +438,6 @@ function define_bls_extra_functions(mod) {
 		mod.Runtime.stackRestore(stack)
 	}
 	/*
-		set shared BlsSecretKey by msk and id
-		input
-		msk : master secret key(array of BlsSecretKey)
-		id : BlsId
-	*/
-	BlsSecretKey.prototype.share = function(msk, id) {
-		share(_blsSecretKeyShare, this.a_, BLS_SECRETKEY_SIZE, msk, id)
-	}
-	BlsPublicKey.prototype.share = function(msk, id) {
-		share(_blsPublicKeyShare, this.a_, BLS_PUBLICKEY_SIZE, msk, id)
-	}
-	/*
 		recover BlsSecretKey from (secVec, idVec)
 		secVec : array of BlsSecretKey
 	*/
@@ -421,30 +449,6 @@ function define_bls_extra_functions(mod) {
 	}
 	BlsSignature.prototype.recover = function(secVec, idVec) {
 		recover(_blsSignatureRecover, this.a_, BLS_SIGNATURE_SIZE, secVec, idVec)
-	}
-	/// BlsPublicKey
-	BlsPublicKey.prototype.deserialize = function(s) {
-		callSetter(blsPublicKeyDeserialize, this.a_, s)
-	}
-	BlsPublicKey.prototype.serialize = function() {
-		return callGetter(blsPublicKeySerialize, this.a_)
-	}
-	BlsPublicKey.prototype.verify = function(sig, m) {
-		let stack = mod.Runtime.stackSave()
-		let pubPos = mod.Runtime.stackAlloc(this.a_.length * 4)
-		let sigPos = mod.Runtime.stackAlloc(sig.a_.length * 4)
-		mod.HEAP32.set(this.a_, pubPos / 4)
-		mod.HEAP32.set(sig.a_, sigPos / 4)
-		let r = blsVerify(sigPos, pubPos, m)
-		mod.Runtime.stackRestore(stack)
-		return r != 0
-	}
-	/// BlsSignature
-	BlsSignature.prototype.deserialize = function(s) {
-		callSetter(blsSignatureDeserialize, this.a_, s)
-	}
-	BlsSignature.prototype.serialize = function() {
-		return callGetter(blsSignatureSerialize, this.a_)
 	}
 }
 
