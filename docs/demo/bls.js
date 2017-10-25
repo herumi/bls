@@ -139,52 +139,7 @@
 			let r = func(...args.slice(0, argNum), pos, buf.length, ioMode)
 			mod.Runtime.stackRestore(stack)
 			if (returnValue) return r
-			if (r) throw('err wrap_input0 ' + buf)
-		}
-	}
-	const wrap_input0 = function(func, returnValue = false) {
-		return function(buf, ioMode = 0) {
-			let stack = mod.Runtime.stackSave()
-			let pos = mod.Runtime.stackAlloc(buf.length)
-			if (typeof(buf) == "string") {
-				AsciiStrToMem(pos, buf)
-			} else {
-				Uint8ArrayToMem(pos, buf)
-			}
-			let r = func(pos, buf.length, ioMode)
-			mod.Runtime.stackRestore(stack)
-			if (returnValue) return r
-			if (r) throw('err wrap_input0 ' + buf)
-		}
-	}
-	const wrap_input1 = function(func, returnValue = false) {
-		return function(x1, buf, ioMode = 0) {
-			let stack = mod.Runtime.stackSave()
-			let pos = mod.Runtime.stackAlloc(buf.length)
-			if (typeof(buf) == "string") {
-				AsciiStrToMem(pos, buf)
-			} else {
-				Uint8ArrayToMem(pos, buf)
-			}
-			let r = func(x1, pos, buf.length, ioMode)
-			mod.Runtime.stackRestore(stack)
-			if (returnValue) return r
-			if (r) throw('err wrap_input1 ' + buf)
-		}
-	}
-	const wrap_input2 = function(func, returnValue = false) {
-		return function(x1, x2, buf, ioMode = 0) {
-			let stack = mod.Runtime.stackSave()
-			let pos = mod.Runtime.stackAlloc(buf.length)
-			if (typeof(buf) == "string") {
-				AsciiStrToMem(pos, buf)
-			} else {
-				Uint8ArrayToMem(pos, buf)
-			}
-			let r = func(x1, x2, pos, buf.length, ioMode)
-			mod.Runtime.stackRestore(stack)
-			if (returnValue) return r
-			if (r) throw('err wrap_input2 ' + buf)
+			if (r) throw('err wrap_input ' + buf)
 		}
 	}
 	const callSetter = function(func, a, p1, p2) {
@@ -199,13 +154,6 @@
 		let s = func(pos, p1, p2)
 		mod._free(pos)
 		return s
-	}
-	const callModifier = function(func, a, p1, p2) {
-		let pos = mod._malloc(a.length * 4)
-		mod.HEAP32.set(a, pos / 4)
-		func(pos, p1, p2) // p1, p2 may be undefined
-		copyToUint32Array(a, pos)
-		mod._free(pos)
 	}
 	const wrap_keyShare = function(func, dataSize) {
 		return function(x, vec, id) {
@@ -273,39 +221,39 @@
 		capi.mcl_free = function(x) {
 			mod._free(x)
 		}
-		capi.mclBnFr_deserialize = wrap_input1(capi._mclBnFr_deserialize)
-		capi.mclBnFr_setLittleEndian = wrap_input1(capi._mclBnFr_setLittleEndian)
-		capi.mclBnFr_setStr = wrap_input1(capi._mclBnFr_setStr)
+		capi.mclBnFr_deserialize = wrap_input(capi._mclBnFr_deserialize, 1)
+		capi.mclBnFr_setLittleEndian = wrap_input(capi._mclBnFr_setLittleEndian, 1)
+		capi.mclBnFr_setStr = wrap_input(capi._mclBnFr_setStr, 1)
 		capi.mclBnFr_getStr = wrap_outputString(capi._mclBnFr_getStr)
-		capi.mclBnFr_setHashOf = wrap_input1(capi._mclBnFr_setHashOf)
+		capi.mclBnFr_setHashOf = wrap_input(capi._mclBnFr_setHashOf, 1)
 
 		///////////////////////////////////////////////////////////////
 		capi.mclBnG1_malloc = function() {
 			return mod._malloc(MCLBN_G1_SIZE)
 		}
-		capi.mclBnG1_setStr = wrap_input1(capi._mclBnG1_setStr)
+		capi.mclBnG1_setStr = wrap_input(capi._mclBnG1_setStr, 1)
 		capi.mclBnG1_getStr = wrap_outputString(capi._mclBnG1_getStr)
-		capi.mclBnG1_deserialize = wrap_input1(capi._mclBnG1_deserialize)
+		capi.mclBnG1_deserialize = wrap_input(capi._mclBnG1_deserialize, 1)
 		capi.mclBnG1_serialize = wrap_outputArray(capi._mclBnG1_serialize)
-		capi.mclBnG1_hashAndMapTo = wrap_input1(capi._mclBnG1_hashAndMapTo)
+		capi.mclBnG1_hashAndMapTo = wrap_input(capi._mclBnG1_hashAndMapTo, 1)
 
 		///////////////////////////////////////////////////////////////
 		capi.mclBnG2_malloc = function() {
 			return mod._malloc(MCLBN_G2_SIZE)
 		}
-		capi.mclBnG2_setStr = wrap_input1(capi._mclBnG2_setStr)
+		capi.mclBnG2_setStr = wrap_input(capi._mclBnG2_setStr, 1)
 		capi.mclBnG2_getStr = wrap_outputString(capi._mclBnG2_getStr)
-		capi.mclBnG2_deserialize = wrap_input1(capi._mclBnG2_deserialize)
+		capi.mclBnG2_deserialize = wrap_input(capi._mclBnG2_deserialize, 1)
 		capi.mclBnG2_serialize = wrap_outputArray(capi._mclBnG2_serialize)
-		capi.mclBnG2_hashAndMapTo = wrap_input1(capi._mclBnG2_hashAndMapTo)
+		capi.mclBnG2_hashAndMapTo = wrap_input(capi._mclBnG2_hashAndMapTo, 1)
 
 		///////////////////////////////////////////////////////////////
 		capi.mclBnGT_malloc = function() {
 			return mod._malloc(MCLBN_GT_SIZE)
 		}
-		capi.mclBnGT_deserialize = wrap_input1(capi._mclBnGT_deserialize)
+		capi.mclBnGT_deserialize = wrap_input(capi._mclBnGT_deserialize, 1)
 		capi.mclBnGT_serialize = wrap_outputArray(capi._mclBnGT_serialize)
-		capi.mclBnGT_setStr = wrap_input1(capi._mclBnGT_setStr)
+		capi.mclBnGT_setStr = wrap_input(capi._mclBnGT_setStr, 1)
 		capi.mclBnGT_getStr = wrap_outputString(capi._mclBnGT_getStr)
 		///////////////////////////////////////////////////////////////
 		capi.bls_free = capi.mcl_free
@@ -321,13 +269,13 @@
 		capi.blsGetCurveOrder = wrap_outputString(capi._blsGetCurveOrder)
 		capi.blsGetFieldOrder = wrap_outputString(capi._blsGetFieldOrder)
 
-		capi.blsIdSetDecStr = wrap_input1(capi._blsIdSetDecStr)
-		capi.blsIdSetHexStr = wrap_input1(capi._blsIdSetHexStr)
+		capi.blsIdSetDecStr = wrap_input(capi._blsIdSetDecStr, 1)
+		capi.blsIdSetHexStr = wrap_input(capi._blsIdSetHexStr, 1)
 		capi.blsIdGetDecStr = wrap_outputString(capi._blsIdGetDecStr)
 		capi.blsIdGetHexStr = wrap_outputString(capi._blsIdGetHexStr)
 
-		capi.blsSecretKeySetDecStr = wrap_input1(capi._blsSecretKeySetDecStr)
-		capi.blsSecretKeySetHexStr = wrap_input1(capi._blsSecretKeySetHexStr)
+		capi.blsSecretKeySetDecStr = wrap_input(capi._blsSecretKeySetDecStr, 1)
+		capi.blsSecretKeySetHexStr = wrap_input(capi._blsSecretKeySetHexStr, 1)
 		capi.blsSecretKeyGetDecStr = wrap_outputString(capi._blsSecretKeyGetDecStr)
 		capi.blsSecretKeyGetHexStr = wrap_outputString(capi._blsSecretKeyGetHexStr)
 
@@ -336,15 +284,15 @@
 		capi.blsPublicKeySerialize = wrap_outputArray(capi._blsPublicKeySerialize)
 		capi.blsSignatureSerialize = wrap_outputArray(capi._blsSignatureSerialize)
 
-		capi.blsIdDeserialize = wrap_input1(capi._blsIdDeserialize)
-		capi.blsSecretKeyDeserialize = wrap_input1(capi._blsSecretKeyDeserialize)
-		capi.blsPublicKeyDeserialize = wrap_input1(capi._blsPublicKeyDeserialize)
-		capi.blsSignatureDeserialize = wrap_input1(capi._blsSignatureDeserialize)
+		capi.blsIdDeserialize = wrap_input(capi._blsIdDeserialize, 1)
+		capi.blsSecretKeyDeserialize = wrap_input(capi._blsSecretKeyDeserialize, 1)
+		capi.blsPublicKeyDeserialize = wrap_input(capi._blsPublicKeyDeserialize, 1)
+		capi.blsSignatureDeserialize = wrap_input(capi._blsSignatureDeserialize, 1)
 
-		capi.blsSecretKeySetLittleEndian = wrap_input1(capi._blsSecretKeySetLittleEndian)
-		capi.blsHashToSecretKey = wrap_input1(capi._blsHashToSecretKey)
-		capi.blsSign = wrap_input2(capi._blsSign)
-		capi.blsVerify = wrap_input2(capi._blsVerify, true)
+		capi.blsSecretKeySetLittleEndian = wrap_input(capi._blsSecretKeySetLittleEndian, 1)
+		capi.blsHashToSecretKey = wrap_input(capi._blsHashToSecretKey, 1)
+		capi.blsSign = wrap_input(capi._blsSign, 2)
+		capi.blsVerify = wrap_input(capi._blsVerify, 2, true)
 
 		capi.blsSecretKeyShare = wrap_keyShare(capi._blsSecretKeyShare, BLS_SECRETKEY_SIZE)
 		capi.blsPublicKeyShare = wrap_keyShare(capi._blsPublicKeyShare, BLS_PUBLICKEY_SIZE)
