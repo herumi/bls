@@ -86,13 +86,13 @@ test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 	cd go/bls && ln -sf ../../lib . && env LD_RUN_PATH="../../lib" CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 EXPORTED_TXT=ffi/js/exported-bls.txt
-EXPORTED_JS=docs/demo/exported-bls.js
+EXPORTED_JS=docs/demo/exported-bls.json
 EXPORT_OPT=-re ffi/js/bls-re.txt
 $(EXPORTED_TXT): ./include/bls/bls.h ../mcl/include/mcl/bn.h
 	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) $^ > $@
 
 $(EXPORTED_JS): ./include/bls/bls.h ../mcl/include/mcl/bn.h
-	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) -js bls $^ > $@
+	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) -json $^ > $@
 
 EXPORTED_BLS=$(shell cat $(EXPORTED_TXT))
 
