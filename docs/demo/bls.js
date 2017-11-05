@@ -5,7 +5,7 @@
     exports.mod = require('./bls_c.js')
     generator(exports, crypto, true)
   } else {
-	const crypto = window.crypto || window.msCrypto
+    const crypto = window.crypto || window.msCrypto
     let exports = {}
     exports.mod = {}
     window.bls = generator(exports, crypto, false)
