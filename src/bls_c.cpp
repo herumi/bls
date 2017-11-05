@@ -36,11 +36,14 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 	return -1;
 }
 
-#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
-#include <mutex>
-	#define USE_STD_MUTEX
-#else
-#include <cybozu/mutex.hpp>
+#ifndef __EMSCRIPTEN__
+	#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
+	#include <mutex>
+		#define USE_STD_MUTEX
+	#else
+	#include <cybozu/mutex.hpp>
+		#define USE_CYBOZU_MUTEX
+	#endif
 #endif
 
 int blsInit(int curve, int maxUnitSize)
@@ -49,7 +52,7 @@ int blsInit(int curve, int maxUnitSize)
 #ifdef USE_STD_MUTEX
 	static std::mutex m;
 	std::lock_guard<std::mutex> lock(m);
-#else
+#elif defined(USE_CYBOZU_MUTEX)
 	static cybozu::Mutex m;
 	cybozu::AutoLock lock(m);
 #endif

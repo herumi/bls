@@ -99,6 +99,9 @@ EXPORTED_BLS=$(shell cat $(EXPORTED_TXT))
 docs/demo/bls_c.js: src/bls_c.cpp ../mcl/src/fp.cpp $(EXPORTED_TXT) $(EXPORTED_JS)
 	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp -I./ -I./include -I../cybozulib/include -I../mcl/include -s WASM=1 -s "MODULARIZE=1" -s "EXPORTED_FUNCTIONS=[$(EXPORTED_BLS)]" -O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1
 
+../bls-wasm/bls_c.js: src/bls_c.cpp ../mcl/src/fp.cpp $(EXPORTED_JS)
+	cd ../bls-wasm && emcc -O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1 -o bls_c.js ../bls/src/bls_c.cpp ../mcl/src/fp.cpp -I../bls/ -I../bls/include -I../cybozulib/include -I../mcl/include  && cp ../bls/docs/demo/bls.js index.js
+
 demo:
 	$(MAKE) docs/demo/bls_c.js
 

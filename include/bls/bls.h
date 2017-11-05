@@ -20,7 +20,11 @@
 #endif
 #endif
 #else
-#define BLS_DLL_API
+#ifdef __EMSCRIPTEN__
+	#define BLS_DLL_API __attribute__((used))
+#else
+	#define BLS_DLL_API
+#endif
 #endif
 
 #ifdef __cplusplus

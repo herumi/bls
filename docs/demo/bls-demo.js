@@ -3,10 +3,12 @@ function setValue(name, val) { document.getElementsByName(name)[0].value = val }
 function getText(name) { return document.getElementsByName(name)[0].innerText }
 function setText(name, val) { document.getElementsByName(name)[0].innerText = val }
 
-bls.init(bls.MCLBN_CURVE_FP254BNB, function() {
-	setText('status', 'ok')
-	setText('curveOrder', bls.capi.blsGetCurveOrder())
-})
+(function() {
+	bls.init(function() {
+		setText('status', 'ok')
+		setText('curveOrder', bls.capi.blsGetCurveOrder())
+	})
+})()
 
 let prevSelectedCurve = -1
 function onChangeSelectCurve() {
