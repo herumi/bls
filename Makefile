@@ -85,28 +85,35 @@ endif
 test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 	cd go/bls && ln -sf ../../lib . && env LD_RUN_PATH="../../lib" CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
+EXPORTED_JSON=docs/demo/exported-bls.json
 EXPORTED_TXT=ffi/js/exported-bls.txt
-EXPORTED_JS=docs/demo/exported-bls.json
-EXPORT_OPT=-re ffi/js/bls-re.txt
-$(EXPORTED_TXT): ./include/bls/bls.h ../mcl/include/mcl/bn.h
-	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) $^ > $@
+RE_TXT=ffi/js/bls-re.txt
+EXPORT_OPT=-re $(RE_TXT)
+$(EXPORTED_JSON): include/bls/bls.h ../mcl/include/mcl/bn.h
+	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) -json $^ > $(EXPORTED_JSON)
 
-$(EXPORTED_JS): ./include/bls/bls.h ../mcl/include/mcl/bn.h
-	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) -json $^ > $@
+$(EXPORTED_TXT): include/bls/bls.h ../mcl/include/mcl/bn.h
+	python ../mcl/ffi/js/export-functions.py $(EXPORT_OPT) $^ > $(EXPORTED_TXT)
 
-EXPORTED_BLS=$(shell cat $(EXPORTED_TXT))
+EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./
+EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384
+EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1 -s "EXPORTED_FUNCTIONS=[$(shell cat $(EXPORTED_TXT))]" --pre-js ffi/js/pre.js
+JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp $(EXPORTED_JSON) Makefile ffi/js/pre.js $(EXPORTED_TXT)
+docs/demo/bls_c.js: $(JS_DEP)
+	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -s "MODULARIZE=1"
 
-docs/demo/bls_c.js: src/bls_c.cpp ../mcl/src/fp.cpp $(EXPORTED_TXT) $(EXPORTED_JS)
-	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp -I./ -I./include -I../cybozulib/include -I../mcl/include -s WASM=1 -s "MODULARIZE=1" -s "EXPORTED_FUNCTIONS=[$(EXPORTED_BLS)]" -O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1
-
-../bls-wasm/bls_c.js: src/bls_c.cpp ../mcl/src/fp.cpp $(EXPORTED_JS)
-	cd ../bls-wasm && emcc -O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1 -o bls_c.js ../bls/src/bls_c.cpp ../mcl/src/fp.cpp -I../bls/ -I../bls/include -I../cybozulib/include -I../mcl/include  && cp ../bls/docs/demo/bls.js index.js
+../bls-wasm/bls_c.js: $(JS_DEP)
+	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT)
+	cp docs/demo/bls.js ../bls-wasm/
 
 demo:
 	$(MAKE) docs/demo/bls_c.js
 
+bls-wasm:
+	$(MAKE) ../bls-wasm/bls_c.js
+
 clean:
-	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB) $(EXPORTED_JS) $(EXPORTED_TXT)
+	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB) $(EXPORTED_JSON) $(EXPORTED_TXT) docs/demo/bls_c.js docs/demo/bls_c.wasm
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))

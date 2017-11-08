@@ -321,11 +321,6 @@
     capi.blsPublicKeyRecover = wrap_recover(capi._blsPublicKeyRecover, BLS_PUBLICKEY_SIZE, BLS_ID_SIZE)
     capi.blsSignatureRecover = wrap_recover(capi._blsSignatureRecover, BLS_SIGNATURE_SIZE, BLS_ID_SIZE)
 
-    capi.sheInit = function(curveType = MCLBN_CURVE_FP254BNB) {
-      let r = capi._sheInit(curveType, MCLBN_FP_UNIT_SIZE)
-      console.log('sheInit ' + r)
-      if (r) throw('sheInit')
-    }
     class Common {
       constructor(size) {
         this.a_ = new Uint32Array(size / 4)
