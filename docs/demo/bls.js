@@ -28,46 +28,40 @@
   const BLS_PUBLICKEY_SIZE = BLS_ID_SIZE * 3 * 2
   const BLS_SIGNATURE_SIZE = BLS_ID_SIZE * 3
 
-  let g_callback = null
-  let g_curveType = 0
-
   let capi = {}
   exports.capi = capi
   let mod = exports.mod
 
-  exports.init = function(callback = null, curveType = MCLBN_CURVE_FP254BNB) {
+  exports.init = (curveType = MCLBN_CURVE_FP254BNB) => {
     console.log('init')
-    g_callback = callback
-    g_curveType = curveType
-    if (isNodeJs) {
-    } else {
+    if (!isNodeJs) {
       fetch('bls_c.wasm')
         .then(response => response.arrayBuffer())
         .then(buffer => new Uint8Array(buffer))
         .then(binary => { Module(mod) })
     }
-  }
-
-  mod.onRuntimeInitialized = function() {
-    console.log('onRuntimeInitialized')
-    const f = function(exportedFuncs) {
-      exportedFuncs.forEach(func => {
-        capi[func.exportName] = mod.cwrap(func.name, func.returns, func.args)
-      })
-      define_extra_functions(mod)
-      let r = capi.blsInit(g_curveType)
-      console.log('finished ' + r)
-      if (g_callback) g_callback()
-    }
-    if (isNodeJs) {
-      const fs = require('fs')
-      const jsonStr = fs.readFileSync('./exported-bls.json')
-      f(JSON.parse(jsonStr))
-    } else {
-      fetch('exported-bls.json')
-        .then(response => response.json())
-        .then(exportedFuncs => f(exportedFuncs))
-    }
+    return new Promise((resolve) => {
+      mod.onRuntimeInitialized = () => {
+        const f = (exportedFuncs) => {
+          exportedFuncs.forEach(func => {
+            capi[func.exportName] = mod.cwrap(func.name, func.returns, func.args)
+          })
+          define_extra_functions(mod)
+          let r = capi.blsInit(curveType)
+          console.log('finished ' + r)
+          resolve()
+        }
+        if (isNodeJs) {
+          const fs = require('fs')
+          const jsonStr = fs.readFileSync('./exported-bls.json')
+          f(JSON.parse(jsonStr))
+        } else {
+          fetch('exported-bls.json')
+            .then(response => response.json())
+            .then(exportedFuncs => f(exportedFuncs))
+        }
+      }
+    })
   }
 
   const ptrToStr = function(pos, n) {
