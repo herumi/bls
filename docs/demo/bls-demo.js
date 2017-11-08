@@ -5,7 +5,6 @@ function setText(name, val) { document.getElementsByName(name)[0].innerText = va
 
 bls.init()
   .then(() => {
-    console.log('XXX')
     setText('status', 'ok')
     setText('curveOrder', bls.capi.blsGetCurveOrder())
   })
