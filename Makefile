@@ -87,23 +87,14 @@ test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./
 EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384
-EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1 --pre-js ffi/js/pre.js
-JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile ffi/js/pre.js
-docs/demo/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -s "MODULARIZE=1"
+EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1
+JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT)
-	cp docs/demo/bls.js ../bls-wasm/
-
-demo:
-	$(MAKE) docs/demo/bls_c.js
-
-bls-wasm:
-	$(MAKE) ../bls-wasm/bls_c.js
+	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -s "MODULARIZE=1"
 
 clean:
-	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB) docs/demo/bls_c.js docs/demo/bls_c.wasm
+	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
