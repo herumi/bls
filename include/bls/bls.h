@@ -61,38 +61,42 @@ BLS_DLL_API int blsInit(int curve, int maxUnitSize);
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int maxUnitSize);
 
-BLS_DLL_API size_t blsGetOpUnitSize(void);
+BLS_DLL_API mclSize blsGetOpUnitSize(void);
 // return strlen(buf) if success else 0
-BLS_DLL_API int blsGetCurveOrder(char *buf, size_t maxBufSize);
-BLS_DLL_API int blsGetFieldOrder(char *buf, size_t maxBufSize);
+BLS_DLL_API int blsGetCurveOrder(char *buf, mclSize maxBufSize);
+BLS_DLL_API int blsGetFieldOrder(char *buf, mclSize maxBufSize);
 
 // get a generator of G2
 BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
 
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 // return 0 if success
-BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, size_t bufSize);
-BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, size_t bufSize);
+BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);
+BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize);
 
 /*
 	return strlen(buf) if success else 0
 	buf is '\0' terminated
 */
-BLS_DLL_API size_t blsIdGetDecStr(char *buf, size_t maxBufSize, const blsId *id);
-BLS_DLL_API size_t blsIdGetHexStr(char *buf, size_t maxBufSize, const blsId *id);
+BLS_DLL_API mclSize blsIdGetDecStr(char *buf, mclSize maxBufSize, const blsId *id);
+BLS_DLL_API mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id);
 
 
 // return written byte size if success else 0
-BLS_DLL_API size_t blsIdSerialize(void *buf, size_t maxBufSize, const blsId *id);
-BLS_DLL_API size_t blsSecretKeySerialize(void *buf, size_t maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API size_t blsPublicKeySerialize(void *buf, size_t maxBufSize, const blsPublicKey *pub);
-BLS_DLL_API size_t blsSignatureSerialize(void *buf, size_t maxBufSize, const blsSignature *sig);
+BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
+BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API mclSize blsPublicKeySerialize(void *buf, mclSize maxBufSize, const blsPublicKey *pub);
+BLS_DLL_API mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature *sig);
 
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+// return read byte size if success else 0
+#else
 // return 0 if success else -1
-BLS_DLL_API int blsIdDeserialize(blsId *id, const void *buf, size_t bufSize);
-BLS_DLL_API int blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, size_t bufSize);
-BLS_DLL_API int blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, size_t bufSize);
-BLS_DLL_API int blsSignatureDeserialize(blsSignature *sig, const void *buf, size_t bufSize);
+#endif
+BLS_DLL_API mclRetType blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize);
+BLS_DLL_API mclRetType blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize);
+BLS_DLL_API mclRetType blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize);
+BLS_DLL_API mclRetType blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize);
 
 // return 1 if same else 0
 BLS_DLL_API int blsIdIsEqual(const blsId *lhs, const blsId *rhs);
@@ -106,7 +110,7 @@ BLS_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 
 // hash buf and set
-BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, size_t bufSize);
+BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize);
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom
 	return 0 if success else -1
@@ -117,49 +121,49 @@ BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
 
 // return 0 if success
-BLS_DLL_API int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, size_t k, const blsId *id);
-BLS_DLL_API int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, size_t k, const blsId *id);
+BLS_DLL_API int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id);
+BLS_DLL_API int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, mclSize k, const blsId *id);
 
 
-BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, size_t n);
-BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, size_t n);
-BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, size_t n);
+BLS_DLL_API int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, mclSize n);
+BLS_DLL_API int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, mclSize n);
+BLS_DLL_API int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n);
 
-BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, size_t size);
+BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
 
 // return 1 if valid
-BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, size_t size);
+BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
 BLS_DLL_API int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub);
 
 //////////////////////////////////////////////////////////////////////////
 // the following apis will be removed
 
 // mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
-BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, size_t bufSize);
+BLS_DLL_API int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize);
 /*
 	return written byte size if success else 0
 */
-BLS_DLL_API size_t blsIdGetLittleEndian(void *buf, size_t maxBufSize, const blsId *id);
+BLS_DLL_API mclSize blsIdGetLittleEndian(void *buf, mclSize maxBufSize, const blsId *id);
 
 // return 0 if success
 // mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
-BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, size_t bufSize);
-BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, size_t bufSize);
-BLS_DLL_API int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, size_t bufSize);
+BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize);
+BLS_DLL_API int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
+BLS_DLL_API int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, mclSize bufSize);
 /*
 	return written byte size if success else 0
 */
-BLS_DLL_API size_t blsSecretKeyGetLittleEndian(void *buf, size_t maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API mclSize blsSecretKeyGetLittleEndian(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
 /*
 	return strlen(buf) if success else 0
 	buf is '\0' terminated
 */
-BLS_DLL_API size_t blsSecretKeyGetDecStr(char *buf, size_t maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API size_t blsSecretKeyGetHexStr(char *buf, size_t maxBufSize, const blsSecretKey *sec);
-BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, size_t bufSize);
-BLS_DLL_API size_t blsPublicKeyGetHexStr(char *buf, size_t maxBufSize, const blsPublicKey *pub);
-BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, size_t bufSize);
-BLS_DLL_API size_t blsSignatureGetHexStr(char *buf, size_t maxBufSize, const blsSignature *sig);
+BLS_DLL_API mclSize blsSecretKeyGetDecStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API mclSize blsSecretKeyGetHexStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec);
+BLS_DLL_API int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsPublicKeyGetHexStr(char *buf, mclSize maxBufSize, const blsPublicKey *pub);
+BLS_DLL_API int blsSignatureSetHexStr(blsSignature *sig, const char *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const blsSignature *sig);
 
 /*
 	Diffie Hellman key exchange

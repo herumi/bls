@@ -40,7 +40,11 @@ void blsDataTest()
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_EQUAL(n, fpSize);
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
 
 	blsPublicKey pub1, pub2;
@@ -48,14 +52,22 @@ void blsDataTest()
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, fpSize * 2);
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 	blsSignature sig1, sig2;
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, fpSize);
 	ret = blsSignatureDeserialize(&sig2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 }
 
@@ -132,16 +144,28 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	ret = blsIdDeserialize(&id2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsIdIsEqual(&id1, &id2));
 
 	ret = blsIdDeserialize(&id2, buf, n - 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, 0);
+#else
 	CYBOZU_TEST_ASSERT(ret != 0);
+#endif
 
 	memset(&id2, 0, sizeof(id2));
 	buf[n] = dummyChar;
 	ret = blsIdDeserialize(&id2, buf, n + 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsIdIsEqual(&id1, &id2));
 
 	n = blsIdSerialize(buf, expectSize, &id1);
@@ -154,16 +178,28 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
 
 	ret = blsSecretKeyDeserialize(&sec2, buf, n - 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, 0);
+#else
 	CYBOZU_TEST_ASSERT(ret != 0);
+#endif
 
 	memset(&sec2, 0, sizeof(sec2));
 	buf[n] = dummyChar;
 	ret = blsSecretKeyDeserialize(&sec2, buf, n + 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
 
 	n = blsSecretKeySerialize(buf, expectSize, &sec1);
@@ -176,16 +212,28 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 
 	ret = blsPublicKeyDeserialize(&pub2, buf, n - 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, 0);
+#else
 	CYBOZU_TEST_ASSERT(ret != 0);
+#endif
 
 	memset(&pub2, 0, sizeof(pub2));
 	buf[n] = dummyChar;
 	ret = blsPublicKeyDeserialize(&pub2, buf, n + 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 
 	n = blsPublicKeySerialize(buf, expectSize, &pub1);
@@ -198,16 +246,28 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	ret = blsSignatureDeserialize(&sig2, buf, n);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 
 	ret = blsSignatureDeserialize(&sig2, buf, n - 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, 0);
+#else
 	CYBOZU_TEST_ASSERT(ret != 0);
+#endif
 
 	memset(&sig2, 0, sizeof(sig2));
 	buf[n] = dummyChar;
 	ret = blsSignatureDeserialize(&sig2, buf, n + 1);
+#ifdef MCLBN_USE_NEW_DESERIALIZE_API
+	CYBOZU_TEST_EQUAL(ret, n);
+#else
 	CYBOZU_TEST_EQUAL(ret, 0);
+#endif
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 
 	n = blsSignatureSerialize(buf, expectSize, &sig1);
