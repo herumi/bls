@@ -88,15 +88,11 @@ BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const b
 BLS_DLL_API mclSize blsPublicKeySerialize(void *buf, mclSize maxBufSize, const blsPublicKey *pub);
 BLS_DLL_API mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature *sig);
 
-#ifdef MCLBN_USE_NEW_DESERIALIZE_API
 // return read byte size if success else 0
-#else
-// return 0 if success else -1
-#endif
-BLS_DLL_API mclRetType blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize);
-BLS_DLL_API mclRetType blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize);
-BLS_DLL_API mclRetType blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize);
-BLS_DLL_API mclRetType blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize);
+BLS_DLL_API mclSize blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize);
 
 // return 1 if same else 0
 BLS_DLL_API int blsIdIsEqual(const blsId *lhs, const blsId *rhs);

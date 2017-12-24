@@ -91,7 +91,7 @@ func (x *Fr) SetString(s string, base int) error {
 func (x *Fr) Deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnFr_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
+	if err == 0 {
 		return fmt.Errorf("err mclBnFr_deserialize %x", buf)
 	}
 	return nil
@@ -220,7 +220,7 @@ func (x *G1) SetString(s string, base int) error {
 func (x *G1) Deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnG1_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
+	if err == 0 {
 		return fmt.Errorf("err mclBnG1_deserialize %x", buf)
 	}
 	return nil
@@ -330,7 +330,7 @@ func (x *G2) SetString(s string, base int) error {
 func (x *G2) Deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnG2_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
+	if err == 0 {
 		return fmt.Errorf("err mclBnG2_deserialize %x", buf)
 	}
 	return nil
@@ -441,7 +441,7 @@ func (x *GT) SetString(s string, base int) error {
 func (x *GT) Deserialize(buf []byte) error {
 	// #nosec
 	err := C.mclBnGT_deserialize(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
-	if err != 0 {
+	if err == 0 {
 		return fmt.Errorf("err mclBnGT_deserialize %x", buf)
 	}
 	return nil

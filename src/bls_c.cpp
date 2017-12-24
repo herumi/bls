@@ -205,19 +205,19 @@ mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature 
 {
 	return mclBnG1_serialize(buf, maxBufSize, &sig->v);
 }
-mclRetType blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize)
+mclSize blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize)
 {
 	return mclBnFr_deserialize(&id->v, buf, bufSize);
 }
-mclRetType blsSecretKeyDeserialize(blsSecretKey *sig, const void *buf, mclSize bufSize)
+mclSize blsSecretKeyDeserialize(blsSecretKey *sig, const void *buf, mclSize bufSize)
 {
 	return mclBnFr_deserialize(&sig->v, buf, bufSize);
 }
-mclRetType blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize)
+mclSize blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize)
 {
 	return mclBnG2_deserialize(&pub->v, buf, bufSize);
 }
-mclRetType blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize)
+mclSize blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize)
 {
 	return mclBnG1_deserialize(&sig->v, buf, bufSize);
 }
