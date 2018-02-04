@@ -344,6 +344,27 @@ void addTest()
 	CYBOZU_TEST_ASSERT((sig1 + sig2).verify(pub1 + pub2, m));
 }
 
+void aggregateTest()
+{
+	const size_t n = 10;
+	bls::SecretKey secs[n];
+	bls::PublicKey pubs[n], pub;
+	bls::Signature sigs[n], sig;
+	const std::string m = "abc";
+	for (size_t i = 0; i < n; i++) {
+		secs[i].init();
+		secs[i].getPublicKey(pubs[i]);
+		secs[i].sign(sigs[i], m);
+	}
+	pub = pubs[0];
+	sig = sigs[0];
+	for (size_t i = 1; i < n; i++) {
+		pub.add(pubs[i]);
+		sig.add(sigs[i]);
+	}
+	CYBOZU_TEST_ASSERT(sig.verify(pub, m));
+}
+
 void dataTest()
 {
 	const size_t size = bls::getOpUnitSize() * sizeof(uint64_t);
@@ -395,6 +416,7 @@ void testAll()
 	popTest();
 	addTest();
 	dataTest();
+	aggregateTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
