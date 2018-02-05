@@ -5,7 +5,6 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 #include <cybozu/crypto.hpp>
-#include <cybozu/random_generator.hpp>
 #include <vector>
 #include <string>
 #include <bls/bls.hpp>
@@ -20,13 +19,6 @@ using namespace mcl::bn384;
 #endif
 
 typedef std::vector<Fr> FrVec;
-
-static cybozu::RandomGenerator& getRG()
-{
-	static cybozu::RandomGenerator rg;
-	return rg;
-}
-
 const std::vector<Fp6> *g_pQcoeff;
 const G2 *g_pQ;
 
@@ -73,7 +65,7 @@ struct Polynomial {
 		c.resize(k);
 		c[0] = s;
 		for (size_t i = 1; i < c.size(); i++) {
-			c[i].setRand(getRG());
+			c[i].setRand();
 		}
 	}
 	// y = f(id)
@@ -405,7 +397,7 @@ void SecretKey::setStr(const std::string& str, int ioMode)
 
 void SecretKey::init()
 {
-	getInner().s.setRand(getRG());
+	getInner().s.setRand();
 }
 
 void SecretKey::set(const uint64_t *p)
