@@ -156,17 +156,17 @@ std::ostream& writeAsHex(std::ostream& os, const T& t)
 void init(int curve, int maxUnitSize)
 {
 	if (maxUnitSize != MCLBN_FP_UNIT_SIZE) throw cybozu::Exception("bls:init:bad maxUnitSize") << maxUnitSize << MCLBN_FP_UNIT_SIZE;
-	mcl::bn::CurveParam cp;
+	mcl::CurveParam cp;
 	switch (curve) {
-	case mclBn_CurveFp254BNb:
-		cp = mcl::bn::CurveFp254BNb;
+	case MCL_BN254:
+		cp = mcl::BN254;
 		break;
 #if MCLBN_FP_UNIT_SIZE == 6
-	case mclBn_CurveFp382_1:
-		cp = mcl::bn::CurveFp382_1;
+	case MCL_BN381_1:
+		cp = mcl::BN381_1;
 		break;
-	case mclBn_CurveFp382_2:
-		cp = mcl::bn::CurveFp382_2;
+	case MCL_BLS12_381:
+		cp = mcl::BLS12_381;
 		break;
 #endif
 	default:

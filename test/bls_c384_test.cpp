@@ -24,21 +24,22 @@ void blsDataTest()
 {
 	const char *msg = "test test";
 	const size_t msgSize = strlen(msg);
-	const size_t fpSize = blsGetOpUnitSize() * sizeof(uint64_t);
+	const size_t FrSize = mclBn_getFrByteSize();
+	const size_t FpSize = mclBn_getG1ByteSize();
 	blsSecretKey sec1, sec2;
 	blsSecretKeySetByCSPRNG(&sec1);
 	char buf[1024];
 	size_t n;
 	int ret;
 	n = blsSecretKeyGetHexStr(buf, sizeof(buf), &sec1);
-	CYBOZU_TEST_ASSERT(0 < n && n <= fpSize * 2);
+	CYBOZU_TEST_ASSERT(0 < n && n <= FrSize * 2);
 	ret = blsSecretKeySetHexStr(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, 0);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
 
 	memset(&sec2, 0, sizeof(sec2));
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
-	CYBOZU_TEST_EQUAL(n, fpSize);
+	CYBOZU_TEST_EQUAL(n, FrSize);
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
@@ -46,14 +47,14 @@ void blsDataTest()
 	blsPublicKey pub1, pub2;
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
-	CYBOZU_TEST_EQUAL(n, fpSize * 2);
+	CYBOZU_TEST_EQUAL(n, FpSize * 2);
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 	blsSignature sig1, sig2;
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
-	CYBOZU_TEST_EQUAL(n, fpSize);
+	CYBOZU_TEST_EQUAL(n, FpSize);
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
@@ -95,7 +96,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, mclBn_CurveFp254BNb, MCLBN_FP_UNIT_SIZE);
+			vt[i].run(blsInit, MCL_BN254, MCLBN_FP_UNIT_SIZE);
 		}
 	}
 	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 4u);
@@ -103,7 +104,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, mclBn_CurveFp382_1, MCLBN_FP_UNIT_SIZE);
+			vt[i].run(blsInit, MCL_BLS12_381, MCLBN_FP_UNIT_SIZE);
 		}
 	}
 	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 6u);
@@ -113,8 +114,9 @@ CYBOZU_TEST_AUTO(multipleInit)
 
 void blsSerializeTest()
 {
-	const size_t opUnitSize = mclBn_getOpUnitSize();
-	printf("opUnitSize=%d\n", (int)opUnitSize);
+	const size_t FrSize = mclBn_getFrByteSize();
+	const size_t FpSize = mclBn_getG1ByteSize();
+	printf("FrSize=%d, FpSize=%d\n", (int)FrSize, (int)FpSize);
 	blsId id1, id2;
 	blsSecretKey sec1, sec2;
 	blsPublicKey pub1, pub2;
@@ -126,7 +128,7 @@ void blsSerializeTest()
 	const char dummyChar = '1';
 
 	// Id
-	expectSize = opUnitSize * 8;
+	expectSize = FrSize;
 	blsIdSetInt(&id1, -1);
 	n = blsIdSerialize(buf, sizeof(buf), &id1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -148,7 +150,7 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// SecretKey
-	expectSize = opUnitSize * 8;
+	expectSize = FrSize;
 	blsSecretKeySetDecStr(&sec1, "-1", 2);
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -170,7 +172,7 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// PublicKey
-	expectSize = opUnitSize * 8 * 2;
+	expectSize = FpSize * 2;
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -192,7 +194,7 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// Signature
-	expectSize = opUnitSize * 8;
+	expectSize = FpSize;
 	blsSign(&sig1, &sec1, "abc", 3);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -217,21 +219,21 @@ void blsSerializeTest()
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
-		mclBn_CurveFp254BNb,
+		MCL_BN254,
 #if MCLBN_FP_UNIT_SIZE == 6
-		mclBn_CurveFp382_1,
-		mclBn_CurveFp382_2
+		MCL_BN381_1,
+		MCL_BLS12_381,
 #endif
 	};
 	const char *curveOrderTbl[] = {
 		"16798108731015832284940804142231733909759579603404752749028378864165570215949",
 		"5540996953667913971058039301942914304734176495422447785042938606876043190415948413757785063597439175372845535461389",
-		"5541245505022739011583672869577435255026888277144126952448297309161979278754528049907713682488818304329661351460877",
+		"52435875175126190479447740508185965837690552500527637822603658699938581184513",
 	};
 	const char *fieldOrderTbl[] = {
 		"16798108731015832284940804142231733909889187121439069848933715426072753864723",
 		"5540996953667913971058039301942914304734176495422447785045292539108217242186829586959562222833658991069414454984723",
-		"5541245505022739011583672869577435255026888277144126952450651294188487038640194767986566260919128250811286032482323",
+		"4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787",
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);

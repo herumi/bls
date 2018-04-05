@@ -66,7 +66,7 @@ void SecretKeyTestBN256()
 
 CYBOZU_TEST_AUTO(bn256)
 {
-	bls::init(mclBn_CurveFp254BNb);
+	bls::init(MCL_BN254);
 	IdTestBN256();
 	SecretKeyTestBN256();
 	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
@@ -367,13 +367,14 @@ void aggregateTest()
 
 void dataTest()
 {
-	const size_t size = bls::getOpUnitSize() * sizeof(uint64_t);
+	const size_t FrSize = mclBn_getFrByteSize();
+	const size_t FpSize = mclBn_getG1ByteSize();
 	bls::SecretKey sec;
 	sec.init();
 	std::string str;
 	sec.getStr(str, bls::IoFixedByteSeq);
 	{
-		CYBOZU_TEST_EQUAL(str.size(), size);
+		CYBOZU_TEST_EQUAL(str.size(), FrSize);
 		bls::SecretKey sec2;
 		sec2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sec, sec2);
@@ -382,7 +383,7 @@ void dataTest()
 	sec.getPublicKey(pub);
 	pub.getStr(str, bls::IoFixedByteSeq);
 	{
-		CYBOZU_TEST_EQUAL(str.size(), size * 2);
+		CYBOZU_TEST_EQUAL(str.size(), FpSize * 2);
 		bls::PublicKey pub2;
 		pub2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(pub, pub2);
@@ -392,7 +393,7 @@ void dataTest()
 	sec.sign(sign, m);
 	sign.getStr(str, bls::IoFixedByteSeq);
 	{
-		CYBOZU_TEST_EQUAL(str.size(), size);
+		CYBOZU_TEST_EQUAL(str.size(), FpSize);
 		bls::Signature sign2;
 		sign2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sign, sign2);
@@ -402,7 +403,7 @@ void dataTest()
 	id.set(v);
 	id.getStr(str, bls::IoFixedByteSeq);
 	{
-		CYBOZU_TEST_EQUAL(str.size(), size);
+		CYBOZU_TEST_EQUAL(str.size(), FrSize);
 		bls::Id id2;
 		id2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(id, id2);
@@ -424,10 +425,10 @@ CYBOZU_TEST_AUTO(all)
 		int type;
 		const char *name;
 	} tbl[] = {
-		{ mclBn_CurveFp254BNb, "Fp254" },
+		{ MCL_BN254, "BN254" },
 #if MCLBN_FP_UNIT_SIZE == 6
-		{ mclBn_CurveFp382_1, "Fp382_1" },
-		{ mclBn_CurveFp382_2, "Fp382_2" },
+		{ MCL_BN381_1, "BN381_1" },
+		{ MCL_BLS12_381, "BLS12_381" },
 #endif
 	};
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {

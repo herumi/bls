@@ -3,7 +3,6 @@ package bls
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #include <mcl/bn.h>
-#include <bls/bls.h>
 */
 import "C"
 import "fmt"
@@ -17,6 +16,9 @@ const CurveFp382_1 = C.mclBn_CurveFp382_1
 
 // CurveFp382_2 -- 382 bit curve 2
 const CurveFp382_2 = C.mclBn_CurveFp382_2
+
+// BLS12_381
+const BLS12_381 = C.MCL_BLS12_381
 
 // GetMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
