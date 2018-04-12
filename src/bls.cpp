@@ -283,10 +283,8 @@ void Signature::setStr(const std::string& str, int ioMode)
 	getInner().sHm.setStr(str, ioMode);
 }
 
-bool Signature::verify(const PublicKey& pub, const std::string& m) const
+static bool VerifyMappedHash(const G2& sQ, const G1& sHm, const G1& Hm)
 {
-	G1 Hm;
-	HashAndMapToG1(Hm, m); // Hm = Hash(m)
 #if 1
 	/*
 		e(P1, Q1) == e(P2, Q2)
@@ -297,16 +295,32 @@ bool Signature::verify(const PublicKey& pub, const std::string& m) const
 	*/
 	Fp12 e;
 	std::vector<Fp6> Q2coeff;
-	precomputeG2(Q2coeff, pub.getInner().sQ);
-	precomputedMillerLoop2(e, getInner().sHm, getQcoeff(), -Hm, Q2coeff);
+	precomputeG2(Q2coeff, sQ);
+	precomputedMillerLoop2(e, sHm, getQcoeff(), -Hm, Q2coeff);
 	finalExp(e, e);
 	return e.isOne();
 #else
 	Fp12 e1, e2;
-	pairing(e1, getInner().sHm, getQ()); // e(s Hm, Q)
-	pairing(e2, Hm, pub.getInner().sQ); // e(Hm, sQ)
+	pairing(e1, sHm, getQ()); // e(s Hm, Q)
+	pairing(e2, Hm, sQ); // e(Hm, sQ)
 	return e1 == e2;
 #endif
+}
+
+bool Signature::verify(const PublicKey& pub, const std::string& m) const
+{
+	G1 Hm;
+	HashAndMapToG1(Hm, m); // Hm = Hash(m)
+	return VerifyMappedHash(pub.getInner().sQ, getInner().sHm, Hm);
+}
+
+bool Signature::verifyHash(const PublicKey& pub, const void *hash, size_t hashSize) const
+{
+    G1 Hm;
+    Fp t;
+    t.setArrayMask((const char*)hash, hashSize);
+    BN::mapToG1(Hm, t);
+	return VerifyMappedHash(pub.getInner().sQ, getInner().sHm, Hm);
 }
 
 bool Signature::verify(const PublicKey& pub) const
@@ -432,6 +446,16 @@ void SecretKey::sign(Signature& sig, const std::string& m) const
 	HashAndMapToG1(Hm, m);
 //	G1::mul(sig.getInner().sHm, Hm, getInner().s);
 	G1::mulCT(sig.getInner().sHm, Hm, getInner().s);
+}
+
+void SecretKey::signHash(Signature& sig, const void* hash, size_t hashSize) const
+{
+    G1 Hm;
+    Fp t;
+    t.setArrayMask((const char*)hash, hashSize);
+    BN::mapToG1(Hm, t);
+//	G1::mul(sig.getInner().sHm, Hm, getInner().s);
+    G1::mulCT(sig.getInner().sHm, Hm, getInner().s);
 }
 
 void SecretKey::getPop(Signature& pop) const

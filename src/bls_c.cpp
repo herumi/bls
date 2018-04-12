@@ -123,6 +123,15 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
 }
 
+void blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
+{
+	G1 Hm;
+	Fp t;
+	t.setArrayMask((const char*)h, size);
+	BN::mapToG1(Hm, t);
+	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
+}
+
 /*
 	e(P1, Q1) == e(P2, Q2)
 	<=> finalExp(ML(P1, Q1)) == finalExp(ML(P2, Q2))
@@ -147,6 +156,19 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 		e(sig, Q) = e(Hm, pub)
 	*/
 	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+}
+
+int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
+{
+    G1 Hm;
+    Fp t;
+    t.setArrayMask((const char*)h, size);
+    BN::mapToG1(Hm, t);
+    /*
+        e(sHm, Q) = e(Hm, sQ)
+        e(sig, Q) = e(Hm, pub)
+    */
+    return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
 }
 
 mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id)

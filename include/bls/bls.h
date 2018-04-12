@@ -72,10 +72,17 @@ BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, 
 
 BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 
+// calculate the hash of m and sign the hash
 BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
 
 // return 1 if valid
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
+
+// sign the hash
+BLS_DLL_API void blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size);
+
+// return 1 if valid
+BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
 
 // return written byte size if success else 0
 BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
