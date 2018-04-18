@@ -93,6 +93,9 @@ JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
 ../bls-wasm/bls_c.js: $(JS_DEP)
 	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -s "MODULARIZE=1"
 
+bls-wasm:
+	$(MAKE) ../bls-wasm/bls_c.js
+
 clean:
 	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB)
 

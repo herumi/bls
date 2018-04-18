@@ -29,8 +29,8 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 	try
 {
 	if (mclBn_init(curve, maxUnitSize) != 0) return -1;
-	BN::mapToG2(g_Q, 1);
-	BN::precomputeG2(g_Qcoeff, getQ());
+	mapToG2(g_Q, 1);
+	precomputeG2(g_Qcoeff, getQ());
 	return 0;
 } catch (std::exception&) {
 	return -1;
@@ -77,10 +77,10 @@ static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2& Q2)
 {
 	std::vector<Fp6> Q2coeff;
-	BN::precomputeG2(Q2coeff, Q2);
+	precomputeG2(Q2coeff, Q2);
 	Fp12 e;
-	BN::precomputedMillerLoop2(e, P1, Q1coeff, -P2, Q2coeff.data());
-	BN::finalExp(e, e);
+	precomputedMillerLoop2(e, P1, Q1coeff, -P2, Q2coeff.data());
+	finalExp(e, e);
 	return e.isOne();
 }
 
@@ -131,7 +131,7 @@ void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
 	G1 Hm;
-	BN::hashAndMapToG1(Hm, m, size);
+	hashAndMapToG1(Hm, m, size);
 	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
 }
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id)
@@ -169,7 +169,7 @@ int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const bls
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
 	G1 Hm;
-	BN::hashAndMapToG1(Hm, m, size);
+	hashAndMapToG1(Hm, m, size);
 	/*
 		e(sHm, Q) = e(Hm, sQ)
 		e(sig, Q) = e(Hm, pub)

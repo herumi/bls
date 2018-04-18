@@ -31,7 +31,7 @@ static void HashAndMapToG1(G1& P, const std::string& m)
 {
 	Fp t;
 	t.setHashOf(m);
-	BN::mapToG1(P, t);
+	mapToG1(P, t);
 }
 
 template<class T, class G, class Vec>
@@ -172,10 +172,7 @@ void init(int curve, int maxUnitSize)
 	default:
 		throw cybozu::Exception("bls:init:bad curve") << curve;
 	}
-	BN::init(cp);
-	G1::setCompressedExpression();
-	G2::setCompressedExpression();
-	Fr::init(BN::param.r);
+	initPairing(cp);
 	assert(sizeof(Id) == sizeof(impl::Id));
 	assert(sizeof(SecretKey) == sizeof(impl::SecretKey));
 	assert(sizeof(PublicKey) == sizeof(impl::PublicKey));
@@ -187,11 +184,11 @@ void init(int curve, int maxUnitSize)
 			Fp2("13891744915211034074451795021214165905772212241412891944830863846330766296736", "7937318970632701341203597196594272556916396164729705624521405069090520231616")
 		);
 	} else {
-		BN::mapToG2(Q, 1);
+		mapToG2(Q, 1);
 	}
 	static std::vector<Fp6> Qcoeff;
 
-	BN::precomputeG2(Qcoeff, Q);
+	precomputeG2(Qcoeff, Q);
 	g_pQ = &Q;
 	g_pQcoeff = &Qcoeff;
 }
@@ -289,14 +286,14 @@ bool Signature::verify(const PublicKey& pub, const std::string& m) const
 	*/
 	Fp12 e;
 	std::vector<Fp6> Q2coeff;
-	BN::precomputeG2(Q2coeff, pub.getInner().sQ);
-	BN::precomputedMillerLoop2(e, getInner().sHm, getQcoeff(), -Hm, Q2coeff);
-	BN::finalExp(e, e);
+	precomputeG2(Q2coeff, pub.getInner().sQ);
+	precomputedMillerLoop2(e, getInner().sHm, getQcoeff(), -Hm, Q2coeff);
+	finalExp(e, e);
 	return e.isOne();
 #else
 	Fp12 e1, e2;
-	BN::pairing(e1, getInner().sHm, getQ()); // e(s Hm, Q)
-	BN::pairing(e2, Hm, pub.getInner().sQ); // e(Hm, sQ)
+	pairing(e1, getInner().sHm, getQ()); // e(s Hm, Q)
+	pairing(e2, Hm, pub.getInner().sQ); // e(Hm, sQ)
 	return e1 == e2;
 #endif
 }
