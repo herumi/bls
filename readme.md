@@ -133,7 +133,7 @@ make test_go
 # WASM(WebAssembly)
 ```
 mkdir ../bls-wasm
-make ../bls-wasm/bls_c.js
+make bls-wasm
 ```
 see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
 

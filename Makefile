@@ -86,7 +86,7 @@ test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
 	cd go/bls && ln -sf ../../lib . && env LD_RUN_PATH="../../lib" CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./
-EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384
+EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -Os
 EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1
 JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
 
