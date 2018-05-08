@@ -82,8 +82,8 @@ test: $(TEST_EXE)
 ifeq ($(OS),mac)
   MAC_GO_LDFLAGS="-ldflags=-s"
 endif
-test_go: go/bls/bls.go go/bls/bls_test.go $(BLS384_SLIB)
-	cd go/bls && ln -sf ../../lib . && env LD_RUN_PATH="../../lib" CGO_CFLAGS="-I../../include -I../../../mcl/include" CGO_LDFLAGS="-L../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
+test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
+	cd ffi/go/bls && ln -sf ../../../lib . && env LD_RUN_PATH="../../../lib" CGO_CFLAGS="-I../../../include -I../../../../mcl/include" CGO_LDFLAGS="-L../../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./
 EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -Os
