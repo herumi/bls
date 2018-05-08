@@ -7,7 +7,7 @@ LDFLAGS += -lpthread
 
 SRC_SRC=bls.cpp bls_c.cpp
 TEST_SRC=bls_test.cpp bls_c384_test.cpp
-SAMPLE_SRC=bls_smpl.cpp bls_tool.cpp
+SAMPLE_SRC=bls_smpl.cpp
 
 CFLAGS+=-I../mcl/include
 UNIT?=6
@@ -102,6 +102,8 @@ clean:
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
 -include $(DEPEND_FILE)
+
+.PHONY: test bls-wasm
 
 # don't remove these files automatically
 .SECONDARY: $(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.o))
