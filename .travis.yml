@@ -12,5 +12,6 @@ script:
   - git clone --depth 1 https://github.com/herumi/mcl.git
   - git clone --depth 1 https://github.com/herumi/bls.git
   - cd bls
+  - make
   - make test
   - make test_go
