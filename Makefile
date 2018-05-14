@@ -87,11 +87,11 @@ test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./
 EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -Os
-EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1
+EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1
 JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -s "MODULARIZE=1"
+	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DCYBOZU_MINIMUM_EXCEPTION
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
