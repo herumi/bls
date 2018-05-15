@@ -72,7 +72,7 @@ void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 	CYBOZU_TEST_EQUAL(buf, fieldOrder);
 }
 
-#if !(defined(DISABLE_THREAD_TEST) && defined(__GCC_IEC_559))
+#if !defined(DISABLE_THREAD_TEST) || defined(__clang__)
 #if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
 #include <thread>
 #include <vector>
