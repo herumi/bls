@@ -22,6 +22,9 @@ endif
 ifneq ($(MCL_MAX_BIT_SIZE),)
   CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
 endif
+ifeq ($(DISABLE_THREAD_TEST),1)
+  CFLAGS+=-DDISABLE_THREAD_TEST
+endif
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
 	python bls_smpl.py

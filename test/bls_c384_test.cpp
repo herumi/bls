@@ -72,6 +72,7 @@ void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 	CYBOZU_TEST_EQUAL(buf, fieldOrder);
 }
 
+#if !(defined(DISABLE_THREAD_TEST) && defined(__GCC_IEC_559))
 #if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
 #include <thread>
 #include <vector>
@@ -90,9 +91,10 @@ struct Thread {
 		t.reset(new std::thread(func, p1, p2));
 	}
 };
+
 CYBOZU_TEST_AUTO(multipleInit)
 {
-	const size_t n = 10;
+	const size_t n = 100;
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
@@ -110,6 +112,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 6u);
 #endif
 }
+#endif
 #endif
 
 void blsSerializeTest()

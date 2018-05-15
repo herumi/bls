@@ -13,5 +13,5 @@ script:
   - git clone --depth 1 https://github.com/herumi/bls.git
   - cd bls
   - make
-  - make test
+  - make test DISABLE_THREAD_TEST=1
   - make test_go
