@@ -92,7 +92,7 @@ struct Thread {
 };
 CYBOZU_TEST_AUTO(multipleInit)
 {
-	const size_t n = 100;
+	const size_t n = 10;
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
