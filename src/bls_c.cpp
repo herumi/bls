@@ -26,14 +26,14 @@ static const G2& getQ() { return g_Q; }
 static const std::vector<Fp6>& getQcoeff() { return g_Qcoeff; }
 
 int blsInitNotThreadSafe(int curve, int maxUnitSize)
-	try
 {
-	if (mclBn_init(curve, maxUnitSize) != 0) return -1;
-	mapToG2(g_Q, 1);
+	int ret = mclBn_init(curve, maxUnitSize);
+	if (ret < 0) return ret;
+	bool b;
+	mapToG2(&b, g_Q, 1);
+	if (!b) return -100;
 	precomputeG2(g_Qcoeff, getQ());
 	return 0;
-} catch (std::exception&) {
-	return -1;
 }
 
 #ifndef __EMSCRIPTEN__
@@ -84,39 +84,19 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 	return e.isOne();
 }
 
-mclSize checkAndCopy(char *buf, mclSize maxBufSize, const std::string& s)
-{
-	if (s.size() > maxBufSize + 1) {
-		return 0;
-	}
-	memcpy(buf, s.c_str(), s.size());
-	buf[s.size()] = '\0';
-	return s.size();
-}
-
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
 	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
 }
 
 int blsGetCurveOrder(char *buf, mclSize maxBufSize)
-	try
 {
-	std::string s;
-	Fr::getModulo(s);
-	return (int)checkAndCopy(buf, maxBufSize, s);
-} catch (std::exception&) {
-	return 0;
+	return Fr::getModulo(buf, maxBufSize);
 }
 
 int blsGetFieldOrder(char *buf, mclSize maxBufSize)
-	try
 {
-	std::string s;
-	Fp::getModulo(s);
-	return (int)checkAndCopy(buf, maxBufSize, s);
-} catch (std::exception&) {
-	return 0;
+	return Fp::getModulo(buf, maxBufSize);
 }
 
 void blsGetGeneratorOfG2(blsPublicKey *pub)
