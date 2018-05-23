@@ -161,7 +161,7 @@ int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 {
 	char buf[1024];
 	mclSize n = mclBnG2_serialize(buf, sizeof(buf), &pub->v);
-	assert(n);
+	if (n == 0) return 0;
 	return blsVerify(sig, pub, buf, n);
 }
 
