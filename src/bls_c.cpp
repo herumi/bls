@@ -1,11 +1,10 @@
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <iosfwd>
-#include <stdint.h>
-#include <memory.h>
+#ifdef __EMSCRIPTEN__
+#define MCLBN_DONT_EXPORT
+#include "../mcl/src/fp.cpp"
+#endif
+
 #include "../mcl/src/bn_c_impl.hpp"
+
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
@@ -21,9 +20,9 @@
 */
 
 static G2 g_Q;
-static std::vector<Fp6> g_Qcoeff; // precomputed Q
+static mcl::Vector<Fp6> g_Qcoeff; // precomputed Q
 static const G2& getQ() { return g_Q; }
-static const std::vector<Fp6>& getQcoeff() { return g_Qcoeff; }
+static const mcl::Vector<Fp6>& getQcoeff() { return g_Qcoeff; }
 
 int blsInitNotThreadSafe(int curve, int maxUnitSize)
 {
@@ -32,9 +31,16 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 	bool b;
 	mapToG2(&b, g_Q, 1);
 	if (!b) return -100;
-	precomputeG2(g_Qcoeff, getQ());
+	if (!precomputeG2(g_Qcoeff, getQ())) return -101;
 	return 0;
 }
+
+#ifdef __EMSCRIPTEN__
+extern "C" BLS_DLL_API void blsFree(void *p)
+{
+	free(p);
+}
+#endif
 
 #ifndef __EMSCRIPTEN__
 	#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
@@ -76,8 +82,8 @@ static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 */
 bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2& Q2)
 {
-	std::vector<Fp6> Q2coeff;
-	precomputeG2(Q2coeff, Q2);
+	mcl::Vector<Fp6> Q2coeff;
+	if (!precomputeG2(Q2coeff, Q2)) return false;
 	Fp12 e;
 	precomputedMillerLoop2(e, P1, Q1coeff, -P2, Q2coeff.data());
 	finalExp(e, e);
