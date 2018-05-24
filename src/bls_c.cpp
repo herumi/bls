@@ -1,13 +1,10 @@
-#ifdef __EMSCRIPTEN__
 #define MCLBN_DONT_EXPORT
-#include "../mcl/src/fp.cpp"
-#endif
-
-#include "../mcl/src/bn_c_impl.hpp"
-
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
+
+#include "../mcl/src/bn_c_impl.hpp"
+
 /*
 	BLS signature
 	e : G1 x G2 -> Fp12

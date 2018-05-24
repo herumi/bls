@@ -89,14 +89,15 @@ test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 	cd ffi/go/bls && ln -sf ../../../lib . && env LD_RUN_PATH="../../../lib" CGO_CFLAGS="-I../../../include -I../../../../mcl/include" CGO_LDFLAGS="-L../../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./ -Wall -Wextra
-EMCC_OPT+=-O3 -DNDEBUG -DMCLBN_FP_UNIT_SIZE=6 -DMCL_MAX_BIT_SIZE=384 -Os
-EMCC_OPT+=-s WASM=1 -s DISABLE_EXCEPTION_CATCHING=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1
+EMCC_OPT+=-O3 -DNDEBUG -Os
+EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION
 EMCC_OPT+=-s ABORTING_MALLOC=0
+EMCC_OPT+=-DMCLBN_FP_UNIT_SIZE=6
 JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c.cpp $(EMCC_OPT)
+	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
