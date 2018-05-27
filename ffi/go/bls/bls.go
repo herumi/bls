@@ -2,7 +2,7 @@ package bls
 
 /*
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
-#cgo LDFLAGS:-lbls384_dy -lgmpxx -lstdc++ -lgmp -lcrypto
+#cgo LDFLAGS:-lbls384_dy -lcrypto -lgmp -lgmpxx -lstdc++
 #include <bls/bls.h>
 */
 import "C"
