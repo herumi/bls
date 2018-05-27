@@ -33,6 +33,10 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 }
 
 #ifdef __EMSCRIPTEN__
+extern "C" BLS_DLL_API void *blsMalloc(size_t n)
+{
+	return malloc(n);
+}
 extern "C" BLS_DLL_API void blsFree(void *p)
 {
 	free(p);
