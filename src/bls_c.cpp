@@ -288,10 +288,12 @@ int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
 	return mclBnFr_setHashOf(&sec->v, buf, bufSize);
 }
+#ifndef MCL_DONT_USE_CSPRNG
 int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
 {
 	return mclBnFr_setByCSPRNG(&sec->v);
 }
+#endif
 int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize)
 {
 	return mclBnG2_setStr(&pub->v, buf, bufSize, 16);

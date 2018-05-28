@@ -107,11 +107,13 @@ BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 
 // hash buf and set
 BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize);
+#ifndef MCL_DONT_USE_CSPRNG
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom
 	return 0 if success else -1
 */
 BLS_DLL_API int blsSecretKeySetByCSPRNG(blsSecretKey *sec);
+#endif
 
 BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
