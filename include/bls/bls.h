@@ -22,6 +22,8 @@
 #else
 #ifdef __EMSCRIPTEN__
 	#define BLS_DLL_API __attribute__((used))
+#elif defined(__wasm__)
+	#define BLS_DLL_API __attribute__((visibility("default")))
 #else
 	#define BLS_DLL_API
 #endif

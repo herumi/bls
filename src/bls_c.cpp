@@ -43,7 +43,7 @@ extern "C" BLS_DLL_API void blsFree(void *p)
 }
 #endif
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(__wasm__)
 	#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
 	#include <mutex>
 		#define USE_STD_MUTEX
