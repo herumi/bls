@@ -17,9 +17,10 @@
 */
 
 static G2 g_Q;
-static mcl::Array<Fp6> g_Qcoeff; // precomputed Q
-static const G2& getQ() { return g_Q; }
-static const mcl::Array<Fp6>& getQcoeff() { return g_Qcoeff; }
+const size_t maxQcoeffN = 128;
+static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
+inline const G2& getQ() { return g_Q; }
+inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 
 int blsInitNotThreadSafe(int curve, int maxUnitSize)
 {
@@ -28,7 +29,8 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 	bool b;
 	mapToG2(&b, g_Q, 1);
 	if (!b) return -100;
-	if (!precomputeG2(g_Qcoeff, getQ())) return -101;
+	precomputeG2(&b, g_Qcoeff, getQ());
+	if (!b) return -101;
 	return 0;
 }
 
@@ -83,10 +85,8 @@ static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
 */
 bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2& Q2)
 {
-	mcl::Array<Fp6> Q2coeff;
-	if (!precomputeG2(Q2coeff, Q2)) return false;
 	Fp12 e;
-	precomputedMillerLoop2(e, P1, Q1coeff, -P2, Q2coeff.data());
+	precomputedMillerLoop2mixed(e, P2, Q2, -P1, Q1coeff);
 	finalExp(e, e);
 	return e.isOne();
 }
