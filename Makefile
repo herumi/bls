@@ -89,7 +89,7 @@ test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 	cd ffi/go/bls && ln -sf ../../../lib . && env LD_RUN_PATH="../../../lib" CGO_CFLAGS="-I../../../include -I../../../../mcl/include" CGO_LDFLAGS="-L../../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./ -Wall -Wextra
-EMCC_OPT+=-O3 -DNDEBUG -Os
+EMCC_OPT+=-O3 -DNDEBUG
 EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION
 EMCC_OPT+=-s ABORTING_MALLOC=0
