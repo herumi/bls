@@ -30,7 +30,7 @@ void blsDataTest()
 	blsSecretKeySetByCSPRNG(&sec1);
 	char buf[1024];
 	size_t n;
-	int ret;
+	size_t ret;
 	n = blsSecretKeyGetHexStr(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_ASSERT(0 < n && n <= FrSize * 2);
 	ret = blsSecretKeySetHexStr(&sec2, buf, n);
@@ -127,7 +127,7 @@ void blsSerializeTest()
 	char buf[1024];
 	size_t n;
 	size_t expectSize;
-	int ret;
+	size_t ret;
 	const char dummyChar = '1';
 
 	// Id
