@@ -1,10 +1,8 @@
 @echo off
-call setvar.bat
-echo make bls.lib
-rem cl /c %CFLAGS% src\bls.cpp
-rem lib /OUT:lib\bls.lib /nodefaultlib bls.obj %LDFLAGS%
-rem echo make bls256.lib
-cl /c %CFLAGS% src\bls_c.cpp /I../mcl/ /DMCL_NO_AUTOLINK
-rem lib /OUT:lib\bls256.lib /nodefaultlib bls_c.obj %LDFLAGS%
-echo make bls256.dll
-link /nologo /DLL /OUT:bin\bls256.dll bls_c.obj %LDFLAGS% ../mcl/lib/mcl.lib /implib:lib\bls256.lib
+
+call setvar.bat lib
+echo make lib/lib384.%MODE%
+echo CFLAGS=%CFLAGS%
+cl /c %CFLAGS% /Foobj/bls_c.obj src/bls_c.cpp
+cl /c %CFLAGS% /Foobj/fp.obj ../mcl/src/fp.cpp
+lib /OUT:lib/bls384.lib /nodefaultlib obj/bls_c.obj obj/fp.obj %LDFLAGS%
