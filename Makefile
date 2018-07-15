@@ -26,9 +26,6 @@ ifeq ($(DISABLE_THREAD_TEST),1)
   CFLAGS+=-DDISABLE_THREAD_TEST
 endif
 
-sample_test: $(EXE_DIR)/bls_smpl.exe
-	python bls_smpl.py
-
 SHARE_BASENAME_SUF?=_dy
 ##################################################################
 BLS_LIB=$(LIB_DIR)/libbls.a
@@ -49,7 +46,7 @@ $(MCL_LIB):
 BLS384_LIB=$(LIB_DIR)/libbls384.a
 BLS384_SNAME=bls384$(SHARE_BASENAME_SUF)
 BLS384_SLIB=$(LIB_DIR)/lib$(BLS384_SNAME).$(LIB_SUF)
-lib: $(BLS_LIB) $(BLS384_SLIB)
+all: $(BLS_LIB) $(BLS384_SLIB)
 
 $(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
@@ -81,6 +78,10 @@ test: $(TEST_EXE)
 	@echo test $(TEST_EXE)
 	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
+	$(MAKE) sample_test
+
+sample_test: $(EXE_DIR)/bls_smpl.exe
+	python bls_smpl.py
 
 ifeq ($(OS),mac)
   MAC_GO_LDFLAGS="-ldflags=-s"
