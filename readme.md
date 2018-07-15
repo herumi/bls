@@ -30,14 +30,13 @@ make sample_test
 ```
 
 # Build and test for Windows
+Type
 ```
-cd mcl
+cd bls
 mklib
-cd ..\bls
-mklib
-mk test\bls_test.cpp
-bls_test.exe
+mk test/bls_c384_test.cpp
 ```
+then `bin/bls_c384_test.exe` will be built.
 
 # API
 
