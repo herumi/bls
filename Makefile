@@ -51,11 +51,14 @@ all: $(BLS_LIB) $(BLS384_SLIB)
 $(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
 
-ifeq ($(OS),mac)
-  MAC_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
+ifneq ($(findstring $(OS),mac/mingw64),)
+  BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
+endif
+ifeq ($(OS),mingw64)
+  BLS384_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS384_SNAME).a
 endif
 $(BLS384_SLIB): $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB) $(MAC_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB) $(BLS384_SLIB_LDFLAGS)
 
 VPATH=test sample src
 
@@ -86,8 +89,9 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 ifeq ($(OS),mac)
   MAC_GO_LDFLAGS="-ldflags=-s"
 endif
+# PATH is for mingw, LD_RUN_PATH is for linux
 test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && ln -sf ../../../lib . && env LD_RUN_PATH="../../../lib" CGO_CFLAGS="-I../../../include -I../../../../mcl/include" CGO_LDFLAGS="-L../../../lib -L../../../mcl/lib" go test $(MAC_GO_LDFLAGS) .
+	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
@@ -114,4 +118,4 @@ DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
 
 # don't remove these files automatically
 .SECONDARY: $(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.o))
- 
+
