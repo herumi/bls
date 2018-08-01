@@ -1,6 +1,8 @@
 package bls
 
 /*
+#cgo CFLAGS:-I../../../include -I../../../../mcl/include/
+#cgo LDFLAGS:-L../../../lib
 #cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #cgo LDFLAGS:-lbls384_dy -lcrypto -lgmp -lgmpxx -lstdc++
 #include <bls/bls.h>
