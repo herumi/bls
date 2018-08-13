@@ -367,8 +367,8 @@ void aggregateTest()
 
 void dataTest()
 {
-	const size_t FrSize = mclBn_getFrByteSize();
-	const size_t FpSize = mclBn_getG1ByteSize();
+	const size_t FrSize = bls::getFrByteSize();
+	const size_t FpSize = bls::getG1ByteSize();
 	bls::SecretKey sec;
 	sec.init();
 	std::string str;

@@ -7,6 +7,7 @@
 #include <cybozu/crypto.hpp>
 #include <vector>
 #include <string>
+#define MCLBN_NO_AUTOLINK
 #include <bls/bls.hpp>
 #if MCLBN_FP_UNIT_SIZE == 4
 #include <mcl/bn256.hpp>
@@ -204,6 +205,16 @@ void getCurveOrder(std::string& str)
 void getFieldOrder(std::string& str)
 {
 	Fp::getModulo(str);
+}
+
+int getG1ByteSize()
+{
+	return (int)Fp::getByteSize();
+}
+
+int getFrByteSize()
+{
+	return (int)Fr::getByteSize();
 }
 
 Id::Id(unsigned int id)

@@ -6,15 +6,16 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
-#include <mcl/bn.h>
 #include <bls/bls.h>
 #include <vector>
 #include <string>
 #include <iosfwd>
 #include <stdint.h>
 
-#ifdef _MSC_VER
-	#pragma comment(lib, "bls.lib")
+#ifndef BLS_NO_AUTOLINK
+	#ifdef _MSC_VER
+		#pragma comment(lib, "bls.lib")
+	#endif
 #endif
 
 namespace bls {
@@ -58,6 +59,8 @@ void init(int curve = mclBn_CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE)
 size_t getOpUnitSize();
 void getCurveOrder(std::string& str);
 void getFieldOrder(std::string& str);
+int getG1ByteSize();
+int getFrByteSize();
 
 class SecretKey;
 class PublicKey;

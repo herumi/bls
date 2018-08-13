@@ -240,6 +240,16 @@ int blsGetFieldOrder(char *buf, mclSize maxBufSize)
 	return (int)Fp::getModulo(buf, maxBufSize);
 }
 
+int blsGetG1ByteSize()
+{
+	return mclBn_getG1ByteSize();
+}
+
+int blsGetFrByteSize()
+{
+	return mclBn_getFrByteSize();
+}
+
 void blsGetGeneratorOfG2(blsPublicKey *pub)
 {
 	*(G2*)pub = getQ();
