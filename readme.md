@@ -30,13 +30,19 @@ make sample_test
 ```
 
 # Build and test for Windows
-Type
+1) make static library and use it
 ```
-cd bls
 mklib
-mk test/bls_c384_test.cpp
+mk -s test\bls_c384_test.cpp
+bin\bls_c384_test.exe
 ```
-then `bin/bls_c384_test.exe` will be built.
+
+2) make dynamic library and use it
+```
+mklib dll
+mk -d test\bls_c384_test.cpp
+bin\bls_c384_test.exe
+```
 
 # API
 
