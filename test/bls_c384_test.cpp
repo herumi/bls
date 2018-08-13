@@ -24,8 +24,8 @@ void blsDataTest()
 {
 	const char *msg = "test test";
 	const size_t msgSize = strlen(msg);
-	const size_t FrSize = mclBn_getFrByteSize();
-	const size_t FpSize = mclBn_getG1ByteSize();
+	const size_t FrSize = blsGetFrByteSize();
+	const size_t FpSize = blsGetG1ByteSize();
 	blsSecretKey sec1, sec2;
 	blsSecretKeySetByCSPRNG(&sec1);
 	char buf[1024];
@@ -117,8 +117,8 @@ CYBOZU_TEST_AUTO(multipleInit)
 
 void blsSerializeTest()
 {
-	const size_t FrSize = mclBn_getFrByteSize();
-	const size_t FpSize = mclBn_getG1ByteSize();
+	const size_t FrSize = blsGetFrByteSize();
+	const size_t FpSize = blsGetG1ByteSize();
 	printf("FrSize=%d, FpSize=%d\n", (int)FrSize, (int)FpSize);
 	blsId id1, id2;
 	blsSecretKey sec1, sec2;
