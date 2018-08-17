@@ -27,7 +27,7 @@
 	#endif
 #elif defined(__EMSCRIPTEN__) && !defined(BLS_DONT_EXPORT)
 	#define BLS_DLL_API __attribute__((used))
-#elif defined(__wasm__) && !defined(MCLBN_DONT_EXPORT)
+#elif defined(__wasm__) && !defined(BLS_DONT_EXPORT)
 	#define BLS_DLL_API __attribute__((visibility("default")))
 #else
 	#define BLS_DLL_API
