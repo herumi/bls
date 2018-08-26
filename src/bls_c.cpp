@@ -224,6 +224,23 @@ void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
 	mclBnG1_add(&sig->v, &sig->v, &rhs->v);
 }
 
+void blsSignatureVerifyOrder(int doVerify)
+{
+	mclBn_verifyOrderG1(doVerify);
+}
+void blsPublicKeyVerifyOrder(int doVerify)
+{
+	mclBn_verifyOrderG2(doVerify);
+}
+int blsSignatureIsValidOrder(const blsSignature *sig)
+{
+	return mclBnG1_isValidOrder(&sig->v);
+}
+int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
+{
+	return mclBnG2_isValidOrder(&pub->v);
+}
+
 #ifndef BLS_MINIMUM_API
 mclSize blsGetOpUnitSize() // FpUint64Size
 {

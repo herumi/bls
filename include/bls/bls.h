@@ -108,6 +108,18 @@ BLS_DLL_API void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs);
 BLS_DLL_API void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs);
 BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 
+/*
+	verify whether a point of an elliptic curve has order r
+	This api affetcs setStr(), deserialize() for G2 on BN or G1/G2 on BLS12
+	@param doVerify [in] does not verify if zero(default 1)
+	Signature = G1, PublicKey = G2
+*/
+BLS_DLL_API void blsSignatureVerifyOrder(int doVerify);
+BLS_DLL_API void blsPublicKeyVerifyOrder(int doVerify);
+//	deserialize under VerifyOrder(true) = deserialize under VerifyOrder(false) + IsValidOrder
+BLS_DLL_API int blsSignatureIsValidOrder(const blsSignature *sig);
+BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
+
 #ifndef BLS_MINIMUM_API
 
 // not thread safe version (old blsInit)
