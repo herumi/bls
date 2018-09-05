@@ -27,9 +27,27 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 	int ret = mclBn_init(curve, maxUnitSize);
 	if (ret < 0) return ret;
 	bool b;
-	mapToG2(&b, g_Q, 1);
+
+	if (curve == MCL_BN254) {
+		const char *Qx_BN254 = "11ccb44e77ac2c5dc32a6009594dbe331ec85a61290d6bbac8cc7ebb2dceb128 f204a14bbdac4a05be9a25176de827f2e60085668becdd4fc5fa914c9ee0d9a";
+		const char *Qy_BN254 = "7c13d8487903ee3c1c5ea327a3a52b6cc74796b1760d5ba20ed802624ed19c8 8f9642bbaacb73d8c89492528f58932f2de9ac3e80c7b0e41f1a84f1c40182";
+		g_Q.x.setStr(&b, Qx_BN254, 16);
+		g_Q.y.setStr(&b, Qy_BN254, 16);
+		g_Q.z = 1;
+	} else {
+		mapToG2(&b, g_Q, 1);
+	}
 	if (!b) return -100;
-	precomputeG2(&b, g_Qcoeff, getQ());
+	if (curve == MCL_BN254) {
+		#include "./qcoeff-bn254.hpp"
+		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
+		assert(g_Qcoeff.size() == CYBOZU_NUM_OF_ARRAY(tbl));
+		for (size_t i = 0; i < g_Qcoeff.size(); i++) {
+			g_Qcoeff[i].setStr(&b, tbl[i], 16);
+		}
+	} else {
+		precomputeG2(&b, g_Qcoeff, getQ());
+	}
 	if (!b) return -101;
 	return 0;
 }
