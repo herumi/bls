@@ -89,9 +89,9 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 ifeq ($(OS),mac)
   MAC_GO_LDFLAGS="-ldflags=-s"
 endif
-# PATH is for mingw, LD_RUN_PATH is for linux
+# PATH is for mingw, LD_RUN_PATH is for linux, DYLD_LIBRARY_PATH is for mac
 test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
+	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
 
 EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
