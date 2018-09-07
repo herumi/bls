@@ -9,7 +9,7 @@ SRC_SRC=bls.cpp bls_c.cpp
 TEST_SRC=bls_test.cpp bls_c384_test.cpp
 SAMPLE_SRC=bls_smpl.cpp
 
-CFLAGS+=-I../mcl/include
+CFLAGS+=-I../mcl/include -I./
 UNIT?=6
 ifeq ($(UNIT),4)
   CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=4"
