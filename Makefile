@@ -93,7 +93,7 @@ endif
 test_go: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
 
-EMCC_OPT=-I./include -I./src -I../cybozulib/include -I../mcl/include -I./ -Wall -Wextra
+EMCC_OPT=-I./include -I./src -I../mcl/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
 EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION

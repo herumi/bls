@@ -43,7 +43,14 @@ int blsInitNotThreadSafe(int curve, int maxUnitSize)
 		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
 		assert(g_Qcoeff.size() == CYBOZU_NUM_OF_ARRAY(tbl));
 		for (size_t i = 0; i < g_Qcoeff.size(); i++) {
-			g_Qcoeff[i].setStr(&b, tbl[i], 16);
+			Fp6& x6 = g_Qcoeff[i];
+			for (size_t j = 0; j < 6; j++) {
+				Fp& x = x6.getFp0()[j];
+				mcl::fp::Unit *p = const_cast<mcl::fp::Unit*>(x.getUnit());
+				for (size_t k = 0; k < 4; k++) {
+					p[k] = QcoeffTblBN254[i][j][k];
+				}
+			}
 		}
 	} else {
 		precomputeG2(&b, g_Qcoeff, getQ());
