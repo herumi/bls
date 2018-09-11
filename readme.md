@@ -130,6 +130,18 @@ bool Sign::verify(const PublicKey& pub) const;
 
 Verify a public key by pop.
 
+# Check the order of a point
+
+deserializer functions check whether a point has correct order and
+the cost is heavy for especially G2.
+If you do not want to check it, then call
+```
+void blsSignatureVerifyOrder(false);
+void blsPublicKeyVerifyOrder(false);
+```
+
+cf. subgroup attack
+
 # Go
 ```
 make test_go
