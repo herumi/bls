@@ -250,6 +250,44 @@ void blsVerifyOrderTest()
 	blsSignatureVerifyOrder(1);
 }
 
+void blsAddSubTest()
+{
+	blsSecretKey sec[3];
+	blsPublicKey pub[3];
+	blsSignature sig[3];
+	const char *msg = "this is a pen";
+	const size_t msgSize = strlen(msg);
+
+	const char *secHexStr[8] = { "12", "34" };
+	for (int i = 0; i < 2; i++) {
+		blsSecretKeySetHexStr(&sec[i], secHexStr[i], strlen(secHexStr[i]));
+		blsGetPublicKey(&pub[i], &sec[i]);
+		blsSign(&sig[i], &sec[i], msg, msgSize);
+	}
+	sec[2] = sec[0];
+	blsSecretKeyAdd(&sec[2], &sec[1]);
+	char buf[1024];
+	size_t n = blsSecretKeyGetHexStr(buf, sizeof(buf), &sec[2]);
+	CYBOZU_TEST_EQUAL(n, 2);
+	CYBOZU_TEST_EQUAL(buf, "46"); // "12" + "34"
+
+	pub[2] = pub[0];
+	blsPublicKeyAdd(&pub[2], &pub[1]);
+	sig[2] = sig[0];
+	blsSignatureAdd(&sig[2], &sig[1]); // sig[2] = sig[0] + sig[1]
+	blsSignature sig2;
+	blsSign(&sig2, &sec[2], msg, msgSize); // sig2 = signature by sec[2]
+	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig2, &sig[2]));
+	CYBOZU_TEST_ASSERT(blsVerify(&sig[2], &pub[2], msg, msgSize)); // verify by pub[2]
+
+	blsSecretKeySub(&sec[2], &sec[1]);
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec[2], &sec[0]));
+	blsPublicKeySub(&pub[2], &pub[1]);
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub[2], &pub[0]));
+	blsSignatureSub(&sig[2], &sig[1]);
+	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig[2], &sig[0]));
+}
+
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
@@ -277,5 +315,6 @@ CYBOZU_TEST_AUTO(all)
 		blsOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);
 		blsSerializeTest();
 		if (tbl[i] == MCL_BLS12_381) blsVerifyOrderTest();
+		blsAddSubTest();
 	}
 }

@@ -267,6 +267,20 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 }
 
 #ifndef BLS_MINIMUM_API
+void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs)
+{
+	mclBnFr_sub(&sec->v, &sec->v, &rhs->v);
+}
+
+void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs)
+{
+	mclBnG2_sub(&pub->v, &pub->v, &rhs->v);
+}
+
+void blsSignatureSub(blsSignature *sig, const blsSignature *rhs)
+{
+	mclBnG1_sub(&sig->v, &sig->v, &rhs->v);
+}
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
 	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);

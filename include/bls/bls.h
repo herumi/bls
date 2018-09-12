@@ -122,6 +122,11 @@ BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 
 #ifndef BLS_MINIMUM_API
 
+// sub
+BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);
+BLS_DLL_API void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs);
+BLS_DLL_API void blsSignatureSub(blsSignature *sig, const blsSignature *rhs);
+
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int maxUnitSize);
 
