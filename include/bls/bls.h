@@ -84,6 +84,10 @@ BLS_DLL_API void blsSignHash(blsSignature *sig, const blsSecretKey *sec, const v
 // return 1 if valid
 BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
 
+// return 1 if valid, 0 if invalid or when duplicated hashes were provided
+// verify an aggregated signature given the public keys and message hashes. No duplicate message hashes allowed
+BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *sig, const blsPublicKey *pubVec, const void *hashVec, mclSize hashSize, mclSize hashCount);
+
 // return written byte size if success else 0
 BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
 BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);

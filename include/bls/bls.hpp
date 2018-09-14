@@ -228,6 +228,7 @@ public:
 	void setStr(const std::string& str, int ioMode = 0);
 	bool verify(const PublicKey& pub, const std::string& m) const;
 	bool verifyHash(const PublicKey& pub, const void *hash, size_t hashSize) const;
+	bool verifyAggregatedHashes(const PublicKey* pubs, const void* hashVec, size_t hashSize, size_t hashCount) const;
 	/*
 		verify self(pop) with pub
 	*/

@@ -6,6 +6,7 @@
 */
 #include <cybozu/crypto.hpp>
 #include <vector>
+#include <set>
 #include <string>
 #define MCLBN_NO_AUTOLINK
 #include <bls/bls.hpp>
@@ -329,6 +330,38 @@ bool Signature::verify(const PublicKey& pub) const
 	pub.getInner().sQ.getStr(str);
 	return verify(pub, str);
 }
+
+bool Signature::verifyAggregatedHashes(const PublicKey* pubs, const void* hashVec, size_t hashSize, size_t hashCount) const
+{
+    if (hashCount == 0 || hashSize == 0) return false;
+    typedef std::set<Fp> FpSet;
+    FpSet msgSet;
+    typedef std::vector<G1> G1Vec;
+    G1Vec hv(hashCount);
+    for (size_t i = 0; i < hashCount; i++) {
+        Fp h;
+        h.setArrayMask((const char*)hashVec + i * hashSize, hashSize);
+        std::pair<typename FpSet::iterator, bool> ret = msgSet.insert(h);
+        if (!ret.second) throw cybozu::Exception("Signature:verifyAggregatedHashes:same msg");
+        BN::mapToG1(hv[i], h);
+    }
+    /*
+        e(aggSig, xQ) = prod_i e(hv[i], pub[i].Q)
+        <=> finalExp(e(-aggSig, xQ) * prod_i millerLoop(hv[i], pub[i].xQ)) == 1
+    */
+    GT e1, e2;
+    BN::precomputedMillerLoop(e1, -getInner().sHm, getQcoeff().data());
+    BN::millerLoop(e2, hv[0], pubs[0].getInner().sQ);
+    for (size_t i = 1; i < hashCount; i++) {
+        GT e;
+        BN::millerLoop(e, hv[i], pubs[i].getInner().sQ);
+        e2 *= e;
+    }
+    e1 *= e2;
+    BN::finalExp(e1, e1);
+    return e1.isOne();
+}
+
 
 void Signature::recover(const SignatureVec& sigVec, const IdVec& idVec)
 {
