@@ -3,6 +3,8 @@
 
 #include <bls/bls.h>
 
+#include <set>
+
 #include "../mcl/src/bn_c_impl.hpp"
 
 /*
@@ -123,6 +125,15 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
 }
 
+void blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
+{
+	G1 Hm;
+	Fp t;
+	t.setArrayMask((const char*)h, size);
+	BN::mapToG1(Hm, t);
+	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
+}
+
 /*
 	e(P1, Q1) == e(P2, Q2)
 	<=> finalExp(ML(P1, Q1)) == finalExp(ML(P2, Q2))
@@ -147,6 +158,50 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 		e(sig, Q) = e(Hm, pub)
 	*/
 	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+}
+
+int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
+{
+    G1 Hm;
+    Fp t;
+    t.setArrayMask((const char*)h, size);
+    BN::mapToG1(Hm, t);
+    /*
+        e(sHm, Q) = e(Hm, sQ)
+        e(sig, Q) = e(Hm, pub)
+    */
+    return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+}
+
+int blsVerifyAggregatedHashes(const blsSignature *sig, const blsPublicKey *pubVec, const void *hashVec, mclSize hashSize, mclSize hashCount)
+{
+    if (hashCount == 0 || hashSize == 0) return false;
+    typedef std::set<Fp> FpSet;
+    FpSet msgSet;
+    typedef std::vector<G1> G1Vec;
+    G1Vec hv(hashCount);
+    for (size_t i = 0; i < hashCount; i++) {
+        Fp h;
+        h.setArrayMask((const char*)hashVec + i * hashSize, hashSize);
+        std::pair<typename FpSet::iterator, bool> ret = msgSet.insert(h);
+        if (!ret.second) return 0;
+        BN::mapToG1(hv[i], h);
+    }
+    /*
+        e(aggSig, xQ) = prod_i e(hv[i], pub[i].Q)
+        <=> finalExp(e(-aggSig, xQ) * prod_i millerLoop(hv[i], pub[i].xQ)) == 1
+    */
+    GT e1, e2;
+    BN::precomputedMillerLoop(e1, -*cast(&sig->v), g_Qcoeff.data());
+    BN::millerLoop(e2, hv[0], *cast(&pubVec[0].v));
+    for (size_t i = 1; i < hashCount; i++) {
+        GT e;
+        BN::millerLoop(e, hv[i], *cast(&pubVec[i].v));
+        e2 *= e;
+    }
+    e1 *= e2;
+    BN::finalExp(e1, e1);
+    return e1.isOne();
 }
 
 mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id)

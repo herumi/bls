@@ -3,7 +3,9 @@
 #include <cybozu/inttype.hpp>
 #include <iostream>
 #include <sstream>
+#include <array>
 #include <cybozu/benchmark.hpp>
+#include <cybozu/crypto.hpp>
 
 template<class T>
 void streamTest(const T& t)
@@ -365,6 +367,38 @@ void aggregateTest()
 	CYBOZU_TEST_ASSERT(sig.verify(pub, m));
 }
 
+void verifyAggregateTest()
+{
+	const size_t n = 10;
+	bls::SecretKey secs[n];
+	bls::PublicKey pubs[n];
+	bls::Signature sigs[n], sig;
+	std::vector<char[32]> h(n);
+	for (size_t i = 0; i < n; i++) {
+	    char msg[128];
+	    sprintf(msg, "abc-%d", (int)i);
+
+        cybozu::crypto::Hash  hash(cybozu::crypto::Hash::N_SHA256);
+        hash.digest(h[i], msg, strlen(msg));
+
+		secs[i].init();
+		secs[i].getPublicKey(pubs[i]);
+		secs[i].signHash(sigs[i], h[i], 32);
+	}
+	sig = sigs[0];
+	for (size_t i = 1; i < n; i++) {
+		sig.add(sigs[i]);
+	}
+    CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), 32, n));
+
+	bls::Signature invalidSig = sigs[0] + sigs[1];
+    CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs, h.data(), 32, n));
+
+    h[0][0]++;
+    CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), 32, n));
+}
+
+
 void dataTest()
 {
 	const size_t FrSize = bls::getFrByteSize();
@@ -418,6 +452,7 @@ void testAll()
 	addTest();
 	dataTest();
 	aggregateTest();
+	verifyAggregateTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
