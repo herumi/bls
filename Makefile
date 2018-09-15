@@ -5,20 +5,11 @@ EXE_DIR=bin
 CFLAGS += -std=c++11
 LDFLAGS += -lpthread
 
-SRC_SRC=bls_c384.cpp
-TEST_SRC=bls_test.cpp bls_c384_test.cpp
-SAMPLE_SRC=bls_smpl.cpp
+SRC_SRC=bls_c256.cpp bls_c384.cpp
+TEST_SRC=bls256_test.cpp bls384_test.cpp bls_c256_test.cpp bls_c384_test.cpp
+SAMPLE_SRC=bls256_smpl.cpp bls384_smpl.cpp
 
 CFLAGS+=-I../mcl/include -I./
-UNIT?=6
-ifeq ($(UNIT),4)
-  CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=4"
-  GO_TAG=bn256
-endif
-ifeq ($(UNIT),6)
-  CFLAGS+=-D"MCLBN_FP_UNIT_SIZE=6"
-  GO_TAG=bn384
-endif
 ifneq ($(MCL_MAX_BIT_SIZE),)
   CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
 endif
@@ -28,27 +19,36 @@ endif
 
 SHARE_BASENAME_SUF?=_dy
 
+BLS256_LIB=$(LIB_DIR)/libbls256.a
 BLS384_LIB=$(LIB_DIR)/libbls384.a
+BLS256_SNAME=bls256$(SHARE_BASENAME_SUF)
 BLS384_SNAME=bls384$(SHARE_BASENAME_SUF)
+BLS256_SLIB=$(LIB_DIR)/lib$(BLS256_SNAME).$(LIB_SUF)
 BLS384_SLIB=$(LIB_DIR)/lib$(BLS384_SNAME).$(LIB_SUF)
-all: $(BLS384_LIB) $(BLS384_SLIB)
+all: $(BLS256_LIB) $(BLS256_SLIB) $(BLS384_LIB) $(BLS384_SLIB)
 
 MCL_LIB=../mcl/lib/libmcl.a
 
 $(MCL_LIB):
 	$(MAKE) -C ../mcl
 
+$(BLS256_LIB): $(OBJ_DIR)/bls_c256.o
+	$(AR) $@ $<
 $(BLS384_LIB): $(OBJ_DIR)/bls_c384.o
-	$(AR) $@ $(OBJ_DIR)/bls_c384.o
+	$(AR) $@ $<
 
 ifneq ($(findstring $(OS),mac/mingw64),)
+  BLS256_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
   BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
 endif
 ifeq ($(OS),mingw64)
+  BLS256_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS256_SNAME).a
   BLS384_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS384_SNAME).a
 endif
+$(BLS256_SLIB): $(OBJ_DIR)/bls_c256.o $(MCL_LIB)
+	$(PRE)$(CXX) -shared -o $@ $< $(MCL_LIB) $(BLS256_SLIB_LDFLAGS)
 $(BLS384_SLIB): $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $(OBJ_DIR)/bls_c384.o $(MCL_LIB) $(BLS384_SLIB_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $< $(MCL_LIB) $(BLS384_SLIB_LDFLAGS)
 
 VPATH=test sample src
 
@@ -57,11 +57,15 @@ VPATH=test sample src
 $(OBJ_DIR)/%.o: %.cpp
 	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d)
 
-$(OBJ_DIR)/bls_c384.o: bls_c384.cpp
-	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d) -DMCL_FP_UNIT_SIZE=6
-
-$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS384_LIB) $(MCL_LIB)
+$(EXE_DIR)/%384_test.exe: $(OBJ_DIR)/%384_test.o $(BLS384_LIB) $(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(BLS384_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
+
+$(EXE_DIR)/%256_test.exe: $(OBJ_DIR)/%256_test.o $(BLS256_LIB) $(MCL_LIB)
+	$(PRE)$(CXX) $< -o $@ $(BLS256_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
+
+# sample exe links libbls256.a
+$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS256_LIB) $(MCL_LIB)
+	$(PRE)$(CXX) $< -o $@ $(BLS256_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 SAMPLE_EXE=$(addprefix $(EXE_DIR)/,$(SAMPLE_SRC:.cpp=.exe))
 sample: $(SAMPLE_EXE)
@@ -98,7 +102,7 @@ bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
 
 clean:
-	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC) $(BLS384_LIB) $(BLS384_SLIB)
+	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC) $(BLS256_LIB) $(BLS256_SLIB) $(BLS384_LIB) $(BLS384_SLIB)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))

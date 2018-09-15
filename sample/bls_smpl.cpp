@@ -1,3 +1,4 @@
+#define MCLBN_FP_UNIT_SIZE 4
 #include <bls/bls.hpp>
 #include <cybozu/option.hpp>
 #include <cybozu/itoa.hpp>
@@ -118,7 +119,7 @@ int recover(const bls::IdVec& ids)
 int main(int argc, char *argv[])
 	try
 {
-	bls::init();
+	bls::init(); // use BN254
 
 	std::string mode;
 	std::string m;
