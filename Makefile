@@ -42,6 +42,7 @@ ifneq ($(findstring $(OS),mac/mingw64),)
   BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
 endif
 ifeq ($(OS),mingw64)
+  CFLAGS+=-I../mcl
   BLS256_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS256_SNAME).a
   BLS384_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS384_SNAME).a
 endif
