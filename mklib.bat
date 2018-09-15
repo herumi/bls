@@ -15,6 +15,4 @@ if "%1"=="dll" (
   cl /c %CFLAGS% /Foobj/bls_c.obj src/bls_c.cpp
   cl /c %CFLAGS% /Foobj/fp.obj ../mcl/src/fp.cpp /DMCLBN_DONT_EXPORT
   lib /OUT:lib/bls384.lib /nodefaultlib obj/bls_c.obj obj/fp.obj %LDFLAGS%
-  cl /c %CFLAGS% /Foobj/bls.obj src/bls.cpp
-  lib /OUT:lib/bls.lib /nodefaultlib obj/bls.obj obj/fp.obj %LDFLAGS%
 )

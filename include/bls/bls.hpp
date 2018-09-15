@@ -7,16 +7,11 @@
 	http://opensource.org/licenses/BSD-3-Clause
 */
 #include <bls/bls.h>
+#include <stdexcept>
 #include <vector>
 #include <string>
 #include <iosfwd>
 #include <stdint.h>
-
-#ifndef BLS_NO_AUTOLINK
-	#ifdef _MSC_VER
-		#pragma comment(lib, "bls.lib")
-	#endif
-#endif
 
 namespace bls {
 
@@ -25,17 +20,10 @@ enum {
 	IoBin = 2, // binary number
 	IoDec = 10, // decimal number
 	IoHex = 16, // hexadecimal number
-	IoFixedByteSeq = 512 // fixed byte representation
+	IoPrefix = 128, // append '0b'(bin) or '0x'(hex)
+	IoSerialize = 512,
+	IoFixedByteSeq = IoSerialize // fixed byte representation
 };
-
-namespace impl {
-
-struct SecretKey;
-struct PublicKey;
-struct Signature;
-struct Id;
-
-} // bls::impl
 
 /*
 	BLS signature
@@ -55,24 +43,42 @@ struct Id;
 	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
 	@note init() is not thread safe
 */
-void init(int curve = mclBn_CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE);
-size_t getOpUnitSize();
-void getCurveOrder(std::string& str);
-void getFieldOrder(std::string& str);
-int getG1ByteSize();
-int getFrByteSize();
+inline void init(int curve = mclBn_CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE)
+{
+	if (blsInit(curve, maxUnitSize) != 0) throw std::invalid_argument("blsInit");
+}
+inline size_t getOpUnitSize() { return blsGetOpUnitSize(); }
 
-class SecretKey;
-class PublicKey;
-class Signature;
-class Id;
+inline void getCurveOrder(std::string& str)
+{
+	str.resize(1024);
+	mclSize n = blsGetCurveOrder(&str[0], str.size());
+	if (n == 0) throw std::runtime_error("blsGetCurveOrder");
+	str.resize(n);
+}
+inline void getFieldOrder(std::string& str)
+{
+	str.resize(1024);
+	mclSize n = blsGetFieldOrder(&str[0], str.size());
+	if (n == 0) throw std::runtime_error("blsGetFieldOrder");
+	str.resize(n);
+}
+inline int getG1ByteSize() { return blsGetG1ByteSize(); }
+inline int getFrByteSize() { return blsGetFrByteSize(); }
 
+namespace local {
 /*
 	the value of secretKey and Id must be less than
 	r = 0x2523648240000001ba344d8000000007ff9f800000000010a10000000000000d
 	sizeof(uint64_t) * keySize byte
 */
 const size_t keySize = MCLBN_FP_UNIT_SIZE;
+}
+
+class SecretKey;
+class PublicKey;
+class Signature;
+class Id;
 
 typedef std::vector<SecretKey> SecretKeyVec;
 typedef std::vector<PublicKey> PublicKeyVec;
@@ -83,25 +89,59 @@ class Id {
 	blsId self_;
 	friend class PublicKey;
 	friend class SecretKey;
-	template<class T, class G> friend struct WrapArray;
-	impl::Id& getInner() { return *reinterpret_cast<impl::Id*>(this); }
-	const impl::Id& getInner() const { return *reinterpret_cast<const impl::Id*>(this); }
+	friend class Signature;
 public:
-	Id(unsigned int id = 0);
-	bool operator==(const Id& rhs) const;
+	Id(unsigned int id = 0)
+	{
+		blsIdSetInt(&self_, id);
+	}
+	bool operator==(const Id& rhs) const
+	{
+		return blsIdIsEqual(&self_, &rhs.self_) == 1;
+	}
 	bool operator!=(const Id& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const Id& id);
-	friend std::istream& operator>>(std::istream& is, Id& id);
-	void getStr(std::string& str, int ioMode = 0) const;
-	void setStr(const std::string& str, int ioMode = 0);
-	bool isZero() const;
+	friend std::ostream& operator<<(std::ostream& os, const Id& id)
+	{
+		std::string str;
+		id.getStr(str, 16|IoPrefix);
+		return os << str;
+	}
+	friend std::istream& operator>>(std::istream& is, Id& id)
+	{
+		std::string str;
+		is >> str;
+		id.setStr(str, 16);
+		return is;
+	}
+	void getStr(std::string& str, int ioMode = 0) const
+	{
+		str.resize(1024);
+		size_t n = mclBnFr_getStr(&str[0], str.size(), &self_.v, ioMode);
+		if (n == 0) throw std::runtime_error("mclBnFr_getStr");
+		str.resize(n);
+	}
+	void setStr(const std::string& str, int ioMode = 0)
+	{
+		int ret = mclBnFr_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+		if (ret != 0) throw std::runtime_error("mclBnFr_setStr");
+	}
+	bool isZero() const
+	{
+		return mclBnFr_isZero(&self_.v) == 1;
+	}
 	/*
 		set p[0, .., keySize)
 		@note the value must be less than r
 	*/
-	void set(const uint64_t *p);
+	void set(const uint64_t *p)
+	{
+		setLittleEndian(p, local::keySize * sizeof(uint64_t));
+	}
 	// bufSize is truncted/zero extended to keySize
-	void setLittleEndian(const void *buf, size_t bufSize);
+	void setLittleEndian(const void *buf, size_t bufSize)
+	{
+		mclBnFr_setLittleEndian(&self_.v, buf, bufSize);
+	}
 };
 
 /*
@@ -109,30 +149,64 @@ public:
 */
 class SecretKey {
 	blsSecretKey self_;
-	template<class T, class G> friend struct WrapArray;
-	impl::SecretKey& getInner() { return *reinterpret_cast<impl::SecretKey*>(this); }
-	const impl::SecretKey& getInner() const { return *reinterpret_cast<const impl::SecretKey*>(this); }
 public:
-	SecretKey() : self_() {}
-	bool operator==(const SecretKey& rhs) const;
+	bool operator==(const SecretKey& rhs) const
+	{
+		return blsSecretKeyIsEqual(&self_, &rhs.self_) == 1;
+	}
 	bool operator!=(const SecretKey& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec);
-	friend std::istream& operator>>(std::istream& is, SecretKey& sec);
-	void getStr(std::string& str, int ioMode = 0) const;
-	void setStr(const std::string& str, int ioMode = 0);
+	friend std::ostream& operator<<(std::ostream& os, const SecretKey& sec)
+	{
+		std::string str;
+		sec.getStr(str, 16|IoPrefix);
+		return os << str;
+	}
+	friend std::istream& operator>>(std::istream& is, SecretKey& sec)
+	{
+		std::string str;
+		is >> str;
+		sec.setStr(str);
+		return is;
+	}
+	void getStr(std::string& str, int ioMode = 0) const
+	{
+		str.resize(1024);
+		size_t n = mclBnFr_getStr(&str[0], str.size(), &self_.v, ioMode);
+		if (n == 0) throw std::runtime_error("mclBnFr_getStr");
+		str.resize(n);
+	}
+	void setStr(const std::string& str, int ioMode = 0)
+	{
+		int ret = mclBnFr_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+		if (ret != 0) throw std::runtime_error("mclBnFr_setStr");
+	}
 	/*
-		initialize secretKey with random number and set id = 0
+		initialize secretKey with random number
 	*/
-	void init();
+	void init()
+	{
+		int ret = blsSecretKeySetByCSPRNG(&self_);
+		if (ret != 0) throw std::runtime_error("blsSecretKeySetByCSPRNG");
+	}
 	/*
 		set secretKey with p[0, .., keySize) and set id = 0
 		@note the value must be less than r
 	*/
-	void set(const uint64_t *p);
+	void set(const uint64_t *p)
+	{
+		setLittleEndian(p, local::keySize * sizeof(uint64_t));
+	}
 	// bufSize is truncted/zero extended to keySize
-	void setLittleEndian(const void *buf, size_t bufSize);
+	void setLittleEndian(const void *buf, size_t bufSize)
+	{
+		mclBnFr_setLittleEndian(&self_.v, buf, bufSize);
+	}
 	// set hash of buf
-	void setHashOf(const void *buf, size_t bufSize);
+	void setHashOf(const void *buf, size_t bufSize)
+	{
+		int ret = mclBnFr_setHashOf(&self_.v, buf, bufSize);
+		if (ret != 0) throw std::runtime_error("mclBnFr_setHashOf");
+	}
 	void getPublicKey(PublicKey& pub) const;
 	// constant time sign
 	void sign(Signature& sig, const std::string& m) const;
@@ -144,7 +218,15 @@ public:
 	/*
 		make [s_0, ..., s_{k-1}] to prepare k-out-of-n secret sharing
 	*/
-	void getMasterSecretKey(SecretKeyVec& msk, size_t k) const;
+	void getMasterSecretKey(SecretKeyVec& msk, size_t k) const
+	{
+		if (k <= 1) throw std::invalid_argument("getMasterSecretKey");
+		msk.resize(k);
+		msk[0] = *this;
+		for (size_t i = 1; i < k; i++) {
+			msk[i].init();
+		}
+	}
 	/*
 		set a secret key for id > 0 from msk
 	*/
@@ -155,7 +237,11 @@ public:
 	/*
 		recover secretKey from k secVec
 	*/
-	void recover(const SecretKeyVec& secVec, const IdVec& idVec);
+	void recover(const SecretKeyVec& secVec, const IdVec& idVec)
+	{
+		if (secVec.size() != idVec.size()) throw std::invalid_argument("SecretKey::recover");
+		recover(secVec.data(), idVec.data(), idVec.size());
+	}
 	/*
 		add secret key
 	*/
@@ -165,8 +251,16 @@ public:
 	/*
 		the size of msk must be k
 	*/
-	void set(const SecretKey *msk, size_t k, const Id& id);
-	void recover(const SecretKey *secVec, const Id *idVec, size_t n);
+	void set(const SecretKey *msk, size_t k, const Id& id)
+	{
+		int ret = blsSecretKeyShare(&self_, &msk->self_, k, &id.self_);
+		if (ret != 0) throw std::runtime_error("blsSecretKeyShare");
+	}
+	void recover(const SecretKey *secVec, const Id *idVec, size_t n)
+	{
+		int ret = blsSecretKeyRecover(&self_, &secVec->self_, &idVec->self_, n);
+		if (ret != 0) throw std::runtime_error("blsSecretKeyRecover:same id");
+	}
 };
 
 /*
@@ -176,17 +270,46 @@ class PublicKey {
 	blsPublicKey self_;
 	friend class SecretKey;
 	friend class Signature;
-	template<class T, class G> friend struct WrapArray;
-	impl::PublicKey& getInner() { return *reinterpret_cast<impl::PublicKey*>(this); }
-	const impl::PublicKey& getInner() const { return *reinterpret_cast<const impl::PublicKey*>(this); }
 public:
-	PublicKey() : self_() {}
-	bool operator==(const PublicKey& rhs) const;
+	bool operator==(const PublicKey& rhs) const
+	{
+		return blsPublicKeyIsEqual(&self_, &rhs.self_) == 1;
+	}
 	bool operator!=(const PublicKey& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub);
-	friend std::istream& operator>>(std::istream& is, PublicKey& pub);
-	void getStr(std::string& str, int ioMode = 0) const;
-	void setStr(const std::string& str, int ioMode = 0);
+	friend std::ostream& operator<<(std::ostream& os, const PublicKey& pub)
+	{
+		std::string str;
+		pub.getStr(str, 16|IoPrefix);
+		return os << str;
+	}
+	friend std::istream& operator>>(std::istream& is, PublicKey& pub)
+	{
+		std::string str;
+		is >> str;
+		if (str != "0") {
+			// 1 <x.a> <x.b> <y.a> <y.b>
+			std::string t;
+			for (int i = 0; i < 4; i++) {
+				is >> t;
+				str += ' ';
+				str += t;
+			}
+		}
+		pub.setStr(str, 16);
+		return is;
+	}
+	void getStr(std::string& str, int ioMode = 0) const
+	{
+		str.resize(1024);
+		size_t n = mclBnG2_getStr(&str[0], str.size(), &self_.v, ioMode);
+		if (n == 0) throw std::runtime_error("mclBnG2_getStr");
+		str.resize(n);
+	}
+	void setStr(const std::string& str, int ioMode = 0)
+	{
+		int ret = mclBnG2_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+		if (ret != 0) throw std::runtime_error("mclBnG2_setStr");
+	}
 	/*
 		set public for id from mpk
 	*/
@@ -197,15 +320,30 @@ public:
 	/*
 		recover publicKey from k pubVec
 	*/
-	void recover(const PublicKeyVec& pubVec, const IdVec& idVec);
+	void recover(const PublicKeyVec& pubVec, const IdVec& idVec)
+	{
+		if (pubVec.size() != idVec.size()) throw std::invalid_argument("PublicKey::recover");
+		recover(pubVec.data(), idVec.data(), idVec.size());
+	}
 	/*
 		add public key
 	*/
-	void add(const PublicKey& rhs);
+	void add(const PublicKey& rhs)
+	{
+		blsPublicKeyAdd(&self_, &rhs.self_);
+	}
 
 	// the following methods are for C api
-	void set(const PublicKey *mpk, size_t k, const Id& id);
-	void recover(const PublicKey *pubVec, const Id *idVec, size_t n);
+	void set(const PublicKey *mpk, size_t k, const Id& id)
+	{
+		int ret = blsPublicKeyShare(&self_, &mpk->self_, k, &id.self_);
+		if (ret != 0) throw std::runtime_error("blsPublicKeyShare");
+	}
+	void recover(const PublicKey *pubVec, const Id *idVec, size_t n)
+	{
+		int ret = blsPublicKeyRecover(&self_, &pubVec->self_, &idVec->self_, n);
+		if (ret != 0) throw std::runtime_error("blsPublicKeyRecover");
+	}
 };
 
 /*
@@ -214,33 +352,81 @@ public:
 class Signature {
 	blsSignature self_;
 	friend class SecretKey;
-	template<class T, class G> friend struct WrapArray;
-	impl::Signature& getInner() { return *reinterpret_cast<impl::Signature*>(this); }
-	const impl::Signature& getInner() const { return *reinterpret_cast<const impl::Signature*>(this); }
 public:
-	Signature() : self_() {}
-	bool operator==(const Signature& rhs) const;
+	bool operator==(const Signature& rhs) const
+	{
+		return blsSignatureIsEqual(&self_, &rhs.self_) == 1;
+	}
 	bool operator!=(const Signature& rhs) const { return !(*this == rhs); }
-	friend std::ostream& operator<<(std::ostream& os, const Signature& s);
-	friend std::istream& operator>>(std::istream& is, Signature& s);
-	void getStr(std::string& str, int ioMode = 0) const;
-	void setStr(const std::string& str, int ioMode = 0);
-	bool verify(const PublicKey& pub, const std::string& m) const;
+	friend std::ostream& operator<<(std::ostream& os, const Signature& sig)
+	{
+		std::string str;
+		sig.getStr(str, 16|IoPrefix);
+		return os << str;
+	}
+	friend std::istream& operator>>(std::istream& is, Signature& sig)
+	{
+		std::string str;
+		is >> str;
+		if (str != "0") {
+			// 1 <x> <y>
+			std::string t;
+			for (int i = 0; i < 2; i++) {
+				is >> t;
+				str += ' ';
+				str += t;
+			}
+		}
+		sig.setStr(str, 16);
+		return is;
+	}
+	void getStr(std::string& str, int ioMode = 0) const
+	{
+		str.resize(1024);
+		size_t n = mclBnG1_getStr(&str[0], str.size(), &self_.v, ioMode);
+		if (n == 0) throw std::runtime_error("mclBnG1_getStr");
+		str.resize(n);
+	}
+	void setStr(const std::string& str, int ioMode = 0)
+	{
+		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+		if (ret != 0) throw std::runtime_error("mclBnG1_setStr");
+	}
+	bool verify(const PublicKey& pub, const std::string& m) const
+	{
+		return blsVerify(&self_, &pub.self_, m.c_str(), m.size()) == 1;
+	}
 	/*
 		verify self(pop) with pub
 	*/
-	bool verify(const PublicKey& pub) const;
+	bool verify(const PublicKey& pub) const
+	{
+		std::string str;
+		pub.getStr(str);
+		return verify(pub, str);
+	}
 	/*
 		recover sig from k sigVec
 	*/
-	void recover(const SignatureVec& sigVec, const IdVec& idVec);
+	void recover(const SignatureVec& sigVec, const IdVec& idVec)
+	{
+		if (sigVec.size() != idVec.size()) throw std::invalid_argument("Signature::recover");
+		recover(sigVec.data(), idVec.data(), idVec.size());
+	}
 	/*
 		add signature
 	*/
-	void add(const Signature& rhs);
+	void add(const Signature& rhs)
+	{
+		blsSignatureAdd(&self_, &rhs.self_);
+	}
 
 	// the following methods are for C api
-	void recover(const Signature* sigVec, const Id *idVec, size_t n);
+	void recover(const Signature* sigVec, const Id *idVec, size_t n)
+	{
+		int ret = blsSignatureRecover(&self_, &sigVec->self_, &idVec->self_, n);
+		if (ret != 0) throw std::runtime_error("blsSignatureRecover:same id");
+	}
 };
 
 /*
@@ -253,6 +439,23 @@ inline void getMasterPublicKey(PublicKeyVec& mpk, const SecretKeyVec& msk)
 	for (size_t i = 0; i < n; i++) {
 		msk[i].getPublicKey(mpk[i]);
 	}
+}
+
+inline void SecretKey::getPublicKey(PublicKey& pub) const
+{
+	blsGetPublicKey(&pub.self_, &self_);
+}
+inline void SecretKey::sign(Signature& sig, const std::string& m) const
+{
+	blsSign(&sig.self_, &self_, m.c_str(), m.size());
+}
+inline void SecretKey::getPop(Signature& pop) const
+{
+	PublicKey pub;
+	getPublicKey(pub);
+	std::string m;
+	pub.getStr(m);
+	sign(pop, m);
 }
 
 /*

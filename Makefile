@@ -5,7 +5,7 @@ EXE_DIR=bin
 CFLAGS += -std=c++11
 LDFLAGS += -lpthread
 
-SRC_SRC=bls.cpp bls_c.cpp
+SRC_SRC=bls_c384.cpp
 TEST_SRC=bls_test.cpp bls_c384_test.cpp
 SAMPLE_SRC=bls_smpl.cpp
 
@@ -27,29 +27,19 @@ ifeq ($(DISABLE_THREAD_TEST),1)
 endif
 
 SHARE_BASENAME_SUF?=_dy
-##################################################################
-BLS_LIB=$(LIB_DIR)/libbls.a
-
-LIB_OBJ=$(OBJ_DIR)/bls.o
-
-$(BLS_LIB): $(LIB_OBJ)
-	$(AR) $@ $(LIB_OBJ)
-
-MCL_LIB=../mcl/lib/libmcl.a
-BN384_LIB=../mcl/lib/libmclbn384.a
-
-$(MCL_LIB):
-	$(MAKE) -C ../mcl
-
-##################################################################
 
 BLS384_LIB=$(LIB_DIR)/libbls384.a
 BLS384_SNAME=bls384$(SHARE_BASENAME_SUF)
 BLS384_SLIB=$(LIB_DIR)/lib$(BLS384_SNAME).$(LIB_SUF)
-all: $(BLS_LIB) $(BLS384_SLIB)
+all: $(BLS384_LIB) $(BLS384_SLIB)
 
-$(BLS384_LIB): $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
-	$(AR) $@ $(LIB_OBJ) $(OBJ_DIR)/bls_c384.o
+MCL_LIB=../mcl/lib/libmcl.a
+
+$(MCL_LIB):
+	$(MAKE) -C ../mcl
+
+$(BLS384_LIB): $(OBJ_DIR)/bls_c384.o
+	$(AR) $@ $(OBJ_DIR)/bls_c384.o
 
 ifneq ($(findstring $(OS),mac/mingw64),)
   BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
@@ -67,14 +57,14 @@ VPATH=test sample src
 $(OBJ_DIR)/%.o: %.cpp
 	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d)
 
-$(OBJ_DIR)/bls_c384.o: bls_c.cpp
-	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d) -DMBN_FP_UNIT_SIZE=6
+$(OBJ_DIR)/bls_c384.o: bls_c384.cpp
+	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d) -DMCL_FP_UNIT_SIZE=6
 
-$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS_LIB) $(BLS384_LIB) $(MCL_LIB)
-	$(PRE)$(CXX) $< -o $@ $(BLS_LIB) $(BLS384_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
+$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS384_LIB) $(MCL_LIB)
+	$(PRE)$(CXX) $< -o $@ $(BLS384_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 SAMPLE_EXE=$(addprefix $(EXE_DIR)/,$(SAMPLE_SRC:.cpp=.exe))
-sample: $(SAMPLE_EXE) $(BLS_LIB)
+sample: $(SAMPLE_EXE)
 
 TEST_EXE=$(addprefix $(EXE_DIR)/,$(TEST_SRC:.cpp=.exe))
 test: $(TEST_EXE)
@@ -99,16 +89,16 @@ EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION
 EMCC_OPT+=-s ABORTING_MALLOC=0
 EMCC_OPT+=-DMCLBN_FP_UNIT_SIZE=6
-JS_DEP=src/bls_c.cpp ../mcl/src/fp.cpp Makefile
+JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c.d
+	emcc -o $@ src/bls_c384.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384.d
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
 
 clean:
-	$(RM) $(BLS_LIB) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LIB_OBJ) $(LLVM_SRC) $(BLS384_SLIB)
+	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC) $(BLS384_LIB) $(BLS384_SLIB)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))

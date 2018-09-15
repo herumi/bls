@@ -10,19 +10,20 @@ Create a working directory (e.g., work) and clone the following repositories.
 ```
 mkdir work
 cd work
-git clone git://github.com/herumi/xbyak.git
-git clone git://github.com/herumi/cybozulib.git
 git clone git://github.com/herumi/mcl.git
 git clone git://github.com/herumi/bls.git
 git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
+# **REMARK** libbls.a is removed
+Link `lib/libbls256.a` or `lib/libbls384.a` to use `bls/bls.hpp` according to MCLBN_FP_UNIT_SIZE = 4 or 6.
+
 # Build and test for Linux
 Specifiy UNIT=4 or 6 always to make. Default UNIT is 6.
-To make lib/libbls.a and test, run
+To make and test, run
 ```
 cd bls
-make test UNIT=4
+make test
 ```
 To make sample programs, run
 ```
