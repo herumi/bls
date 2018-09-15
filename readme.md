@@ -19,7 +19,6 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 Link `lib/libbls256.a` or `lib/libbls384.a` to use `bls/bls.hpp` according to MCLBN_FP_UNIT_SIZE = 4 or 6.
 
 # Build and test for Linux
-Specifiy UNIT=4 or 6 always to make. Default UNIT is 6.
 To make and test, run
 ```
 cd bls
@@ -44,6 +43,12 @@ mklib dll
 mk -d test\bls_c384_test.cpp
 bin\bls_c384_test.exe
 ```
+
+# Library
+* libbls256.a/libbls256_dy.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
+* libbls384.a/libbls384_dy.so ; for BN254/BN381_1/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6
+
+See `mcl/include/curve_type.h` for curve parameter
 
 # API
 
