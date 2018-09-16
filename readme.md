@@ -15,7 +15,7 @@ git clone git://github.com/herumi/bls.git
 git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
-# **REMARK** libbls.a is removed
+# **REMARK** libbls.a for C++ interface(bls/bls.hpp) is removed
 Link `lib/libbls256.a` or `lib/libbls384.a` to use `bls/bls.hpp` according to MCLBN_FP_UNIT_SIZE = 4 or 6.
 
 # Build and test for Linux
