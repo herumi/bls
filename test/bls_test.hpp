@@ -17,7 +17,7 @@ void streamTest(const T& t)
 }
 
 template<class T>
-void testSet()
+void testSetForBN254()
 {
 	/*
 		mask value to be less than r if the value >= (1 << (192 + 62))
@@ -43,8 +43,9 @@ void testSet()
 	}
 }
 
-void IdTestBN256()
+void testForBN254()
 {
+	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
 	bls::Id id;
 	CYBOZU_TEST_ASSERT(id.isZero());
 	id = 5;
@@ -56,20 +57,30 @@ void IdTestBN256()
 		os << id;
 		CYBOZU_TEST_EQUAL(os.str(), "0x4000000000000000300000000000000020000000000000001");
 	}
-	testSet<bls::Id>();
+	testSetForBN254<bls::Id>();
+	testSetForBN254<bls::SecretKey>();
 }
 
-void SecretKeyTestBN256()
+void hashTest(int type)
 {
-	testSet<bls::SecretKey>();
-}
-
-CYBOZU_TEST_AUTO(bn256)
-{
-	bls::init(MCL_BN254);
-	IdTestBN256();
-	SecretKeyTestBN256();
-	CYBOZU_TEST_EQUAL(bls::getOpUnitSize(), 4);
+	bls::SecretKey sec;
+	sec.init();
+	bls::PublicKey pub;
+	sec.getPublicKey(pub);
+	const std::string h = "\x01\x02\x03";
+	bls::Signature sig;
+	sec.signHash(sig, h);
+	CYBOZU_TEST_ASSERT(sig.verifyHash(pub, h));
+	CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, "\x01\x02\04"));
+	if (type == MCL_BN254) {
+		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
+		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "", 0), std::exception);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00", 1), std::exception);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00\x00", 2), std::exception);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, c1, 32), std::exception);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, mc1, 24), std::exception);
+	}
 }
 
 void blsTest()
@@ -433,7 +444,12 @@ CYBOZU_TEST_AUTO(all)
 	};
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {
 		printf("curve=%s\n", tbl[i].name);
-		bls::init(tbl[i].type);
+		int type = tbl[i].type;
+		bls::init(type);
+		if (type == MCL_BN254) {
+			testForBN254();
+		}
 		testAll();
+		hashTest(type);
 	}
 }

@@ -72,6 +72,7 @@ BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, 
 
 BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 
+// calculate the has of m and sign the hash
 BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size);
 
 // return 1 if valid
@@ -121,6 +122,16 @@ BLS_DLL_API int blsSignatureIsValidOrder(const blsSignature *sig);
 BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 
 #ifndef BLS_MINIMUM_API
+
+/*
+	sign the hash
+	use the low (bitSize of r) - 1 bit of h
+	return 0 if success else -1
+	NOTE : return false if h is zero or c1 or -c1 value for BN254. see hashTest() in test/bls_test.hpp
+*/
+BLS_DLL_API int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size);
+// return 1 if valid
+BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
 
 // sub
 BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);

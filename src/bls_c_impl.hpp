@@ -267,6 +267,29 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 }
 
 #ifndef BLS_MINIMUM_API
+inline bool toG1(G1& Hm, const void *h, mclSize size)
+{
+	Fp t;
+	t.setArrayMask((const char *)h, size);
+	bool b;
+	BN::mapToG1(&b, Hm, t);
+	return b;
+}
+int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
+{
+	G1 Hm;
+	if (!toG1(Hm, h, size)) return -1;
+	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
+	return 0;
+}
+
+int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
+{
+	G1 Hm;
+	if (!toG1(Hm, h, size)) return 0;
+	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+}
+
 void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs)
 {
 	mclBnFr_sub(&sec->v, &sec->v, &rhs->v);

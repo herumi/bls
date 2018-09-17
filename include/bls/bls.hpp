@@ -209,7 +209,18 @@ public:
 	}
 	void getPublicKey(PublicKey& pub) const;
 	// constant time sign
-	void sign(Signature& sig, const std::string& m) const;
+	// sign hash(m)
+	void sign(Signature& sig, const void *m, size_t size) const;
+	void sign(Signature& sig, const std::string& m) const
+	{
+		sign(sig, m.c_str(), m.size());
+	}
+	// sign hashed value
+	void signHash(Signature& sig, const void *h, size_t size) const;
+	void signHash(Signature& sig, const std::string& h) const
+	{
+		signHash(sig, h.c_str(), h.size());
+	}
 	/*
 		make Pop(Proof of Possesion)
 		pop = prv.sign(pub)
@@ -392,9 +403,21 @@ public:
 		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);
 		if (ret != 0) throw std::runtime_error("mclBnG1_setStr");
 	}
+	bool verify(const PublicKey& pub, const void *m, size_t size) const
+	{
+		return blsVerify(&self_, &pub.self_, m, size) == 1;
+	}
 	bool verify(const PublicKey& pub, const std::string& m) const
 	{
-		return blsVerify(&self_, &pub.self_, m.c_str(), m.size()) == 1;
+		return verify(pub, m.c_str(), m.size());
+	}
+	bool verifyHash(const PublicKey& pub, const void *h, size_t size) const
+	{
+		return blsVerifyHash(&self_, &pub.self_, h, size) == 1;
+	}
+	bool verifyHash(const PublicKey& pub, const std::string& h) const
+	{
+		return verifyHash(pub, h.c_str(), h.size());
 	}
 	/*
 		verify self(pop) with pub
@@ -445,9 +468,13 @@ inline void SecretKey::getPublicKey(PublicKey& pub) const
 {
 	blsGetPublicKey(&pub.self_, &self_);
 }
-inline void SecretKey::sign(Signature& sig, const std::string& m) const
+inline void SecretKey::sign(Signature& sig, const void *m, size_t size) const
 {
-	blsSign(&sig.self_, &self_, m.c_str(), m.size());
+	blsSign(&sig.self_, &self_, m, size);
+}
+inline void SecretKey::signHash(Signature& sig, const void *h, size_t size) const
+{
+	if (blsSignHash(&sig.self_, &self_, h, size) != 0) throw std::runtime_error("bad h");
 }
 inline void SecretKey::getPop(Signature& pop) const
 {
