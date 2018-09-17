@@ -270,19 +270,7 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 inline bool toG1(G1& Hm, const void *h, mclSize size)
 {
 	Fp t;
-	if (BN::param.cp.curveType == MCL_BLS12_381) {
-		/*
-			the current mapToG1 for BLS12_381 uses an algorithm to search x++ while y exsits,
-			so almost same h values return same point unless there exists margine in low bit.
-		*/
-		char buf[48];
-		buf[0] = 0;
-		size = (std::min)(size, sizeof(buf) - 1);
-		memcpy(&buf[1], h, size);
-		t.setArrayMask(buf, size + 1);
-	} else {
-		t.setArrayMask((const char *)h, size);
-	}
+	t.setArrayMask((const char *)h, size);
 	bool b;
 	BN::mapToG1(&b, Hm, t);
 	return b;
