@@ -275,6 +275,30 @@ inline bool toG1(G1& Hm, const void *h, mclSize size)
 	BN::mapToG1(&b, Hm, t);
 	return b;
 }
+int blsG1SetHash(mclBnG1 *g1, const void *h, mclSize size)
+{
+	return toG1(*cast(g1), h, size) ? 0 : -1;
+}
+
+int blsVerifyAggregation(const blsSignature *aggSig, const blsPublicKey *pubVec, const mclBnG1 *g1Vec, mclSize n)
+{
+	if (n == 0) return 0;
+	/*
+		e(aggSig, Q) = prod_i e(g1Vec[i], pubVec[i])
+		<=> finalExp(ML(-aggSig, Q) * prod_i ML(g1Vec[i], pubVec[i])) == 1
+	*/
+	GT e1, e2;
+	BN::precomputedMillerLoop(e1, -*cast(&aggSig->v), g_Qcoeff.data());
+	BN::millerLoop(e2, *cast(&g1Vec[0]), *cast(&pubVec[0].v));
+	e1 *= e2;
+	for (size_t i = 1; i < n; i++) {
+		BN::millerLoop(e2, *cast(&g1Vec[i]), *cast(&pubVec[i].v));
+		e1 *= e2;
+	}
+	BN::finalExp(e1, e1);
+	return e1.isOne();
+}
+
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
 	G1 Hm;

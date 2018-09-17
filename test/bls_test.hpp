@@ -4,6 +4,11 @@
 #include <iostream>
 #include <sstream>
 #include <cybozu/benchmark.hpp>
+#ifdef MCL_DONT_USE_OPENSSL
+#include <cybozu/sha2.hpp>
+#else
+#include <cybozu/crypto.hpp>
+#endif
 
 template<class T>
 void streamTest(const T& t)
@@ -421,6 +426,38 @@ void dataTest()
 	}
 }
 
+void verifyAggregateTest()
+{
+	const size_t n = 10;
+	bls::SecretKey secs[n];
+	bls::PublicKey pubs[n];
+	bls::Signature sigs[n], sig;
+	const size_t sizeofHash = 32;
+	std::vector<char[sizeofHash]> h(n);
+	for (size_t i = 0; i < n; i++) {
+		char msg[128];
+		CYBOZU_SNPRINTF(msg, sizeof(msg), "abc-%d", (int)i);
+		const size_t msgSize = strlen(msg);
+#ifdef MCL_DONT_USE_OPENSSL
+		cybozu::Sha256(msg, msgSize).get(h[i]);
+#else
+		cybozu::crypto::Hash::digest(h[i], cybozu::crypto::Hash::N_SHA256, msg, msgSize);
+#endif
+		secs[i].init();
+		secs[i].getPublicKey(pubs[i]);
+		secs[i].signHash(sigs[i], h[i], sizeofHash);
+	}
+	sig = sigs[0];
+	for (size_t i = 1; i < n; i++) {
+		sig.add(sigs[i]);
+	}
+	CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+	bls::Signature invalidSig = sigs[0] + sigs[1];
+	CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+	h[0][0]++;
+	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+}
+
 void testAll()
 {
 	blsTest();
@@ -429,6 +466,7 @@ void testAll()
 	addTest();
 	dataTest();
 	aggregateTest();
+	verifyAggregateTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
