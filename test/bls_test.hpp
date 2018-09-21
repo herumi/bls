@@ -426,7 +426,7 @@ void dataTest()
 	}
 }
 
-void verifyAggregateTest(int type)
+void verifyAggregateTest()
 {
 	const size_t n = 10;
 	bls::SecretKey secs[n];
@@ -456,19 +456,10 @@ void verifyAggregateTest(int type)
 	bls::Signature invalidSig = sigs[0] + sigs[1];
 	CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
 	h[0].data[0]++;
-	if (type == MCL_BLS12_381) {
-		/*
-			CAUTION!!!
-			BN::mapToG1 may return same point for different h.
-			especially, maptG1(h) may be equal to mapG1(h') such as |h - h'| < small value for BLS12_381.
-		*/
-		CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
-	} else {
-		CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
-	}
+	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
 }
 
-void testAll(int type)
+void testAll()
 {
 	blsTest();
 	k_of_nTest();
@@ -476,7 +467,7 @@ void testAll(int type)
 	addTest();
 	dataTest();
 	aggregateTest();
-	verifyAggregateTest(type);
+	verifyAggregateTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
@@ -497,7 +488,7 @@ CYBOZU_TEST_AUTO(all)
 		if (type == MCL_BN254) {
 			testForBN254();
 		}
-		testAll(type);
+		testAll();
 		hashTest(type);
 	}
 }
