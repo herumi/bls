@@ -124,11 +124,6 @@ BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 #ifndef BLS_MINIMUM_API
 
 /*
-	set h to a point of G1
-	return 0 if success else -1
-*/
-BLS_DLL_API int blsG1SetHash(mclBnG1 *g1, const void *h, mclSize size);
-/*
 	sign the hash
 	use the low (bitSize of r) - 1 bit of h
 	return 0 if success else -1
@@ -137,12 +132,14 @@ BLS_DLL_API int blsG1SetHash(mclBnG1 *g1, const void *h, mclSize size);
 BLS_DLL_API int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size);
 // return 1 if valid
 BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
+
 /*
-	verify aggSig with pubVec[0, n) and g1Vec[0, n)
-	e(aggSig, Q) = prod_i e(g1Vec[i], pubVec[i])
+	verify aggSig with pubVec[0, n) and hVec[0, n)
+	e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
 	return 1 if valid
+	@note do not check duplication of hVec
 */
-BLS_DLL_API int blsVerifyAggregation(const blsSignature *aggSig, const blsPublicKey *pubVec, const mclBnG1 *g1Vec, mclSize n);
+BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n);
 
 // sub
 BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);

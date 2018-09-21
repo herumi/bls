@@ -419,17 +419,9 @@ public:
 	{
 		return verifyHash(pub, h.c_str(), h.size());
 	}
-	bool verifyAggregation(const PublicKey *pubVec, const mclBnG1 *g1Vec, size_t n) const
-	{
-		return blsVerifyAggregation(&self_, &pubVec[0].self_, g1Vec, n) == 1;
-	}
 	bool verifyAggregatedHashes(const PublicKey *pubVec, const void *hVec, size_t sizeofHash, size_t n) const
 	{
-		std::vector<mclBnG1> g1Vec(n);
-		for (size_t i = 0; i < n; i++) {
-			if (blsG1SetHash(&g1Vec[i], (const char*)hVec + sizeofHash * i, sizeofHash) != 0) throw std::runtime_error("blsG1SetHash");
-		}
-		return verifyAggregation(pubVec, g1Vec.data(), n);
+		return blsVerifyAggregatedHashes(&self_, &pubVec[0].self_, hVec, sizeofHash, n) == 1;
 	}
 	/*
 		verify self(pop) with pub

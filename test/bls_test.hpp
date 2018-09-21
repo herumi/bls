@@ -458,7 +458,7 @@ void verifyAggregateTest(int type)
 	if (type == MCL_BLS12_381) {
 		/*
 			CAUTION!!!
-			BN::mapToG1 called in blsG1SetHash(h) may return same point for different h.
+			BN::mapToG1 may return same point for different h.
 			especially, maptG1(h) may be equal to mapG1(h') such as |h - h'| < small value for BLS12_381.
 		*/
 		CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
