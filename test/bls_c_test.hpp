@@ -2,6 +2,7 @@
 #include <cybozu/inttype.hpp>
 #include <bls/bls.h>
 #include <string.h>
+#include <cybozu/benchmark.hpp>
 
 void bls_use_stackTest()
 {
@@ -288,6 +289,22 @@ void blsAddSubTest()
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig[2], &sig[0]));
 }
 
+void blsBench()
+{
+	blsSecretKey sec;
+	blsPublicKey pub;
+	blsSignature sig;
+	const char *msg = "this is a pen";
+	const size_t msgSize = strlen(msg);
+
+	blsSecretKeySetByCSPRNG(&sec);
+
+	blsGetPublicKey(&pub, &sec);
+
+	CYBOZU_BENCH_C("sign", 1000, blsSign, &sig, &sec, msg, msgSize);
+	CYBOZU_BENCH_C("verify", 1000, blsVerify, &sig, &pub, msg, msgSize);
+}
+
 CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
@@ -316,5 +333,6 @@ CYBOZU_TEST_AUTO(all)
 		blsSerializeTest();
 		if (tbl[i] == MCL_BLS12_381) blsVerifyOrderTest();
 		blsAddSubTest();
+		blsBench();
 	}
 }
