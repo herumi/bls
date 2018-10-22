@@ -15,7 +15,7 @@ import "unsafe"
 // call this function before calling all the other operations
 // this function is not thread safe
 func Init(curve int) error {
-	err := C.blsInit(C.int(curve), C.MCLBN_FP_UNIT_SIZE)
+	err := C.blsInit(C.int(curve), C.MCLBN_COMPILED_TIME_VAR)
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}

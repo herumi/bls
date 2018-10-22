@@ -40,12 +40,12 @@ enum {
 	initialize this library
 	call this once before using the other method
 	@param curve [in] type of curve
-	@param maxUnitSize [in] 4 or 6 (specify same value used in compiling for validation)
+	@param compiledTimevar [in] use the default value
 	@note init() is not thread safe
 */
-inline void init(int curve = mclBn_CurveFp254BNb, int maxUnitSize = MCLBN_FP_UNIT_SIZE)
+inline void init(int curve = mclBn_CurveFp254BNb, int compiledTimeVar = MCLBN_COMPILED_TIME_VAR)
 {
-	if (blsInit(curve, maxUnitSize) != 0) throw std::invalid_argument("blsInit");
+	if (blsInit(curve, compiledTimeVar) != 0) throw std::invalid_argument("blsInit");
 }
 inline size_t getOpUnitSize() { return blsGetOpUnitSize(); }
 

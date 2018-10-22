@@ -99,7 +99,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, MCL_BN254, MCLBN_FP_UNIT_SIZE);
+			vt[i].run(blsInit, MCL_BN254, MCLBN_COMPILED_TIME_VAR);
 		}
 	}
 	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 4u);
@@ -107,7 +107,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 	{
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, MCL_BLS12_381, MCLBN_FP_UNIT_SIZE);
+			vt[i].run(blsInit, MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
 		}
 	}
 	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 6u);
@@ -326,7 +326,7 @@ CYBOZU_TEST_AUTO(all)
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
-		blsInit(tbl[i], MCLBN_FP_UNIT_SIZE);
+		blsInit(tbl[i], MCLBN_COMPILED_TIME_VAR);
 		bls_use_stackTest();
 		blsDataTest();
 		blsOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);

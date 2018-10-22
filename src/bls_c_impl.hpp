@@ -22,9 +22,9 @@ static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
 inline const G2& getQ() { return g_Q; }
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 
-int blsInitNotThreadSafe(int curve, int maxUnitSize)
+int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 {
-	int ret = mclBn_init(curve, maxUnitSize);
+	int ret = mclBn_init(curve, compiledTimeVar);
 	if (ret < 0) return ret;
 	bool b;
 
@@ -80,7 +80,7 @@ extern "C" BLS_DLL_API void blsFree(void *p)
 	#endif
 #endif
 
-int blsInit(int curve, int maxUnitSize)
+int blsInit(int curve, int compiledTimeVar)
 {
 	int ret = 0;
 #ifdef USE_STD_MUTEX
@@ -92,7 +92,7 @@ int blsInit(int curve, int maxUnitSize)
 #endif
 	static int g_curve = -1;
 	if (g_curve != curve) {
-		ret = blsInitNotThreadSafe(curve, maxUnitSize);
+		ret = blsInitNotThreadSafe(curve, compiledTimeVar);
 		g_curve = curve;
 	}
 	return ret;
