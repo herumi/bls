@@ -328,7 +328,12 @@ CYBOZU_TEST_AUTO(all)
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
-		blsInit(tbl[i], MCLBN_COMPILED_TIME_VAR);
+		int ret = blsInit(tbl[i], MCLBN_COMPILED_TIME_VAR);
+		CYBOZU_TEST_EQUAL(ret, 0);
+		if (ret) {
+			printf("ERR %d\n", ret);
+			exit(1);
+		}
 		bls_use_stackTest();
 		blsDataTest();
 		blsOrderTest(curveOrderTbl[i], fieldOrderTbl[i]);
