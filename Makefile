@@ -67,14 +67,14 @@ VPATH=test sample src
 $(OBJ_DIR)/%.o: %.cpp
 	$(PRE)$(CXX) $(CFLAGS) -c $< -o $@ -MMD -MP -MF $(@:.o=.d)
 
+$(EXE_DIR)/%384_256_test.exe: $(OBJ_DIR)/%384_256_test.o $(BLS384_256_LIB) $(MCL_LIB)
+	$(PRE)$(CXX) $< -o $@ $(BLS384_256_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
+
 $(EXE_DIR)/%384_test.exe: $(OBJ_DIR)/%384_test.o $(BLS384_LIB) $(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(BLS384_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 $(EXE_DIR)/%256_test.exe: $(OBJ_DIR)/%256_test.o $(BLS256_LIB) $(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(BLS256_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
-
-$(EXE_DIR)/%384_256_test.exe: $(OBJ_DIR)/%384_256_test.o $(BLS384_256_LIB) $(MCL_LIB)
-	$(PRE)$(CXX) $< -o $@ $(BLS384_256_LIB) -lmcl -L../mcl/lib $(LDFLAGS)
 
 # sample exe links libbls256.a
 $(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS256_LIB) $(MCL_LIB)
