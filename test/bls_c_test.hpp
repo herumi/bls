@@ -309,8 +309,10 @@ CYBOZU_TEST_AUTO(all)
 {
 	const int tbl[] = {
 		MCL_BN254,
-#if MCLBN_FP_UNIT_SIZE == 6
+#if MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 6
 		MCL_BN381_1,
+#endif
+#if MCLBN_FR_UNIT_SIZE == 6 && MCLBN_FP_UNIT_SIZE == 4
 		MCL_BLS12_381,
 #endif
 	};
