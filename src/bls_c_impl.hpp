@@ -41,7 +41,7 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 	if (curve == MCL_BN254) {
 		#include "./qcoeff-bn254.hpp"
 		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
-		assert(g_Qcoeff.size() == CYBOZU_NUM_OF_ARRAY(tbl));
+		assert(g_Qcoeff.size() == CYBOZU_NUM_OF_ARRAY(QcoeffTblBN254));
 		for (size_t i = 0; i < g_Qcoeff.size(); i++) {
 			Fp6& x6 = g_Qcoeff[i];
 			for (size_t j = 0; j < 6; j++) {
