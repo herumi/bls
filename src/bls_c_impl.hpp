@@ -392,6 +392,10 @@ int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
 {
 	return mclBnFr_setByCSPRNG(&sec->v);
 }
+void blsSetRandFunc(void *self, unsigned int (*readFunc)(void *self, void *buf, unsigned int bufSize))
+{
+	return mclBn_setRandFunc(self, readFunc);
+}
 #endif
 
 void blsGetPop(blsSignature *sig, const blsSecretKey *sec)

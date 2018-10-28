@@ -184,6 +184,15 @@ BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize b
 	return 0 if success else -1
 */
 BLS_DLL_API int blsSecretKeySetByCSPRNG(blsSecretKey *sec);
+/*
+	set user-defined random function for setByCSPRNG
+	@param self [in] user-defined pointer
+	@param readFunc [in] user-defined function,
+	which writes random bufSize bytes to buf and returns bufSize if success else returns 0
+	@note if self == 0 and readFunc == 0 then set default random function
+	@note not threadsafe
+*/
+BLS_DLL_API void blsSetRandFunc(void *self, unsigned int (*readFunc)(void *self, void *buf, unsigned int bufSize));
 #endif
 
 BLS_DLL_API void blsGetPop(blsSignature *sig, const blsSecretKey *sec);
