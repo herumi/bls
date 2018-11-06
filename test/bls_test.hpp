@@ -104,8 +104,8 @@ void blsTest()
 		CYBOZU_TEST_ASSERT(sig.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!sig.verify(pub, m + "a"));
 		streamTest(sig);
-		CYBOZU_BENCH_C("sign", 100, sec.sign, sig, m);
-		CYBOZU_BENCH_C("verify", 100, sig.verify, pub, m);
+		CYBOZU_BENCH_C("sign", 10000, sec.sign, sig, m);
+		CYBOZU_BENCH_C("verify", 1000, sig.verify, pub, m);
 	}
 }
 
@@ -476,8 +476,10 @@ CYBOZU_TEST_AUTO(all)
 		const char *name;
 	} tbl[] = {
 		{ MCL_BN254, "BN254" },
-#if MCLBN_FP_UNIT_SIZE == 6
+#if MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 6
 		{ MCL_BN381_1, "BN381_1" },
+#endif
+#if MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 4
 		{ MCL_BLS12_381, "BLS12_381" },
 #endif
 	};

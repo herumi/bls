@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 dist: trusty
 language: cpp
 compiler:
@@ -12,6 +12,6 @@ install:
   - git clone --depth 1 https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
 script:
   - make -j3
-  - make test DISABLE_THREAD_TEST=1
+  - make test_ci DISABLE_THREAD_TEST=1
   - make test_go
   - bin/bls_c384_test.exe
