@@ -44,9 +44,10 @@ $(BLS384_256_LIB): $(OBJ_DIR)/bls_c384_256.o
 	$(AR) $@ $<
 
 ifneq ($(findstring $(OS),mac/mingw64),)
-  BLS256_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
-  BLS384_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
-  BLS384_256_SLIB_LDFLAGS+=-lgmpxx -lgmp -lcrypto -lstdc++
+  COMMON_LIB=$(GMP_LIB) $(OPENSSL_LIB) -lstdc++
+  BLS256_SLIB_LDFLAGS+=$(COMMON_LIB)
+  BLS384_SLIB_LDFLAGS+=$(COMMON_LIB)
+  BLS384_256_SLIB_LDFLAGS+=$(COMMON_LIB)
 endif
 ifeq ($(OS),mingw64)
   CFLAGS+=-I$(MCL_DIR)
