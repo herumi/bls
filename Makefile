@@ -17,6 +17,9 @@ endif
 ifeq ($(DISABLE_THREAD_TEST),1)
   CFLAGS+=-DDISABLE_THREAD_TEST
 endif
+ifeq ($(BLS_SWAP_G),1)
+  CFLAGS+=-DBLS_SWAP_G
+endif
 
 SHARE_BASENAME_SUF?=_dy
 

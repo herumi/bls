@@ -78,13 +78,15 @@ void hashTest(int type)
 	CYBOZU_TEST_ASSERT(sig.verifyHash(pub, h));
 	CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, "\x01\x02\04"));
 	if (type == MCL_BN254) {
-		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
-		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "", 0), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00", 1), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00\x00", 2), std::exception);
+#ifndef BLS_SWAP_G
+		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
+		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, c1, 32), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, mc1, 24), std::exception);
+#endif
 	}
 }
 
@@ -399,7 +401,11 @@ void dataTest()
 	sec.getPublicKey(pub);
 	pub.getStr(str, bls::IoFixedByteSeq);
 	{
+#ifdef BLS_SWAP_G
+		CYBOZU_TEST_EQUAL(str.size(), FpSize);
+#else
 		CYBOZU_TEST_EQUAL(str.size(), FpSize * 2);
+#endif
 		bls::PublicKey pub2;
 		pub2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(pub, pub2);
@@ -409,7 +415,11 @@ void dataTest()
 	sec.sign(sign, m);
 	sign.getStr(str, bls::IoFixedByteSeq);
 	{
+#ifdef BLS_SWAP_G
+		CYBOZU_TEST_EQUAL(str.size(), FpSize * 2);
+#else
 		CYBOZU_TEST_EQUAL(str.size(), FpSize);
+#endif
 		bls::Signature sign2;
 		sign2.setStr(str, bls::IoFixedByteSeq);
 		CYBOZU_TEST_EQUAL(sign, sign2);

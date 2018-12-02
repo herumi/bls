@@ -4,6 +4,23 @@
 #include <string.h>
 #include <cybozu/benchmark.hpp>
 
+size_t pubSize(size_t FrSize)
+{
+#ifdef BLS_SWAP_G
+	return FrSize;
+#else
+	return FrSize * 2;
+#endif
+}
+size_t sigSize(size_t FrSize)
+{
+#ifdef BLS_SWAP_G
+	return FrSize * 2;
+#else
+	return FrSize;
+#endif
+}
+
 void bls_use_stackTest()
 {
 	blsSecretKey sec;
@@ -48,14 +65,14 @@ void blsDataTest()
 	blsPublicKey pub1, pub2;
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
-	CYBOZU_TEST_EQUAL(n, FpSize * 2);
+	CYBOZU_TEST_EQUAL(n, pubSize(FpSize));
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 	blsSignature sig1, sig2;
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
-	CYBOZU_TEST_EQUAL(n, FpSize);
+	CYBOZU_TEST_EQUAL(n, sigSize(FpSize));
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
@@ -176,7 +193,7 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// PublicKey
-	expectSize = FpSize * 2;
+	expectSize = pubSize(FpSize);
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -199,7 +216,11 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// Signature
+#ifdef BLS_SWAP_G
+	expectSize = FpSize * 2;
+#else
 	expectSize = FpSize;
+#endif
 	blsSign(&sig1, &sec1, "abc", 3);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, expectSize);
@@ -225,10 +246,20 @@ void blsSerializeTest()
 void blsVerifyOrderTest()
 {
 	puts("blsVerifyOrderTest");
-	const uint8_t Ps[] = {
+#ifdef BLS_SWAP_G
+	const uint8_t Qs[] =
+#else
+	const uint8_t Ps[] =
+#endif
+	{
 0x7b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
 	};
-	const uint8_t Qs[] = {
+#ifdef BLS_SWAP_G
+	const uint8_t Ps[] =
+#else
+	const uint8_t Qs[] =
+#endif
+	{
 0x7c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
 	};
 	size_t n;
@@ -242,10 +273,10 @@ void blsVerifyOrderTest()
 	blsPublicKeyVerifyOrder(1);
 
 	blsSignature sig;
-	n = blsSignatureDeserialize(&sig, Qs, sizeof(Ps));
+	n = blsSignatureDeserialize(&sig, Qs, sizeof(Qs));
 	CYBOZU_TEST_EQUAL(n, 0);
 	blsSignatureVerifyOrder(0);
-	n = blsSignatureDeserialize(&sig, Qs, sizeof(Ps));
+	n = blsSignatureDeserialize(&sig, Qs, sizeof(Qs));
 	CYBOZU_TEST_ASSERT(n > 0);
 	CYBOZU_TEST_ASSERT(!blsSignatureIsValidOrder(&sig));
 	blsSignatureVerifyOrder(1);

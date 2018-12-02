@@ -250,7 +250,7 @@ public:
 	*/
 	void recover(const SecretKeyVec& secVec, const IdVec& idVec)
 	{
-		if (secVec.size() != idVec.size()) throw std::invalid_argument("SecretKey::recover");
+		if (secVec.size() != idVec.size()) throw std::invalid_argument("SecretKey:recover");
 		recover(secVec.data(), idVec.data(), idVec.size());
 	}
 	/*
@@ -300,7 +300,12 @@ public:
 		if (str != "0") {
 			// 1 <x.a> <x.b> <y.a> <y.b>
 			std::string t;
-			for (int i = 0; i < 4; i++) {
+#ifdef BLS_SWAP_G
+			const int elemNum = 2;
+#else
+			const int elemNum = 4;
+#endif
+			for (int i = 0; i < elemNum; i++) {
 				is >> t;
 				str += ' ';
 				str += t;
@@ -312,14 +317,22 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const
 	{
 		str.resize(1024);
+#ifdef BLS_SWAP_G
+		size_t n = mclBnG1_getStr(&str[0], str.size(), &self_.v, ioMode);
+#else
 		size_t n = mclBnG2_getStr(&str[0], str.size(), &self_.v, ioMode);
-		if (n == 0) throw std::runtime_error("mclBnG2_getStr");
+#endif
+		if (n == 0) throw std::runtime_error("PublicKey:getStr");
 		str.resize(n);
 	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{
+#ifdef BLS_SWAP_G
+		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+#else
 		int ret = mclBnG2_setStr(&self_.v, str.c_str(), str.size(), ioMode);
-		if (ret != 0) throw std::runtime_error("mclBnG2_setStr");
+#endif
+		if (ret != 0) throw std::runtime_error("PublicKey:setStr");
 	}
 	/*
 		set public for id from mpk
@@ -333,7 +346,7 @@ public:
 	*/
 	void recover(const PublicKeyVec& pubVec, const IdVec& idVec)
 	{
-		if (pubVec.size() != idVec.size()) throw std::invalid_argument("PublicKey::recover");
+		if (pubVec.size() != idVec.size()) throw std::invalid_argument("PublicKey:recover");
 		recover(pubVec.data(), idVec.data(), idVec.size());
 	}
 	/*
@@ -382,7 +395,12 @@ public:
 		if (str != "0") {
 			// 1 <x> <y>
 			std::string t;
-			for (int i = 0; i < 2; i++) {
+#ifdef BLS_SWAP_G
+			const int elemNum = 4;
+#else
+			const int elemNum = 2;
+#endif
+			for (int i = 0; i < elemNum; i++) {
 				is >> t;
 				str += ' ';
 				str += t;
@@ -394,14 +412,22 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const
 	{
 		str.resize(1024);
+#ifdef BLS_SWAP_G
+		size_t n = mclBnG2_getStr(&str[0], str.size(), &self_.v, ioMode);
+#else
 		size_t n = mclBnG1_getStr(&str[0], str.size(), &self_.v, ioMode);
-		if (n == 0) throw std::runtime_error("mclBnG1_getStr");
+#endif
+		if (n == 0) throw std::runtime_error("Signature:tgetStr");
 		str.resize(n);
 	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{
+#ifdef BLS_SWAP_G
+		int ret = mclBnG2_setStr(&self_.v, str.c_str(), str.size(), ioMode);
+#else
 		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);
-		if (ret != 0) throw std::runtime_error("mclBnG1_setStr");
+#endif
+		if (ret != 0) throw std::runtime_error("Signature:setStr");
 	}
 	bool verify(const PublicKey& pub, const void *m, size_t size) const
 	{
@@ -437,7 +463,7 @@ public:
 	*/
 	void recover(const SignatureVec& sigVec, const IdVec& idVec)
 	{
-		if (sigVec.size() != idVec.size()) throw std::invalid_argument("Signature::recover");
+		if (sigVec.size() != idVec.size()) throw std::invalid_argument("Signature:recover");
 		recover(sigVec.data(), idVec.data(), idVec.size());
 	}
 	/*
