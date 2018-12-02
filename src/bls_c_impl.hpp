@@ -7,26 +7,38 @@
 
 /*
 	BLS signature
-	e : G1 x G2 -> Fp12
+	e : G1 x G2 -> GT
 	Q in G2 ; fixed global parameter
 	H : {str} -> G1
 	s : secret key
 	sQ ; public key
 	s H(m) ; signature of m
 	verify ; e(sQ, H(m)) = e(Q, s H(m))
+
+	swap G1 and G2 if BLS_SWAP_G is defined
+	@note the current implementation does not support precomputed miller loop
 */
 
+#ifdef BLS_SWAP_G
+static G1 g_P;
+inline const G1& getP() { return g_P; }
+#else
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
 inline const G2& getQ() { return g_Q; }
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
+#endif
 
 int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 {
 	int ret = mclBn_init(curve, compiledTimeVar);
 	if (ret < 0) return ret;
 	bool b;
+
+#ifdef BLS_SWAP_G
+	mapToG1(&b, g_P, 1);
+#else
 
 	if (curve == MCL_BN254) {
 		const char *Qx_BN254 = "11ccb44e77ac2c5dc32a6009594dbe331ec85a61290d6bbac8cc7ebb2dceb128 f204a14bbdac4a05be9a25176de827f2e60085668becdd4fc5fa914c9ee0d9a";
@@ -55,6 +67,7 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 	} else {
 		precomputeG2(&b, g_Qcoeff, getQ());
 	}
+#endif
 	if (!b) return -101;
 	return 0;
 }
@@ -113,16 +126,43 @@ int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufS
 
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
+#ifdef BLS_SWAP_G
+	mclBnG1_mul(&pub->v, cast(&getP()), &sec->v);
+#else
 	mclBnG2_mul(&pub->v, cast(&getQ()), &sec->v);
+#endif
 }
 
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
+#ifdef BLS_SWAP_G
+	G2 Hm;
+	hashAndMapToG2(Hm, m, size);
+	mclBnG2_mulCT(&sig->v, cast(&Hm), &sec->v);
+#else
 	G1 Hm;
 	hashAndMapToG1(Hm, m, size);
 	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
+#endif
 }
 
+#ifdef BLS_SWAP_G
+/*
+	e(P, sHm) == e(sP, Hm)
+	<=> finalExp(ML(P, sHm) * e(-sP, Hm)) == 1
+*/
+bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
+{
+	GT e1, e2;
+	millerLoop(e1, getP(), sHm);
+	G1 neg_sP;
+	G1::neg(neg_sP, sP);
+	millerLoop(e2, neg_sP, Hm);
+	e1 *= e2;
+	finalExp(e1, e1);
+	return e1.isOne();
+}
+#else
 /*
 	e(P1, Q1) == e(P2, Q2)
 	<=> finalExp(ML(P1, Q1)) == finalExp(ML(P2, Q2))
@@ -132,14 +172,20 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 */
 bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2& Q2)
 {
-	Fp12 e;
+	GT e;
 	precomputedMillerLoop2mixed(e, P2, Q2, -P1, Q1coeff);
 	finalExp(e, e);
 	return e.isOne();
 }
+#endif
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
+#ifdef BLS_SWAP_G
+	G2 Hm;
+	hashAndMapToG2(Hm, m, size);
+	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
+#else
 	G1 Hm;
 	hashAndMapToG1(Hm, m, size);
 	/*
@@ -147,66 +193,67 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 		e(sig, Q) = e(Hm, pub)
 	*/
 	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+#endif
 }
 
 mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id)
 {
-	return mclBnFr_serialize(buf, maxBufSize, &id->v);
+	return cast(&id->v)->serialize(buf, maxBufSize);
 }
 
 mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec)
 {
-	return mclBnFr_serialize(buf, maxBufSize, &sec->v);
+	return cast(&sec->v)->serialize(buf, maxBufSize);
 }
 
 mclSize blsPublicKeySerialize(void *buf, mclSize maxBufSize, const blsPublicKey *pub)
 {
-	return mclBnG2_serialize(buf, maxBufSize, &pub->v);
+	return cast(&pub->v)->serialize(buf, maxBufSize);
 }
 
 mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature *sig)
 {
-	return mclBnG1_serialize(buf, maxBufSize, &sig->v);
+	return cast(&sig->v)->serialize(buf, maxBufSize);
 }
 
 mclSize blsIdDeserialize(blsId *id, const void *buf, mclSize bufSize)
 {
-	return mclBnFr_deserialize(&id->v, buf, bufSize);
+	return cast(&id->v)->deserialize(buf, bufSize);
 }
 
-mclSize blsSecretKeyDeserialize(blsSecretKey *sig, const void *buf, mclSize bufSize)
+mclSize blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
-	return mclBnFr_deserialize(&sig->v, buf, bufSize);
+	return cast(&sec->v)->deserialize(buf, bufSize);
 }
 
 mclSize blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize)
 {
-	return mclBnG2_deserialize(&pub->v, buf, bufSize);
+	return cast(&pub->v)->deserialize(buf, bufSize);
 }
 
 mclSize blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize)
 {
-	return mclBnG1_deserialize(&sig->v, buf, bufSize);
+	return cast(&sig->v)->deserialize(buf, bufSize);
 }
 
 int blsIdIsEqual(const blsId *lhs, const blsId *rhs)
 {
-	return mclBnFr_isEqual(&lhs->v, &rhs->v);
+	return *cast(&lhs->v) == *cast(&rhs->v);
 }
 
 int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey *rhs)
 {
-	return mclBnFr_isEqual(&lhs->v, &rhs->v);
+	return *cast(&lhs->v) == *cast(&rhs->v);
 }
 
 int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs)
 {
-	return mclBnG2_isEqual(&lhs->v, &rhs->v);
+	return *cast(&lhs->v) == *cast(&rhs->v);
 }
 
 int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs)
 {
-	return mclBnG1_isEqual(&lhs->v, &rhs->v);
+	return *cast(&lhs->v) == *cast(&rhs->v);
 }
 
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id)
@@ -216,7 +263,9 @@ int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, con
 
 int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, mclSize k, const blsId *id)
 {
-	return mclBn_G2EvaluatePolynomial(&pub->v, &mpk->v, k, &id->v);
+	bool b;
+	mcl::evaluatePolynomial(&b, *cast(&pub->v), cast(&mpk->v), k, *cast(&id->v));
+	return b ? 0 : -1;
 }
 
 int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, mclSize n)
@@ -226,108 +275,152 @@ int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const bls
 
 int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, mclSize n)
 {
-	return mclBn_G2LagrangeInterpolation(&pub->v, &idVec->v, &pubVec->v, n);
+	bool b;
+	mcl::LagrangeInterpolation(&b, *cast(&pub->v), cast(&idVec->v), cast(&pubVec->v), n);
+	return b ? 0 : -1;
 }
 
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n)
 {
-	return mclBn_G1LagrangeInterpolation(&sig->v, &idVec->v, &sigVec->v, n);
+	bool b;
+	mcl::LagrangeInterpolation(&b, *cast(&sig->v), cast(&idVec->v), cast(&sigVec->v), n);
+	return b ? 0 : -1;
 }
 
 void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs)
 {
-	mclBnFr_add(&sec->v, &sec->v, &rhs->v);
+	*cast(&sec->v) += *cast(&rhs->v);
 }
 
 void blsPublicKeyAdd(blsPublicKey *pub, const blsPublicKey *rhs)
 {
-	mclBnG2_add(&pub->v, &pub->v, &rhs->v);
+	*cast(&pub->v) += *cast(&rhs->v);
 }
 
 void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
 {
-	mclBnG1_add(&sig->v, &sig->v, &rhs->v);
+	*cast(&sig->v) += *cast(&rhs->v);
 }
 
 void blsSignatureVerifyOrder(int doVerify)
 {
+#ifdef BLS_SWAP_G
+	mclBn_verifyOrderG2(doVerify);
+#else
 	mclBn_verifyOrderG1(doVerify);
+#endif
 }
 void blsPublicKeyVerifyOrder(int doVerify)
 {
+#ifdef BLS_SWAP_G
+	mclBn_verifyOrderG1(doVerify);
+#else
 	mclBn_verifyOrderG2(doVerify);
+#endif
 }
 int blsSignatureIsValidOrder(const blsSignature *sig)
 {
-	return mclBnG1_isValidOrder(&sig->v);
+	return cast(&sig->v)->isValidOrder();
 }
 int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 {
-	return mclBnG2_isValidOrder(&pub->v);
+	return cast(&pub->v)->isValidOrder();
 }
 
 #ifndef BLS_MINIMUM_API
-inline bool toG1(G1& Hm, const void *h, mclSize size)
+template<class G>
+inline bool toG(G& Hm, const void *h, mclSize size)
 {
 	Fp t;
 	t.setArrayMask((const char *)h, size);
 	bool b;
+#ifdef BLS_SWAP_G
+	BN::mapToG2(&b, Hm, Fp2(t, 0));
+#else
 	BN::mapToG1(&b, Hm, t);
+#endif
 	return b;
 }
 
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
 {
 	if (n == 0) return 0;
+	GT e1, e2;
+	const char *ph = (const char*)hVec;
+#ifdef BLS_SWAP_G
+	millerLoop(e1, getP(), -*cast(&aggSig->v));
+	G2 h;
+	if (!toG(h, &ph[0], sizeofHash)) return 0;
+	BN::millerLoop(e2, *cast(&pubVec[0].v), h);
+	e1 *= e2;
+	for (size_t i = 1; i < n; i++) {
+		if (!toG(h, &ph[i * sizeofHash], sizeofHash)) return 0;
+		millerLoop(e2, *cast(&pubVec[i].v), h);
+		e1 *= e2;
+	}
+#else
 	/*
 		e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
 		<=> finalExp(ML(-aggSig, Q) * prod_i ML(hVec[i], pubVec[i])) == 1
 	*/
-	GT e1, e2;
 	BN::precomputedMillerLoop(e1, -*cast(&aggSig->v), g_Qcoeff.data());
-	const char *ph = (const char*)hVec;
 	G1 h;
-	if (!toG1(h, &ph[0], sizeofHash)) return 0;
+	if (!toG(h, &ph[0], sizeofHash)) return 0;
 	BN::millerLoop(e2, h, *cast(&pubVec[0].v));
 	e1 *= e2;
 	for (size_t i = 1; i < n; i++) {
-		if (!toG1(h, &ph[i * sizeofHash], sizeofHash)) return 0;
+		if (!toG(h, &ph[i * sizeofHash], sizeofHash)) return 0;
 		BN::millerLoop(e2, h, *cast(&pubVec[i].v));
 		e1 *= e2;
 	}
+#endif
 	BN::finalExp(e1, e1);
 	return e1.isOne();
 }
 
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
+#ifdef BLS_SWAP_G
+	G2 Hm;
+	if (!toG(Hm, h, size)) return -1;
+	mclBnG2_mulCT(&sig->v, cast(&Hm), &sec->v);
+	return 0;
+#else
 	G1 Hm;
-	if (!toG1(Hm, h, size)) return -1;
+	if (!toG(Hm, h, size)) return -1;
 	mclBnG1_mulCT(&sig->v, cast(&Hm), &sec->v);
 	return 0;
+#endif
 }
 
 int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
 {
+#ifdef BLS_SWAP_G
+	G2 Hm;
+	if (!toG(Hm, h, size)) return 0;
+	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
+#else
 	G1 Hm;
-	if (!toG1(Hm, h, size)) return 0;
+	if (!toG(Hm, h, size)) return 0;
 	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+#endif
 }
 
 void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs)
 {
-	mclBnFr_sub(&sec->v, &sec->v, &rhs->v);
+	*cast(&sec->v) -= *cast(&rhs->v);
 }
 
 void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs)
 {
-	mclBnG2_sub(&pub->v, &pub->v, &rhs->v);
+	*cast(&pub->v) -= *cast(&rhs->v);
 }
 
 void blsSignatureSub(blsSignature *sig, const blsSignature *rhs)
 {
-	mclBnG1_sub(&sig->v, &sig->v, &rhs->v);
+	*cast(&sig->v) -= *cast(&rhs->v);
 }
+
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
 	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
@@ -353,18 +446,25 @@ int blsGetFrByteSize()
 	return mclBn_getFrByteSize();
 }
 
+#ifdef BLS_SWAP_G
+void blsGetGeneratorOfG1(blsPublicKey *pub)
+{
+	*cast(&pub->v) = getP();
+}
+#else
 void blsGetGeneratorOfG2(blsPublicKey *pub)
 {
-	*(G2*)pub = getQ();
+	*cast(&pub->v) = getQ();
 }
+#endif
 
 int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize)
 {
-	return mclBnFr_setStr(&id->v, buf, bufSize, 10);
+	return cast(&id->v)->deserialize(buf, bufSize, 10) > 0 ? 0 : -1;
 }
 int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize)
 {
-	return mclBnFr_setStr(&id->v, buf, bufSize, 16);
+	return cast(&id->v)->deserialize(buf, bufSize, 16) > 0 ? 0 : -1;
 }
 
 int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize)
@@ -374,17 +474,18 @@ int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize)
 
 mclSize blsIdGetDecStr(char *buf, mclSize maxBufSize, const blsId *id)
 {
-	return mclBnFr_getStr(buf, maxBufSize, &id->v, 10);
+	return cast(&id->v)->getStr(buf, maxBufSize, 10);
 }
 
 mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id)
 {
-	return mclBnFr_getStr(buf, maxBufSize, &id->v, 16);
+	return cast(&id->v)->getStr(buf, maxBufSize, 16);
 }
 
 int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
-	return mclBnFr_setHashOf(&sec->v, buf, bufSize);
+	cast(&sec->v)->setHashOf(buf, bufSize);
+	return 0;
 }
 
 #ifndef MCL_DONT_USE_CSPRNG
@@ -403,7 +504,7 @@ void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 	blsPublicKey pub;
 	blsGetPublicKey(&pub, sec);
 	char buf[1024];
-	mclSize n = mclBnG2_serialize(buf, sizeof(buf), &pub.v);
+	mclSize n = cast(&pub.v)->serialize(buf, sizeof(buf));
 	assert(n);
 	blsSign(sig, sec, buf, n);
 }
@@ -411,54 +512,58 @@ void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 {
 	char buf[1024];
-	mclSize n = mclBnG2_serialize(buf, sizeof(buf), &pub->v);
+	mclSize n = cast(&pub->v)->serialize(buf, sizeof(buf));
 	if (n == 0) return 0;
 	return blsVerify(sig, pub, buf, n);
 }
 
 mclSize blsIdGetLittleEndian(void *buf, mclSize maxBufSize, const blsId *id)
 {
-	return mclBnFr_serialize(buf, maxBufSize, &id->v);
+	return cast(&id->v)->serialize(buf, maxBufSize);
 }
 int blsSecretKeySetDecStr(blsSecretKey *sec, const char *buf, mclSize bufSize)
 {
-	return mclBnFr_setStr(&sec->v, buf, bufSize, 10);
+	return cast(&sec->v)->deserialize(buf, bufSize, 10) > 0 ? 0 : -1;
 }
 int blsSecretKeySetHexStr(blsSecretKey *sec, const char *buf, mclSize bufSize)
 {
-	return mclBnFr_setStr(&sec->v, buf, bufSize, 16);
+	return cast(&sec->v)->deserialize(buf, bufSize, 16) > 0 ? 0 : -1;
 }
 mclSize blsSecretKeyGetLittleEndian(void *buf, mclSize maxBufSize, const blsSecretKey *sec)
 {
-	return mclBnFr_serialize(buf, maxBufSize, &sec->v);
+	return cast(&sec->v)->serialize(buf, maxBufSize);
 }
 mclSize blsSecretKeyGetDecStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec)
 {
-	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 10);
+	return cast(&sec->v)->getStr(buf, maxBufSize, 10);
 }
 mclSize blsSecretKeyGetHexStr(char *buf, mclSize maxBufSize, const blsSecretKey *sec)
 {
-	return mclBnFr_getStr(buf, maxBufSize, &sec->v, 16);
+	return cast(&sec->v)->getStr(buf, maxBufSize, 16);
 }
 int blsPublicKeySetHexStr(blsPublicKey *pub, const char *buf, mclSize bufSize)
 {
-	return mclBnG2_setStr(&pub->v, buf, bufSize, 16);
+	return cast(&pub->v)->deserialize(buf, bufSize, 16) > 0 ? 0 : -1;
 }
 mclSize blsPublicKeyGetHexStr(char *buf, mclSize maxBufSize, const blsPublicKey *pub)
 {
-	return mclBnG2_getStr(buf, maxBufSize, &pub->v, 16);
+	return cast(&pub->v)->getStr(buf, maxBufSize, 16);
 }
 int blsSignatureSetHexStr(blsSignature *sig, const char *buf, mclSize bufSize)
 {
-	return mclBnG1_setStr(&sig->v, buf, bufSize, 16);
+	return cast(&sig->v)->deserialize(buf, bufSize, 16) > 0 ? 0 : -1;
 }
 mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const blsSignature *sig)
 {
-	return mclBnG1_getStr(buf, maxBufSize, &sig->v, 16);
+	return cast(&sig->v)->getStr(buf, maxBufSize, 16);
 }
 void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub)
 {
+#ifdef BLS_SWAP_G
+	mclBnG1_mulCT(&out->v, &pub->v, &sec->v);
+#else
 	mclBnG2_mulCT(&out->v, &pub->v, &sec->v);
+#endif
 }
 
 #endif
