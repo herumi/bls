@@ -8,6 +8,14 @@
 */
 #include <mcl/bn.h>
 
+#ifdef BLS_SWAP_G
+	/*
+		error if BLS_SWAP_G is inconsistently used between library and exe
+	*/
+	#undef MCLBN_COMPILED_TIME_VAR
+	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + 100)
+#endif
+
 #ifdef _MSC_VER
 	#ifdef BLS_DONT_EXPORT
 		#define BLS_DLL_API
