@@ -7,7 +7,7 @@ CFLAGS += -std=c++11
 LDFLAGS += -lpthread
 
 SRC_SRC=bls_c256.cpp bls_c384.cpp bls_c384_256.cpp
-TEST_SRC=bls256_test.cpp bls384_test.cpp bls_c256_test.cpp bls_c384_test.cpp bls_c384_256_test.cpp
+TEST_SRC=bls256_test.cpp bls384_test.cpp bls384_256_test.cpp bls_c256_test.cpp bls_c384_test.cpp bls_c384_256_test.cpp
 SAMPLE_SRC=bls256_smpl.cpp bls384_smpl.cpp
 
 CFLAGS+=-I$(MCL_DIR)/include -I./
