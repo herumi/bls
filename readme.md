@@ -15,7 +15,20 @@ git clone git://github.com/herumi/bls.git
 git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
-# **REMARK** libbls.a for C++ interface(bls/bls.hpp) is removed
+# News
+* -tags options is necessary for golang binding
+    * -tags bn256
+    * -tags bn384\_256
+    * -tags bn384 ; previous version
+* Support swap of G1 and G2
+    * `make BLS_SWAP_G=1` then G1 is assigned to PublicKey and G2 is assigned to Signature.
+    * golang binding does not support this feature yet.
+* Build option without GMP
+    * `make MCL_USE_GMP=0`
+* Build option to specify `mcl` directory
+    * `make MCL_DIR=<mcl directory>`
+
+* (old) libbls.a for C++ interface(bls/bls.hpp) is removed
 Link `lib/libbls256.a` or `lib/libbls384.a` to use `bls/bls.hpp` according to MCLBN_FP_UNIT_SIZE = 4 or 6.
 
 # Build and test for Linux
@@ -47,6 +60,7 @@ bin\bls_c384_test.exe
 # Library
 * libbls256.a/libbls256_dy.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
 * libbls384.a/libbls384_dy.so ; for BN254/BN381_1/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6
+* libbls384_256.a/libbls384_256_dy.so ; for BN254/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6 and MCLBN_FR_UNIT_SIZE=4
 
 See `mcl/include/curve_type.h` for curve parameter
 

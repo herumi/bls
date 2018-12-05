@@ -2,9 +2,13 @@ package bls
 
 /*
 #cgo CFLAGS:-I../../../include -I../../../../mcl/include/
-#cgo LDFLAGS:-L../../../lib
-#cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
-#cgo LDFLAGS:-lbls384_dy -lcrypto -lgmp -lgmpxx -lstdc++
+#cgo bn256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=4
+#cgo bn256 LDFLAGS:-lbls256_dy
+#cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
+#cgo bn384 LDFLAGS:-lbls384_dy
+#cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
+#cgo bn384_256 LDFLAGS:-lbls384_256_dy
+#cgo LDFLAGS:-L../../../lib -lcrypto -lgmp -lgmpxx -lstdc++
 #include <bls/bls.h>
 */
 import "C"

@@ -1,7 +1,9 @@
 package bls
 
 /*
-#cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
+#cgo bn256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=4
+#cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
+#cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
 #include <mcl/bn.h>
 */
 import "C"
@@ -22,6 +24,17 @@ const BLS12_381 = C.MCL_BLS12_381
 
 // IoSerializeHexStr
 const IoSerializeHexStr = C.MCLBN_IO_SERIALIZE_HEX_STR
+
+// GetFrUnitSize() --
+func GetFrUnitSize() int {
+	return int(C.MCLBN_FR_UNIT_SIZE)
+}
+
+// GetFpUnitSize() --
+// same as GetMaxOpUnitSize()
+func GetFpUnitSize() int {
+	return int(C.MCLBN_FP_UNIT_SIZE)
+}
 
 // GetMaxOpUnitSize --
 func GetMaxOpUnitSize() int {
