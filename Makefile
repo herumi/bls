@@ -106,6 +106,9 @@ ifeq ($(OS),mac)
   MAC_GO_LDFLAGS="-ldflags=-s"
 endif
 # PATH is for mingw, LD_RUN_PATH is for linux, DYLD_LIBRARY_PATH is for mac
+# use bls384 unless tags is specified
+test_go_default: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
+	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
 test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
 	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) -tags bn256 .
 test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
@@ -114,6 +117,7 @@ test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
 	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) -tags bn384_256 .
 
 test_go:
+	$(MAKE) test_go_default
 	$(MAKE) test_go256
 	$(MAKE) test_go384
 	$(MAKE) test_go384_256

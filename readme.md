@@ -16,10 +16,10 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
-* -tags options is necessary for golang binding
+* -tags option for Go bindings
     * -tags bn256
     * -tags bn384\_256
-    * -tags bn384 ; previous version
+    * -tags bn384 ; default mode
 * Support swap of G1 and G2
     * `make BLS_SWAP_G=1` then G1 is assigned to PublicKey and G2 is assigned to Signature.
     * golang binding does not support this feature yet.
