@@ -4,11 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <cybozu/benchmark.hpp>
-#ifdef MCL_DONT_USE_OPENSSL
 #include <cybozu/sha2.hpp>
-#else
-#include <cybozu/crypto.hpp>
-#endif
 
 template<class T>
 void streamTest(const T& t)
@@ -449,11 +445,7 @@ void verifyAggregateTest()
 		char msg[128];
 		CYBOZU_SNPRINTF(msg, sizeof(msg), "abc-%d", (int)i);
 		const size_t msgSize = strlen(msg);
-#ifdef MCL_DONT_USE_OPENSSL
-		cybozu::Sha256(msg, msgSize).get(h[i].data);
-#else
-		cybozu::crypto::Hash::digest(h[i].data, cybozu::crypto::Hash::N_SHA256, msg, msgSize);
-#endif
+		cybozu::Sha256().digest(h[i].data, sizeofHash, msg, msgSize);
 		secs[i].init();
 		secs[i].getPublicKey(pubs[i]);
 		secs[i].signHash(sigs[i], h[i].data, sizeofHash);
