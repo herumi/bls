@@ -4,7 +4,7 @@
 #include <bls/bls.h>
 
 #if 1
-#include "../mcl/src/bn_c_impl.hpp"
+#include "bn_c_impl.hpp"
 #else
 #if MCLBN_FP_UNIT_SIZE == 4 && MCLBN_FR_UNIT_SIZE == 4
 #include <mcl/bn256.hpp>
