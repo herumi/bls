@@ -16,4 +16,5 @@ script:
   - make test_go
   - bin/bls_c384_test.exe
   - make clean && make -C ../mcl clean
-  - make test_ci -j3 test DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
+  - make -j3 MCL_USE_OPENSSL=0
+  - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
