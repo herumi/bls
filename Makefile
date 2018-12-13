@@ -10,7 +10,7 @@ SRC_SRC=bls_c256.cpp bls_c384.cpp bls_c384_256.cpp
 TEST_SRC=bls256_test.cpp bls384_test.cpp bls384_256_test.cpp bls_c256_test.cpp bls_c384_test.cpp bls_c384_256_test.cpp
 SAMPLE_SRC=bls256_smpl.cpp bls384_smpl.cpp
 
-CFLAGS+=-I$(MCL_DIR)/include -I./ -I$(MCL_DIR)/src
+CFLAGS+=-I$(MCL_DIR)/include
 ifneq ($(MCL_MAX_BIT_SIZE),)
   CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
 endif

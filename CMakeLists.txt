@@ -7,10 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(LIBS mcl gmp gmpxx crypto pthread)
 
-set(MCL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mcl/" CACHE PATH "mcl source dir")
-include_directories(
-	${MCL_DIR}/src ./include/
-)
+include_directories(include/)
 
 add_library(bls_c256 SHARED src/bls_c256.cpp)
 add_library(bls_c384 SHARED src/bls_c384.cpp)
