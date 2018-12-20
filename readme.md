@@ -25,6 +25,8 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
     * golang binding does not support this feature yet.
 * Build option without GMP
     * `make MCL_USE_GMP=0`
+* Build option without OpenSSL
+    * `make MCL_USE_OPENSSL=0`
 * Build option to specify `mcl` directory
     * `make MCL_DIR=<mcl directory>`
 
