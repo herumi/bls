@@ -21,14 +21,12 @@ ifeq ($(BLS_SWAP_G),1)
   CFLAGS+=-DBLS_SWAP_G
 endif
 
-SHARE_BASENAME_SUF?=_dy
-
 BLS256_LIB=$(LIB_DIR)/libbls256.a
 BLS384_LIB=$(LIB_DIR)/libbls384.a
 BLS384_256_LIB=$(LIB_DIR)/libbls384_256.a
-BLS256_SNAME=bls256$(SHARE_BASENAME_SUF)
-BLS384_SNAME=bls384$(SHARE_BASENAME_SUF)
-BLS384_256_SNAME=bls384_256$(SHARE_BASENAME_SUF)
+BLS256_SNAME=bls256
+BLS384_SNAME=bls384
+BLS384_256_SNAME=bls384_256
 BLS256_SLIB=$(LIB_DIR)/lib$(BLS256_SNAME).$(LIB_SUF)
 BLS384_SLIB=$(LIB_DIR)/lib$(BLS384_SNAME).$(LIB_SUF)
 BLS384_256_SLIB=$(LIB_DIR)/lib$(BLS384_256_SNAME).$(LIB_SUF)
@@ -90,31 +88,29 @@ sample: $(SAMPLE_EXE)
 
 TEST_EXE=$(addprefix $(EXE_DIR)/,$(TEST_SRC:.cpp=.exe))
 test_ci: $(TEST_EXE)
-	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env LSAN_OPTIONS=verbosity=1:log_threads=1 $$i; done'
+	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env LSAN_OPTIONS=verbosity=1 log_threads=1 LD_LIBRARY_PATH=../mcl/lib $$i; done'
 	$(MAKE) sample_test
 
 test: $(TEST_EXE)
 	@echo test $(TEST_EXE)
-	@sh -ec 'for i in $(TEST_EXE); do $$i|grep "ctest:name"; done' > result.txt
+	@sh -ec 'for i in $(TEST_EXE); do env LD_LIBRARY_PATH=../mcl/lib $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 	$(MAKE) sample_test
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
-	python bls_smpl.py
+	env LD_LIBRARY_PATH=../mcl/lib python bls_smpl.py
 
-ifeq ($(OS),mac)
-  MAC_GO_LDFLAGS="-ldflags=-s"
-endif
 # PATH is for mingw, LD_RUN_PATH is for linux, DYLD_LIBRARY_PATH is for mac
+COMMON_LIB_PATH="../../../lib:../../../../mcl/lib"
 # use bls384 unless tags is specified
 test_go_default: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test .
 test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) -tags bn256 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn256 .
 test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) -tags bn384 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384 .
 test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:../../../lib LD_RUN_PATH="../../../lib" DYLD_LIBRARY_PATH="../../../lib" go test $(MAC_GO_LDFLAGS) -tags bn384_256 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384_256 .
 
 test_go:
 	$(MAKE) test_go_default
