@@ -14,7 +14,7 @@ script:
   - make -j3
   - make test_ci DISABLE_THREAD_TEST=1
   - make test_go
-  - bin/bls_c384_test.exe
+  - env LD_LIBRARY_PATH=../mcl/lib bin/bls_c384_test.exe
   - make clean && make -C ../mcl clean
   - make -j3 MCL_USE_OPENSSL=0
   - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
