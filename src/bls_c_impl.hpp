@@ -429,17 +429,20 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	return 0;
 }
 
-int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
+int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub)
 {
 #ifdef BLS_SWAP_G
-	G2 Hm;
-	if (!toG(Hm, h, size)) return 0;
-	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
+	return isEqualTwoPairings(*cast(&X->v), *cast(&pub->v), *cast(&Y->v));
 #else
-	G1 Hm;
-	if (!toG(Hm, h, size)) return 0;
-	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+	return isEqualTwoPairings(*cast(&X->v), getQcoeff().data(), *cast(&Y->v), *cast(&pub->v));
 #endif
+}
+
+int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
+{
+	blsSignature Hm;
+	if (!toG(*cast(&Hm.v), h, size)) return 0;
+	return blsVerifyPairing(sig, &Hm, pub);
 }
 
 void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs)

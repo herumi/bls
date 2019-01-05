@@ -142,6 +142,15 @@ BLS_DLL_API int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 #ifndef BLS_MINIMUM_API
 
 /*
+	verify X == sY by checking e(X, sQ) = e(Y, Q)
+	@param X [in]
+	@param Y [in]
+	@param pub [in] pub = sQ
+	@return 1 if e(X, pub) = e(Y, Q) else 0
+*/
+BLS_DLL_API int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub);
+
+/*
 	sign the hash
 	use the low (bitSize of r) - 1 bit of h
 	return 0 if success else -1
