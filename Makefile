@@ -100,17 +100,17 @@ test: $(TEST_EXE)
 sample_test: $(EXE_DIR)/bls_smpl.exe
 	env LD_LIBRARY_PATH=../mcl/lib python bls_smpl.py
 
-# PATH is for mingw, LD_RUN_PATH is for linux, DYLD_LIBRARY_PATH is for mac
+# PATH is for mingw, LD_LIBRARY_PATH is for linux, DYLD_LIBRARY_PATH is for mac
 COMMON_LIB_PATH="../../../lib:../../../../mcl/lib"
 # use bls384 unless tags is specified
 test_go_default: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test .
 test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn256 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn256 .
 test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384 .
 test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
-	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_RUN_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384_256 .
+	cd ffi/go/bls && env PATH=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) go test -tags bn384_256 .
 
 test_go:
 	$(MAKE) test_go_default
