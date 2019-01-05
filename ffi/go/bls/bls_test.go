@@ -356,6 +356,42 @@ func testDHKeyExchange(t *testing.T) {
 	}
 }
 
+func testPairing(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	pub := sec.GetPublicKey()
+	m := "abc"
+	sig1 := sec.Sign(m)
+	sig2 := HashAndMapToSignature([]byte(m))
+	if !VerifyPairing(sig1, sig2, pub) {
+		t.Errorf("VerifyPairing")
+	}
+}
+
+func testAggregate2(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	pub := sec.GetPublicKey()
+	msgTbl := []string{"abc", "def", "123"}
+	n := len(msgTbl)
+	sigVec := make([]*Sign, n)
+	for i := 0; i < n; i++ {
+		m := msgTbl[i]
+		sigVec[i] = sec.Sign(m)
+	}
+	aggSign := sigVec[0]
+	for i := 1; i < n; i++ {
+		aggSign.Add(sigVec[i])
+	}
+	hashPt := HashAndMapToSignature([]byte(msgTbl[0]))
+	for i := 1; i < n; i++ {
+		hashPt.Add(HashAndMapToSignature([]byte(msgTbl[i])))
+	}
+	if !VerifyPairing(aggSign, hashPt, pub) {
+		t.Errorf("aggregate2")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -373,6 +409,8 @@ func test(t *testing.T, c int) {
 	testOrder(t, c)
 	testDHKeyExchange(t)
 	testSerializeToHexStr(t)
+	testPairing(t)
+	testAggregate2(t)
 }
 
 func TestMain(t *testing.T) {
