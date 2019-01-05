@@ -150,6 +150,13 @@ ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
 -include $(DEPEND_FILE)
 
+PREFIX?=/usr/local
+install: lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.$(LIB_SUF) lib/libbls384_256.a lib/libbls384_256.$(LIB_SUF)
+	$(MKDIR) $(PREFIX)/include/bls
+	cp -a include/bls/ $(PREFIX)/include/
+	$(MKDIR) $(PREFIX)/lib
+	cp -a lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.$(LIB_SUF) lib/libbls384_256.a lib/libbls384_256.$(LIB_SUF) $(PREFIX)/lib/
+
 .PHONY: test bls-wasm
 
 # don't remove these files automatically
