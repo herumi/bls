@@ -1,14 +1,13 @@
 package bls
 
 /*
-#cgo CFLAGS:-I../../../include -I../../../../mcl/include/
 #cgo bn256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=4
 #cgo bn256 LDFLAGS:-lbls256
 #cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #cgo bn384 LDFLAGS:-lbls384
 #cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
 #cgo bn384_256 LDFLAGS:-lbls384_256
-#cgo LDFLAGS:-L../../../lib -lbls384
+#cgo LDFLAGS:-lbls384
 #cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
 #include "config.h"
 #include <bls/bls.h>
@@ -331,4 +330,20 @@ func (sign *Sign) VerifyPop(pub *PublicKey) bool {
 func DHKeyExchange(sec *SecretKey, pub *PublicKey) (out PublicKey) {
 	C.blsDHKeyExchange(out.getPointer(), sec.getPointer(), pub.getPointer())
 	return out
+}
+
+// HashAndMapToSignature --
+func HashAndMapToSignature(buf []byte) *Sign {
+	sig := new(Sign)
+	err := sig.v.HashAndMapTo(buf)
+	if err == nil {
+		return sig
+	} else {
+		return nil
+	}
+}
+
+// VerifyPairing --
+func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
+	return C.blsVerifyPairing(X.getPointer(), Y.getPointer(), pub.getPointer()) == 1
 }

@@ -16,7 +16,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
-* (Break backward compatibility) The suffix `_dy` of library name is removed.
+* (Break backward compatibility) The suffix `_dy` of library name is removed and bls\*.a requires libmcl.so set LD_LIBRARY_PATH to the directory.
 * -tags option for Go bindings
     * -tags bn256
     * -tags bn384\_256
