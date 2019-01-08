@@ -347,3 +347,21 @@ func HashAndMapToSignature(buf []byte) *Sign {
 func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
 	return C.blsVerifyPairing(X.getPointer(), Y.getPointer(), pub.getPointer()) == 1
 }
+
+// SignHash --
+func (sec *SecretKey) SignHash(hash []byte) (sign *Sign) {
+	sign = new(Sign)
+	// #nosec
+	err := C.blsSignHash(sign.getPointer(), sec.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash)))
+	if err == 0 {
+		return sign
+	} else {
+		return nil
+	}
+}
+
+// VerifyHash --
+func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
+	// #nosec
+	return C.blsVerifyHash(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash))) == 1
+}

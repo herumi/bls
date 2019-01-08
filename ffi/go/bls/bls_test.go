@@ -2,6 +2,8 @@ package bls
 
 import "testing"
 import "strconv"
+import "crypto/sha256"
+import "crypto/sha512"
 
 var unitN = 0
 
@@ -392,6 +394,33 @@ func testAggregate2(t *testing.T) {
 	}
 }
 
+func testHash(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	pub := sec.GetPublicKey()
+	m := "abc"
+	var h []byte
+	if GetOpUnitSize() == 4 {
+		d := sha256.Sum256([]byte(m))
+		h = d[:]
+	} else {
+		// use SHA512 if bitSize > 256
+		d := sha512.Sum512([]byte(m))
+		h = d[:]
+	}
+	sig1 := sec.Sign(m)
+	sig2 := sec.SignHash(h)
+	if !sig1.IsEqual(sig2) {
+		t.Errorf("SignHash")
+	}
+	if !sig1.Verify(pub, m) {
+		t.Errorf("sig1.Verify")
+	}
+	if !sig2.VerifyHash(pub, h) {
+		t.Errorf("sig2.VerifyHash")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -411,6 +440,7 @@ func test(t *testing.T, c int) {
 	testSerializeToHexStr(t)
 	testPairing(t)
 	testAggregate2(t)
+	testHash(t)
 }
 
 func TestMain(t *testing.T) {
