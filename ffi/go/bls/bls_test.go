@@ -4,6 +4,7 @@ import "testing"
 import "strconv"
 import "crypto/sha256"
 import "crypto/sha512"
+import "fmt"
 
 var unitN = 0
 
@@ -370,7 +371,7 @@ func testPairing(t *testing.T) {
 	}
 }
 
-func testAggregate2(t *testing.T) {
+func testAggregate(t *testing.T) {
 	var sec SecretKey
 	sec.SetByCSPRNG()
 	pub := sec.GetPublicKey()
@@ -394,20 +395,23 @@ func testAggregate2(t *testing.T) {
 	}
 }
 
+func Hash(buf []byte) []byte {
+	if GetOpUnitSize() == 4 {
+		d := sha256.Sum256([]byte(buf))
+		return d[:]
+	} else {
+		// use SHA512 if bitSize > 256
+		d := sha512.Sum512([]byte(buf))
+		return d[:]
+	}
+}
+
 func testHash(t *testing.T) {
 	var sec SecretKey
 	sec.SetByCSPRNG()
 	pub := sec.GetPublicKey()
 	m := "abc"
-	var h []byte
-	if GetOpUnitSize() == 4 {
-		d := sha256.Sum256([]byte(m))
-		h = d[:]
-	} else {
-		// use SHA512 if bitSize > 256
-		d := sha512.Sum512([]byte(m))
-		h = d[:]
-	}
+	h := Hash([]byte(m))
 	sig1 := sec.Sign(m)
 	sig2 := sec.SignHash(h)
 	if !sig1.IsEqual(sig2) {
@@ -418,6 +422,29 @@ func testHash(t *testing.T) {
 	}
 	if !sig2.VerifyHash(pub, h) {
 		t.Errorf("sig2.VerifyHash")
+	}
+}
+
+func testAggregateHashes(t *testing.T) {
+	n := 1000
+	pubVec := make([]PublicKey, n)
+	sigVec := make([]*Sign, n)
+	h := make([][]byte, n)
+	for i := 0; i < n; i++ {
+		sec := new(SecretKey)
+		sec.SetByCSPRNG()
+		pubVec[i] = *sec.GetPublicKey()
+		m := fmt.Sprintf("abc-%d", i)
+		h[i] = Hash([]byte(m))
+		sigVec[i] = sec.SignHash(h[i])
+	}
+	// aggregate sig
+	sig := sigVec[0]
+	for i := 1; i < n; i++ {
+		sig.Add(sigVec[i])
+	}
+	if !sig.VerifyAggregateHashes(pubVec, h) {
+		t.Errorf("sig.VerifyAggregateHashes")
 	}
 }
 
@@ -439,8 +466,9 @@ func test(t *testing.T, c int) {
 	testDHKeyExchange(t)
 	testSerializeToHexStr(t)
 	testPairing(t)
-	testAggregate2(t)
+	testAggregate(t)
 	testHash(t)
+	testAggregateHashes(t)
 }
 
 func TestMain(t *testing.T) {

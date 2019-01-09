@@ -365,3 +365,22 @@ func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
 	// #nosec
 	return C.blsVerifyHash(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash))) == 1
 }
+
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// VerifyAggregateHashes --
+func (sign *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
+	hashByte := GetOpUnitSize() * 8
+	n := len(hash)
+	h := make([]byte, n*hashByte)
+	for i := 0; i < n; i++ {
+		hn := len(hash[i])
+		copy(h[i*hashByte:(i+1)*hashByte], hash[i][0:Min(hn, hashByte)])
+	}
+	return C.blsVerifyAggregatedHashes(sign.getPointer(), pubVec[0].getPointer(), unsafe.Pointer(&h[0]), C.size_t(hashByte), C.size_t(n)) == 1
+}
