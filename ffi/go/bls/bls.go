@@ -229,6 +229,11 @@ func (pub *PublicKey) Add(rhs *PublicKey) {
 	G2Add(&pub.v, &pub.v, &rhs.v)
 }
 
+// Sub --
+func (pub *PublicKey) Sub(rhs *PublicKey) {
+	G2Sub(&pub.v, &pub.v, &rhs.v)
+}
+
 // Set --
 func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
 	// #nosec
