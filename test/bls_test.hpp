@@ -461,6 +461,41 @@ void verifyAggregateTest()
 	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
 }
 
+unsigned int writeSeq(void *self, void *buf, unsigned int bufSize)
+{
+	int& seq = *(int*)self;
+	char *p = (char *)buf;
+	for (unsigned int i = 0; i < bufSize; i++) {
+		p[i] = char(seq++);
+	}
+	return bufSize;
+}
+
+void setRandFuncTest()
+{
+	blsSecretKey sec;
+	const int seqInit1 = 5;
+	int seq = seqInit1;
+	blsSetRandFunc(&seq, writeSeq);
+	blsSecretKeySetByCSPRNG(&sec);
+	unsigned char buf[128];
+	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
+	CYBOZU_TEST_ASSERT(n > 0);
+	for (size_t i = 0; i < n; i++) {
+		CYBOZU_TEST_EQUAL(buf[i], seqInit1 + i);
+	}
+	// use default CSPRNG
+	blsSetRandFunc(0, 0);
+	blsSecretKeySetByCSPRNG(&sec);
+	n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
+	CYBOZU_TEST_ASSERT(n > 0);
+	printf("sec=");
+	for (size_t i = 0; i < n; i++) {
+		printf("%02x", buf[i]);
+	}
+	printf("\n");
+}
+
 void testAll()
 {
 	blsTest();
@@ -470,6 +505,7 @@ void testAll()
 	dataTest();
 	aggregateTest();
 	verifyAggregateTest();
+	setRandFuncTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
