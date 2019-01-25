@@ -14,12 +14,19 @@ package bls
 */
 import "C"
 import "fmt"
+import "log"
 import "unsafe"
 
-// Init --
+func init() {
+	if err := initializeBLS(BLS12_381); err != nil {
+		log.Fatalf("Could not initialize BLS12-381 curve: %v", err)
+	}
+}
+
+// initializeBLS --
 // call this function before calling all the other operations
 // this function is not thread safe
-func Init(curve int) error {
+func initializeBLS(curve int) error {
 	err := C.blsInit(C.int(curve), C.MCLBN_COMPILED_TIME_VAR)
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
