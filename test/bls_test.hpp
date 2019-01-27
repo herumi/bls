@@ -481,7 +481,8 @@ void setRandFuncTest()
 	unsigned char buf[128];
 	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
 	CYBOZU_TEST_ASSERT(n > 0);
-	for (size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < n - 1; i++) {
+		// ommit buf[n - 1] because it may be masked
 		CYBOZU_TEST_EQUAL(buf[i], seqInit1 + i);
 	}
 	// use default CSPRNG

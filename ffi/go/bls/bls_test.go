@@ -468,7 +468,8 @@ func testReadRand(t *testing.T) {
 	sec.SetByCSPRNG()
 	buf := sec.GetLittleEndian()
 	fmt.Printf("(SeqRead) buf=%x\n", buf)
-	for i := 0; i < len(buf); i++ {
+	for i := 0; i < len(buf) - 1; i++ {
+		// ommit buf[len(buf) - 1] because it may be masked
 		if buf[i] != byte(i) {
 			t.Fatal("buf")
 		}
