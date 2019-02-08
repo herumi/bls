@@ -5,7 +5,6 @@ import "strconv"
 import "crypto/sha256"
 import "crypto/sha512"
 import "fmt"
-import "io"
 import "crypto/rand"
 
 var unitN = 0
@@ -462,8 +461,8 @@ func (self *SeqRead) Read(buf []byte) (int, error) {
 }
 
 func testReadRand(t *testing.T) {
-	var s1 io.Reader = &SeqRead{}
-	SetRandFunc(&s1)
+	s1 := new(SeqRead)
+	SetRandFunc(s1)
 	var sec SecretKey
 	sec.SetByCSPRNG()
 	buf := sec.GetLittleEndian()
@@ -474,7 +473,7 @@ func testReadRand(t *testing.T) {
 			t.Fatal("buf")
 		}
 	}
-	SetRandFunc(&rand.Reader)
+	SetRandFunc(rand.Reader)
 	sec.SetByCSPRNG()
 	buf = sec.GetLittleEndian()
 	fmt.Printf("(rand.Reader) buf=%x\n", buf)

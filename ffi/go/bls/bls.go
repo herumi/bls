@@ -390,7 +390,7 @@ func (sign *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool 
 
 ///
 
-var s_randReader *io.Reader
+var s_randReader io.Reader
 
 func createSlice(buf *C.char, n C.uint) []byte {
 	size := int(n)
@@ -401,7 +401,7 @@ func createSlice(buf *C.char, n C.uint) []byte {
 //export wrapReadRandGo
 func wrapReadRandGo(buf *C.char, n C.uint) C.uint {
 	slice := createSlice(buf, n)
-	ret, err := (*s_randReader).Read(slice)
+	ret, err := s_randReader.Read(slice)
 	if ret == int(n) && err == nil {
 		return n
 	}
@@ -409,7 +409,7 @@ func wrapReadRandGo(buf *C.char, n C.uint) C.uint {
 }
 
 // SetRandFunc --
-func SetRandFunc(randReader *io.Reader) {
+func SetRandFunc(randReader io.Reader) {
 	s_randReader = randReader
 	if randReader != nil {
 		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(C.wrapReadRandCgo)))
