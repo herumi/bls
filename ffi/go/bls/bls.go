@@ -323,6 +323,9 @@ func (sign *Sign) Verify(pub *PublicKey, m string) bool {
 
 // VerifyPop --
 func (sign *Sign) VerifyPop(pub *PublicKey) bool {
+	if pub.getPointer() == nil {
+		return false
+	}
 	return C.blsVerifyPop(sign.getPointer(), pub.getPointer()) == 1
 }
 
@@ -345,6 +348,9 @@ func HashAndMapToSignature(buf []byte) *Sign {
 
 // VerifyPairing --
 func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
+	if X.getPointer() == nil || Y.getPointer() == nil || pub.getPointer() == nil {
+		return false
+	}
 	return C.blsVerifyPairing(X.getPointer(), Y.getPointer(), pub.getPointer()) == 1
 }
 
@@ -363,6 +369,9 @@ func (sec *SecretKey) SignHash(hash []byte) (sign *Sign) {
 // VerifyHash --
 func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
 	// #nosec
+	if pub.getPointer() == nil {
+		return false
+	}
 	return C.blsVerifyHash(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash))) == 1
 }
 
@@ -381,6 +390,9 @@ func (sign *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool 
 	for i := 0; i < n; i++ {
 		hn := len(hash[i])
 		copy(h[i*hashByte:(i+1)*hashByte], hash[i][0:Min(hn, hashByte)])
+	}
+	if pubVec[0].getPointer() == nil {
+		return false
 	}
 	return C.blsVerifyAggregatedHashes(sign.getPointer(), pubVec[0].getPointer(), unsafe.Pointer(&h[0]), C.size_t(hashByte), C.size_t(n)) == 1
 }
