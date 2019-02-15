@@ -371,10 +371,10 @@ func (sec *SecretKey) SignHash(hash []byte) (sign *Sign) {
 
 // VerifyHash --
 func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
-	// #nosec
 	if pub.getPointer() == nil {
 		return false
 	}
+	// #nosec
 	return C.blsVerifyHash(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash))) == 1
 }
 
