@@ -1,0 +1,4 @@
+lib/*.a
+lib/*.dylib
+obj/*.d
+obj/*.o
