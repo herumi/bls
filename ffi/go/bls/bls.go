@@ -73,6 +73,9 @@ func (id *ID) SetDecString(s string) error {
 
 // IsEqual --
 func (id *ID) IsEqual(rhs *ID) bool {
+	if id == nil || rhs == nil {
+		return false
+	}
 	return id.v.IsEqual(&rhs.v)
 }
 
@@ -129,6 +132,9 @@ func (sec *SecretKey) SetDecString(s string) error {
 
 // IsEqual --
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
+	if sec == nil || rhs == nil {
+		return false
+	}
 	return sec.v.IsEqual(&rhs.v)
 }
 
@@ -224,6 +230,9 @@ func (pub *PublicKey) SetHexString(s string) error {
 
 // IsEqual --
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
+	if pub == nil || rhs == nil {
+		return false
+	}
 	return pub.v.IsEqual(&rhs.v)
 }
 
@@ -287,6 +296,9 @@ func (sign *Sign) SetHexString(s string) error {
 
 // IsEqual --
 func (sign *Sign) IsEqual(rhs *Sign) bool {
+	if sign == nil || rhs == nil {
+		return false
+	}
 	return sign.v.IsEqual(&rhs.v)
 }
 
