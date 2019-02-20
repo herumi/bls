@@ -5,6 +5,7 @@ import "strconv"
 import "crypto/sha256"
 import "crypto/sha512"
 import "fmt"
+import "crypto/rand"
 
 var unitN = 0
 
@@ -448,6 +449,40 @@ func testAggregateHashes(t *testing.T) {
 	}
 }
 
+type SeqRead struct {
+}
+
+func (self *SeqRead) Read(buf []byte) (int, error) {
+	n := len(buf)
+	for i := 0; i < n; i++ {
+		buf[i] = byte(i)
+	}
+	return n, nil
+}
+
+func testReadRand(t *testing.T) {
+	s1 := new(SeqRead)
+	SetRandFunc(s1)
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	buf := sec.GetLittleEndian()
+	fmt.Printf("(SeqRead) buf=%x\n", buf)
+	for i := 0; i < len(buf)-1; i++ {
+		// ommit buf[len(buf) - 1] because it may be masked
+		if buf[i] != byte(i) {
+			t.Fatal("buf")
+		}
+	}
+	SetRandFunc(rand.Reader)
+	sec.SetByCSPRNG()
+	buf = sec.GetLittleEndian()
+	fmt.Printf("(rand.Reader) buf=%x\n", buf)
+	SetRandFunc(nil)
+	sec.SetByCSPRNG()
+	buf = sec.GetLittleEndian()
+	fmt.Printf("(default) buf=%x\n", buf)
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -455,6 +490,7 @@ func test(t *testing.T, c int) {
 	}
 	unitN = GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
+	testReadRand(t)
 	testPre(t)
 	testRecoverSecretKey(t)
 	testAdd(t)

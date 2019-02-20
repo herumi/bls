@@ -259,6 +259,16 @@ void k_of_nTest()
 			CYBOZU_TEST_ASSERT(sig != sig0);
 		}
 	}
+	// return same value if n = 1
+	sigVec.resize(1);
+	idVec.resize(1);
+	sigVec[0] = allSigVec[0];
+	idVec[0] = allIdVec[0];
+	{
+		bls::Signature sig;
+		sig.recover(sigVec, idVec);
+		CYBOZU_TEST_EQUAL(sig, sigVec[0]);
+	}
 	// share and recover publicKey
 	{
 		bls::PublicKeyVec pubVec(k);
@@ -461,6 +471,42 @@ void verifyAggregateTest()
 	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
 }
 
+unsigned int writeSeq(void *self, void *buf, unsigned int bufSize)
+{
+	int& seq = *(int*)self;
+	char *p = (char *)buf;
+	for (unsigned int i = 0; i < bufSize; i++) {
+		p[i] = char(seq++);
+	}
+	return bufSize;
+}
+
+void setRandFuncTest()
+{
+	blsSecretKey sec;
+	const int seqInit1 = 5;
+	int seq = seqInit1;
+	blsSetRandFunc(&seq, writeSeq);
+	blsSecretKeySetByCSPRNG(&sec);
+	unsigned char buf[128];
+	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
+	CYBOZU_TEST_ASSERT(n > 0);
+	for (size_t i = 0; i < n - 1; i++) {
+		// ommit buf[n - 1] because it may be masked
+		CYBOZU_TEST_EQUAL(buf[i], seqInit1 + i);
+	}
+	// use default CSPRNG
+	blsSetRandFunc(0, 0);
+	blsSecretKeySetByCSPRNG(&sec);
+	n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
+	CYBOZU_TEST_ASSERT(n > 0);
+	printf("sec=");
+	for (size_t i = 0; i < n; i++) {
+		printf("%02x", buf[i]);
+	}
+	printf("\n");
+}
+
 void testAll()
 {
 	blsTest();
@@ -470,6 +516,7 @@ void testAll()
 	dataTest();
 	aggregateTest();
 	verifyAggregateTest();
+	setRandFuncTest();
 }
 CYBOZU_TEST_AUTO(all)
 {

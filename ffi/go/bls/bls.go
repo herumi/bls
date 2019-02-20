@@ -10,11 +10,14 @@ package bls
 #cgo LDFLAGS:-lbls384
 #cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
 #include "config.h"
+typedef unsigned int (*ReadRandFunc)(void *, void *, unsigned int);
+int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
 */
 import "C"
 import "fmt"
 import "unsafe"
+import "io"
 
 // Init --
 // call this function before calling all the other operations
@@ -70,7 +73,7 @@ func (id *ID) SetDecString(s string) error {
 
 // IsEqual --
 func (id *ID) IsEqual(rhs *ID) bool {
-	if rhs == nil {
+	if id == nil || rhs == nil {
 		return false
 	}
 	return id.v.IsEqual(&rhs.v)
@@ -129,7 +132,7 @@ func (sec *SecretKey) SetDecString(s string) error {
 
 // IsEqual --
 func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
-	if rhs == nil {
+	if sec == nil || rhs == nil {
 		return false
 	}
 	return sec.v.IsEqual(&rhs.v)
@@ -227,7 +230,7 @@ func (pub *PublicKey) SetHexString(s string) error {
 
 // IsEqual --
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
-	if rhs == nil {
+	if pub == nil || rhs == nil {
 		return false
 	}
 	return pub.v.IsEqual(&rhs.v)
@@ -298,7 +301,7 @@ func (sign *Sign) SetHexString(s string) error {
 
 // IsEqual --
 func (sign *Sign) IsEqual(rhs *Sign) bool {
-	if rhs == nil {
+	if sign == nil || rhs == nil {
 		return false
 	}
 	return sign.v.IsEqual(&rhs.v)
@@ -385,6 +388,9 @@ func (sec *SecretKey) SignHash(hash []byte) (sign *Sign) {
 
 // VerifyHash --
 func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
+	if pub.getPointer() == nil {
+		return false
+	}
 	// #nosec
 	if pub.getPointer() == nil {
 		return false
@@ -412,4 +418,35 @@ func (sign *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool 
 		return false
 	}
 	return C.blsVerifyAggregatedHashes(sign.getPointer(), pubVec[0].getPointer(), unsafe.Pointer(&h[0]), C.size_t(hashByte), C.size_t(n)) == 1
+}
+
+///
+
+var s_randReader io.Reader
+
+func createSlice(buf *C.char, n C.uint) []byte {
+	size := int(n)
+	return (*[1 << 30]byte)(unsafe.Pointer(buf))[:size:size]
+}
+
+// this function can't be put in callback.go
+//export wrapReadRandGo
+func wrapReadRandGo(buf *C.char, n C.uint) C.uint {
+	slice := createSlice(buf, n)
+	ret, err := s_randReader.Read(slice)
+	if ret == int(n) && err == nil {
+		return n
+	}
+	return 0
+}
+
+// SetRandFunc --
+func SetRandFunc(randReader io.Reader) {
+	s_randReader = randReader
+	if randReader != nil {
+		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(C.wrapReadRandCgo)))
+	} else {
+		// use default random generator
+		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(nil)))
+	}
 }
