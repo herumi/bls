@@ -259,6 +259,16 @@ void k_of_nTest()
 			CYBOZU_TEST_ASSERT(sig != sig0);
 		}
 	}
+	// return same value if n = 1
+	sigVec.resize(1);
+	idVec.resize(1);
+	sigVec[0] = allSigVec[0];
+	idVec[0] = allIdVec[0];
+	{
+		bls::Signature sig;
+		sig.recover(sigVec, idVec);
+		CYBOZU_TEST_EQUAL(sig, sigVec[0]);
+	}
 	// share and recover publicKey
 	{
 		bls::PublicKeyVec pubVec(k);

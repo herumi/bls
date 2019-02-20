@@ -320,6 +320,36 @@ void blsAddSubTest()
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig[2], &sig[0]));
 }
 
+void blsTrivialShareTest()
+{
+	blsSecretKey sec1, sec2;
+	blsPublicKey pub1, pub2;
+	blsId id;
+	blsIdSetInt(&id, 123);
+
+	blsSecretKeySetByCSPRNG(&sec1);
+	blsGetPublicKey(&pub1, &sec1);
+	int ret;
+
+	memset(&sec2, 0, sizeof(sec2));
+	ret = blsSecretKeyShare(&sec2, &sec1, 1, &id);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
+	memset(&sec2, 0, sizeof(sec2));
+	ret = blsSecretKeyRecover(&sec2, &sec1, &id, 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
+
+	memset(&pub2, 0, sizeof(pub2));
+	ret = blsPublicKeyShare(&pub2, &pub1, 1, &id);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
+	memset(&pub2, 0, sizeof(pub2));
+	ret = blsPublicKeyRecover(&pub2, &pub1, &id, 1);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
+}
+
 void blsBench()
 {
 	blsSecretKey sec;
@@ -377,6 +407,7 @@ CYBOZU_TEST_AUTO(all)
 		blsSerializeTest();
 		if (tbl[i].curveType == MCL_BLS12_381) blsVerifyOrderTest();
 		blsAddSubTest();
+		blsTrivialShareTest();
 		blsBench();
 	}
 }
