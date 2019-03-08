@@ -87,6 +87,9 @@ BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 // return 0 if success
 // mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
 BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize);
+// return 0 if success (bufSize <= 64) else -1
+// set (buf mod r) to sec
+BLS_DLL_API int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize);
 
 BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 

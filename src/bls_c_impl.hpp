@@ -163,6 +163,12 @@ int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufS
 	cast(&sec->v)->setArrayMask((const char *)buf, bufSize);
 	return 0;
 }
+int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize)
+{
+	bool b;
+	cast(&sec->v)->setArray(&b, (const char *)buf, bufSize, mcl::fp::Mod);
+	return b ? 0 : -1;
+}
 
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
