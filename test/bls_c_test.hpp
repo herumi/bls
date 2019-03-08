@@ -353,17 +353,15 @@ void blsTrivialShareTest()
 
 void modTest(const char *rStr)
 {
-	std::cout << std::hex;
 	unsigned char buf[1024] = {};
 	int ret;
 	blsSecretKey sec;
-	const size_t pos = 63;
-	buf[pos] = 0xff;
-	mpz_class x = mpz_class(buf[pos]) << (pos * 8);
-	ret = blsSecretKeySetLittleEndianMod(&sec, buf, pos + 1);
+	const size_t maxByte = 64; // 512-bit
+	memset(buf, 0xff, maxByte);
+	ret = blsSecretKeySetLittleEndianMod(&sec, buf, maxByte);
 	CYBOZU_TEST_EQUAL(ret, 0);
-	mpz_class r(rStr);
-	x %= r;
+	const mpz_class x = (mpz_class(1) << (maxByte * 8)) - 1; // 512-bit 0xff....ff
+	const mpz_class r(rStr);
 	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
 	CYBOZU_TEST_ASSERT(n > 0);
 	// serialized data to mpz_class
@@ -372,7 +370,7 @@ void modTest(const char *rStr)
 		y <<= 8;
 		y += buf[n - 1 - i];
 	}
-	CYBOZU_TEST_EQUAL(x, y);
+	CYBOZU_TEST_EQUAL(y, x % r);
 }
 
 void blsBench()
