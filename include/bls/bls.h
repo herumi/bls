@@ -84,8 +84,9 @@ BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
 
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 
-// return 0 if success
-// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
+// sec = buf & (1 << bitLen(r)) - 1
+// if (sec >= r) sec &= (1 << (bitLen(r) - 1)) - 1
+// always return 0
 BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize);
 // return 0 if success (bufSize <= 64) else -1
 // set (buf mod r) to sec
