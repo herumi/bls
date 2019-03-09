@@ -258,6 +258,13 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 	return G2LagrangeInterpolation(&pub.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G2)(unsafe.Pointer(&pubVec)))
 }
 
+// GetAddress --
+func (pub *PublicKey) GetAddress() [20]byte {
+	address := [20]byte{}
+	copy(address[:], sha256.Sum256(pub.Serialize()[:20]))
+	return address
+}
+
 // Sign  --
 type Sign struct {
 	v G1
