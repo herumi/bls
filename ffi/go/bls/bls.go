@@ -18,6 +18,7 @@ import "C"
 import "fmt"
 import "unsafe"
 import "io"
+import "crypto/sha256"
 
 // Init --
 // call this function before calling all the other operations
@@ -261,7 +262,8 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 // GetAddress --
 func (pub *PublicKey) GetAddress() [20]byte {
 	address := [20]byte{}
-	copy(address[:], sha256.Sum256(pub.Serialize()[:20]))
+	hash := sha256.Sum256(pub.Serialize())
+	copy(address[:], hash[:20])
 	return address
 }
 
