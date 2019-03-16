@@ -15,6 +15,7 @@ int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
 */
 import "C"
+import "errors"
 import "fmt"
 import "unsafe"
 import "io"
@@ -146,6 +147,9 @@ func (sec *SecretKey) SetByCSPRNG() {
 
 // Add --
 func (sec *SecretKey) Add(rhs *SecretKey) {
+	if sec == nil || rhs == nil {
+		return
+	}
 	FrAdd(&sec.v, &sec.v, &rhs.v)
 }
 
@@ -201,31 +205,49 @@ func (pub *PublicKey) getPointer() (p *C.blsPublicKey) {
 
 // Serialize --
 func (pub *PublicKey) Serialize() []byte {
+	if pub == nil {
+		return []byte{}
+	}
 	return pub.v.Serialize()
 }
 
 // Deserialize --
 func (pub *PublicKey) Deserialize(buf []byte) error {
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
 	return pub.v.Deserialize(buf)
 }
 
 // SerializeToHexStr --
 func (pub *PublicKey) SerializeToHexStr() string {
+	if pub == nil {
+		return ""
+	}
 	return pub.v.GetString(IoSerializeHexStr)
 }
 
 // DeserializeHexStr --
 func (pub *PublicKey) DeserializeHexStr(s string) error {
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
 	return pub.v.SetString(s, IoSerializeHexStr)
 }
 
 // GetHexString --
 func (pub *PublicKey) GetHexString() string {
+	if pub == nil {
+		return ""
+	}
 	return pub.v.GetString(16)
 }
 
 // SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
 	return pub.v.SetString(s, 16)
 }
 
@@ -239,11 +261,17 @@ func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
 
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
+	if pub == nil || rhs == nil {
+		return
+	}
 	G2Add(&pub.v, &pub.v, &rhs.v)
 }
 
 // Sub --
 func (pub *PublicKey) Sub(rhs *PublicKey) {
+	if pub == nil || rhs == nil {
+		return
+	}
 	G2Sub(&pub.v, &pub.v, &rhs.v)
 }
 
@@ -280,31 +308,49 @@ func (sign *Sign) getPointer() (p *C.blsSignature) {
 
 // Serialize --
 func (sign *Sign) Serialize() []byte {
+	if sign == nil {
+		return []byte{}
+	}
 	return sign.v.Serialize()
 }
 
 // Deserialize --
 func (sign *Sign) Deserialize(buf []byte) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
 	return sign.v.Deserialize(buf)
 }
 
 // SerializeToHexStr --
 func (sign *Sign) SerializeToHexStr() string {
+	if sign == nil {
+		return ""
+	}
 	return sign.v.GetString(IoSerializeHexStr)
 }
 
 // DeserializeHexStr --
 func (sign *Sign) DeserializeHexStr(s string) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
 	return sign.v.SetString(s, IoSerializeHexStr)
 }
 
 // GetHexString --
 func (sign *Sign) GetHexString() string {
+	if sign == nil {
+		return ""
+	}
 	return sign.v.GetString(16)
 }
 
 // SetHexString --
 func (sign *Sign) SetHexString(s string) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
 	return sign.v.SetString(s, 16)
 }
 
