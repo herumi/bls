@@ -3,7 +3,7 @@
 #include <bls/bls.h>
 #include <string.h>
 #include <cybozu/benchmark.hpp>
-#include <gmpxx.h>
+#include <mcl/gmp_util.hpp>
 
 size_t pubSize(size_t FrSize)
 {
