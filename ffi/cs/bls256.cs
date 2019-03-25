@@ -5,9 +5,11 @@ using System.Runtime.InteropServices;
 namespace mcl {
 	class BLS256 {
 		const int IoEcComp = 512; // fixed byte representation
-		public const int maxUnitSize = 4;
+        public const int MCLBN_FR_UNIT_SIZE = 4;
+        public const int MCLBN_FP_UNIT_SIZE = 4;
+        public const int MCLBN_COMPILED_TIME_VAR = MCLBN_FR_UNIT_SIZE * 10 + MCLBN_FP_UNIT_SIZE;
 		[DllImport("bls256.dll")]
-		public static extern int blsInit(int curve, int maxUnitSize);
+		public static extern int blsInit(int curve, int compiledTimeVar);
 
 		[DllImport("bls256.dll")] public static extern void blsIdSetInt(ref Id id, int x);
 		[DllImport("bls256.dll")] public static extern int blsIdSetDecStr(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
@@ -98,7 +100,7 @@ namespace mcl {
 			if (!System.Environment.Is64BitProcess) {
 				throw new PlatformNotSupportedException("not 64-bit system");
 			}
-			int err = blsInit(CurveFp254BNb, maxUnitSize);
+			int err = blsInit(CurveFp254BNb, MCLBN_COMPILED_TIME_VAR);
 			if (err != 0) {
 				throw new ArgumentException("blsInit");
 			}
