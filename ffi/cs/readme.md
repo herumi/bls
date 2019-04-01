@@ -182,4 +182,4 @@ http://opensource.org/licenses/BSD-3-Clause
 
 # Author
 
-MITSUNARI Shigeo(herumi@nifty.com)
+(C)2019 MITSUNARI Shigeo(herumi@nifty.com) All rights reserved.

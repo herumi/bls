@@ -183,4 +183,6 @@ http://opensource.org/licenses/BSD-3-Clause
 
 # 著者
 
-光成滋生 MITSUNARI Shigeo(herumi@nifty.com)
+(C)2019 光成滋生 MITSUNARI Shigeo(herumi@nifty.com) All rights reserved.
+本コンテンツの著作権、および本コンテンツ中に出てくる商標権、団体名、ロゴ、製品、
+サービスなどはそれぞれ、各権利保有者に帰属します
