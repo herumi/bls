@@ -18,7 +18,7 @@ git clone https://github.com/herumi/bls
 cd bls
 mklib dll
 ```
-としてbls/binにDLLを作成する。
+`bls/bin/*.dll`が作成される。
 
 # サンプルのビルド方法
 
@@ -123,6 +123,58 @@ bls/ffi/cs/bls.slnを開いて実行する。
     * 16進数文字列を設定する。
 * `string GetHexStr();`
     * 16進数表記を取得する。
+
+## 使い方
+
+### 最小サンプル
+
+```
+using static BLS;
+
+Init(BN254); // ライブラリ初期化
+SecretKey sec;
+sec.SetByCSPRNG(); // 秘密鍵の初期化
+PublicKey pub = sec.GetPublicKey(); // 公開鍵の取得
+string m = "abc";
+Signature sig = sec.Sign(m); // 署名の作成
+if (pub.Verify(sig, m))) {
+  // 署名の確認
+}
+```
+
+### 集約署名
+```
+Init(BN254); // ライブラリ初期化
+const int n = 10;
+const string m = "abc";
+SecretKey[] secVec = new SecretKey[n];
+PublicKey[] pubVec = new PublicKey[n];
+Signature[] popVec = new Signature[n];
+Signature[] sigVec = new Signature[n];
+
+for (int i = 0; i < n; i++) {
+  secVec[i].SetByCSPRNG(); // 秘密鍵の初期化
+  pubVec[i] = secVec[i].GetPublicKey(); // 公開鍵の取得
+  popVec[i] = secVec[i].GetPop(); // 所有(PoP)の証明
+  sigVec[i] = secVec[i].Sign(m); // 署名
+}
+
+SecretKey secAgg;
+PublicKey pubAgg;
+Signature sigAgg;
+for (int i = 0; i < n; i++) {
+  // PoPの確認
+  if (pubVec[i].VerifyPop(popVec[i]))) {
+    // エラー
+    return;
+  }
+  pubAgg.Add(pubVec[i]); // 公開鍵の集約
+  sigAgg.Add(sigVec[i]); // 署名の集約
+}
+if (pubAgg.Verify(sigAgg, m)) {
+  // 署名の確認
+}
+```
 
 # ライセンス
 

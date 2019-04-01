@@ -17,6 +17,7 @@ git clone https://github.com/herumi/bls
 cd bls
 mklib dll
 ```
+bls/bin/*.dll are created
 
 # How to build a sample
 
@@ -121,6 +122,58 @@ Identifier class
     * get a decimal string
 * `string GetHexStr();`
     * get a hexadecimal string
+
+## How to use
+
+### A minimum sample
+
+```
+using static BLS;
+
+Init(BN254); // init library
+SecretKey sec;
+sec.SetByCSPRNG(); // init secret key
+PublicKey pub = sec.GetPublicKey(); // get public key
+string m = "abc";
+Signature sig = sec.Sign(m); // create signature
+if (pub.Verify(sig, m))) {
+  // signature is verified
+}
+```
+
+### Aggregate signature
+```
+Init(BN254); // init library
+const int n = 10;
+const string m = "abc";
+SecretKey[] secVec = new SecretKey[n];
+PublicKey[] pubVec = new PublicKey[n];
+Signature[] popVec = new Signature[n];
+Signature[] sigVec = new Signature[n];
+
+for (int i = 0; i < n; i++) {
+  secVec[i].SetByCSPRNG(); // init secret key
+  pubVec[i] = secVec[i].GetPublicKey(); // get public key
+  popVec[i] = secVec[i].GetPop(); // get a proof of Possesion (PoP)
+  sigVec[i] = secVec[i].Sign(m); // create signature
+}
+
+SecretKey secAgg;
+PublicKey pubAgg;
+Signature sigAgg;
+for (int i = 0; i < n; i++) {
+  // verify PoP
+  if (pubVec[i].VerifyPop(popVec[i]))) {
+    // error
+    return;
+  }
+  pubAgg.Add(pubVec[i]); // aggregate public key
+  sigAgg.Add(sigVec[i]); // aggregate signature
+}
+if (pubAgg.Verify(sigAgg, m)) {
+  // aggregated signature is verified
+}
+```
 
 # License
 

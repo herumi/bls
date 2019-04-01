@@ -63,7 +63,7 @@ namespace mcl
         }
         static void TestSign() {
             Console.WriteLine("TestSign");
-            SecretKey sec = new SecretKey();
+            SecretKey sec;
             sec.SetByCSPRNG();
             PublicKey pub = sec.GetPublicKey();
             string m = "abc";
@@ -138,14 +138,17 @@ namespace mcl
                 popVec[i] = secVec[i].GetPop();
                 sigVec[i] = secVec[i].Sign(m);
             }
-            for (int i = 1; i < n; i++) {
-                secVec[0].Add(secVec[i]);
+            SecretKey secAgg;
+            PublicKey pubAgg;
+            Signature sigAgg;
+            for (int i = 0; i < n; i++) {
+                secAgg.Add(secVec[i]);
                 assert("verify pop", pubVec[i].VerifyPop(popVec[i]));
-                pubVec[0].Add(pubVec[i]);
-                sigVec[0].Add(sigVec[i]);
+                pubAgg.Add(pubVec[i]);
+                sigAgg.Add(sigVec[i]);
             }
-            assert("aggregate sec", secVec[0].Sign(m).IsEqual(sigVec[0]));
-            assert("aggregate", pubVec[0].Verify(sigVec[0], m));
+            assert("aggregate sec", secAgg.Sign(m).IsEqual(sigAgg));
+            assert("aggregate", pubAgg.Verify(sigAgg, m));
         }
         static void Main(string[] args) {
             try {
