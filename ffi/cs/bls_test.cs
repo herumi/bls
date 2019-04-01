@@ -67,7 +67,7 @@ namespace mcl
             sec.SetByCSPRNG();
             PublicKey pub = sec.GetPublicKey();
             string m = "abc";
-            Signature sig = sec.Signature(m);
+            Signature sig = sec.Sign(m);
             Console.WriteLine("sig={0}", sig.GetHexStr());
             assert("verify", pub.Verify(sig, m));
             assert("not verify", !pub.Verify(sig, m + "a"));
@@ -100,7 +100,7 @@ namespace mcl
             }
             string m = "doremi";
             for (int i = 0; i < n; i++) {
-                Signature Signature = secs[i].Signature(m);
+                Signature Signature = secs[i].Sign(m);
                 assert("Signature.Verify", pubs[i].Verify(Signature, m));
             }
             {
@@ -115,7 +115,7 @@ namespace mcl
                     subIds[i] = ids[idx];
                     subSecs[i] = secs[idx];
                     subPubs[i] = pubs[idx];
-                    subSigns[i] = secs[idx].Signature(m);
+                    subSigns[i] = secs[idx].Sign(m);
                 }
                 SecretKey sec = RecoverSecretKey(subSecs, subIds);
                 PublicKey pub = RecoverPublicKey(subPubs, subIds);
@@ -123,6 +123,29 @@ namespace mcl
                 Signature Signature = RecoverSign(subSigns, subIds);
                 assert("Signature.verify", pub.Verify(Signature, m));
             }
+        }
+        static void TestAggregate() {
+            Console.WriteLine("TestAggregate");
+            const int n = 10;
+            const string m = "abc";
+            SecretKey[] secVec = new SecretKey[n];
+            PublicKey[] pubVec = new PublicKey[n];
+            Signature[] popVec = new Signature[n];
+            Signature[] sigVec = new Signature[n];
+            for (int i = 0; i < n; i++) {
+                secVec[i].SetByCSPRNG();
+                pubVec[i] = secVec[i].GetPublicKey();
+                popVec[i] = secVec[i].GetPop();
+                sigVec[i] = secVec[i].Sign(m);
+            }
+            for (int i = 1; i < n; i++) {
+                secVec[0].Add(secVec[i]);
+                assert("verify pop", pubVec[i].VerifyPop(popVec[i]));
+                pubVec[0].Add(pubVec[i]);
+                sigVec[0].Add(sigVec[i]);
+            }
+            assert("aggregate sec", secVec[0].Sign(m).IsEqual(sigVec[0]));
+            assert("aggregate", pubVec[0].Verify(sigVec[0], m));
         }
         static void Main(string[] args) {
             try {
@@ -135,6 +158,7 @@ namespace mcl
                     TestPublicKey();
                     TestSign();
                     TestSharing();
+                    TestAggregate();
                     if (err == 0) {
                         Console.WriteLine("all tests succeed");
                     } else {

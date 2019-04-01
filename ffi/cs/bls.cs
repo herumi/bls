@@ -213,27 +213,32 @@ namespace mcl
                 }
             }
             public PublicKey GetPublicKey() {
-                PublicKey pub = new PublicKey();
+                PublicKey pub;
                 blsGetPublicKey(ref pub, this);
                 return pub;
             }
-            public Signature Signature(string m) {
-                Signature Signature = new Signature();
-                blsSign(ref Signature, this, m, (ulong)m.Length);
-                return Signature;
+            public Signature Sign(string m) {
+                Signature sig;
+                blsSign(ref sig, this, m, (ulong)m.Length);
+                return sig;
+            }
+            public Signature GetPop() {
+                Signature sig;
+                blsGetPop(ref sig, this);
+                return sig;
             }
         }
         // secretKey = sum_{i=0}^{msk.Length - 1} msk[i] * id^i
         public static SecretKey ShareSecretKey(in SecretKey[] msk, in Id id) {
-            SecretKey sec = new SecretKey();
+            SecretKey sec;
             if (blsSecretKeyShare(ref sec, msk[0], (ulong)msk.Length, id) != 0) {
                 throw new ArgumentException("GetSecretKeyForId:" + id.ToString());
             }
             return sec;
         }
-        public static SecretKey RecoverSecretKey(in SecretKey[] secs, in Id[] ids) {
-            SecretKey sec = new SecretKey();
-            if (blsSecretKeyRecover(ref sec, secs[0], ids[0], (ulong)secs.Length) != 0) {
+        public static SecretKey RecoverSecretKey(in SecretKey[] secVec, in Id[] idVec) {
+            SecretKey sec;
+            if (blsSecretKeyRecover(ref sec, secVec[0], idVec[0], (ulong)secVec.Length) != 0) {
                 throw new ArgumentException("Recover");
             }
             return sec;
@@ -278,18 +283,21 @@ namespace mcl
             public bool Verify(in Signature sig, string m) {
                 return blsVerify(sig, this, m, (ulong)m.Length) == 1;
             }
+            public bool VerifyPop(in Signature pop) {
+                return blsVerifyPop(pop, this) == 1;
+            }
         }
         // publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
         public static PublicKey SharePublicKey(in PublicKey[] mpk, in Id id) {
-            PublicKey pub = new PublicKey();
+            PublicKey pub;
             if (blsPublicKeyShare(ref pub, mpk[0], (ulong)mpk.Length, id) != 0) {
                 throw new ArgumentException("GetPublicKeyForId:" + id.ToString());
             }
             return pub;
         }
-        public static PublicKey RecoverPublicKey(in PublicKey[] pubs, in Id[] ids) {
-            PublicKey pub = new PublicKey();
-            if (blsPublicKeyRecover(ref pub, pubs[0], ids[0], (ulong)pubs.Length) != 0) {
+        public static PublicKey RecoverPublicKey(in PublicKey[] pubVec, in Id[] idVec) {
+            PublicKey pub;
+            if (blsPublicKeyRecover(ref pub, pubVec[0], idVec[0], (ulong)pubVec.Length) != 0) {
                 throw new ArgumentException("Recover");
             }
             return pub;
@@ -332,12 +340,12 @@ namespace mcl
                 blsSignatureAdd(ref this, rhs);
             }
         }
-        public static Signature RecoverSign(in Signature[] signs, in Id[] ids) {
-            Signature Signature = new Signature();
-            if (blsSignatureRecover(ref Signature, signs[0], ids[0], (ulong)signs.Length) != 0) {
+        public static Signature RecoverSign(in Signature[] sigVec, in Id[] idVec) {
+            Signature sig;
+            if (blsSignatureRecover(ref sig, sigVec[0], idVec[0], (ulong)sigVec.Length) != 0) {
                 throw new ArgumentException("Recover");
             }
-            return Signature;
+            return sig;
         }
     }
 }
