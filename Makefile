@@ -155,6 +155,47 @@ JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
 
+# ios
+XCODEPATH=$(shell xcode-select -p)
+IOS_CLANG=$(XCODEPATH)/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+IOS_AR=${XCODEPATH}/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar
+PLATFORM?="iPhoneOS"
+IOS_MIN_VERSION?=7.0
+IOS_CFLAGS=-fembed-bitcode -fno-common -DPIC -fPIC -Dmcl_EXPORTS
+IOS_CFLAGS+=-DMCL_USE_VINT -DMCL_VINT_FIXED_BUFFER -DMCL_DONT_USE_OPENSSL -DMCL_DONT_USE_XBYAK -DMCL_LLVM_BMI2=0 -DMCL_USE_LLVM=1 -DMCL_SIZEOF_UNIT=8 -I ./include -std=c++11 -Wall -Wextra -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wfloat-equal -Wpointer-arith -O3 -DNDEBUG
+IOS_CFLAGS+=-I../mcl/include
+IOS_LDFLAGS=-dynamiclib -Wl,-flat_namespace -Wl,-undefined -Wl,suppress
+CURVE_BIT?=256
+IOS_OBJS=$(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base64.o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
+IOS_LIB=libbls$(CURVE_BIT)
+
+GOMOBILE_ARCHS=armv7 arm64 i386 x86_64
+
+ios:
+	@echo "Building iOS $(ARCH)..."
+	$(eval IOS_OUTDIR=ios/$(ARCH))
+	$(eval IOS_SDK_PATH=$(XCODEPATH)/Platforms/$(PLATFORM).platform/Developer/SDKs/$(PLATFORM).sdk)
+	$(eval IOS_COMMON=-arch $(ARCH) -isysroot $(IOS_SDK_PATH) -mios-version-min=$(IOS_MIN_VERSION))
+	@$(MKDIR) $(IOS_OUTDIR)
+	$(MAKE) -C ../mcl src/base64.ll
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c ../mcl/src/fp.cpp -o $(IOS_OUTDIR)/fp.o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c ../mcl/src/base64.ll -o $(IOS_OUTDIR)/base64.o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c src/bls_c$(CURVE_BIT).cpp -o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_LDFLAGS) -install_name $(XCODEPATH)/Platforms/$(PLATFORM).platform/Developer/usr/lib/$(IOS_LIB).dylib -o $(IOS_OUTDIR)/$(IOS_LIB).dylib $(IOS_OBJS)
+	ar cru $(IOS_OUTDIR)/$(IOS_LIB).a $(IOS_OBJS)
+	ranlib $(IOS_OUTDIR)/$(IOS_LIB).a
+
+gomobile:
+	@for target in $(GOMOBILE_ARCHS); do \
+		if [ "$$target" == "i386" ] || [ "$$target" == "x86_64" ] ; then \
+			$(MAKE) ios ARCH=$$target PLATFORM="iPhoneSimulator"; \
+		else \
+			$(MAKE) ios ARCH=$$target PLATFORM="iPhoneOS"; \
+		fi \
+	done
+	@lipo "ios/armv7/libbls$(CURVE_BIT).a"  "ios/arm64/libbls$(CURVE_BIT).a" "ios/i386/libbls$(CURVE_BIT).a" "ios/x86_64/libbls$(CURVE_BIT).a" -create -output ios/libbls$(CURVE_BIT).a
+	@lipo "ios/armv7/libbls$(CURVE_BIT).dylib"  "ios/arm64/libbls$(CURVE_BIT).dylib" "ios/i386/libbls$(CURVE_BIT).dylib" "ios/x86_64/libbls$(CURVE_BIT).dylib" -create -output lib/libbls$(CURVE_BIT).dylib
+
 clean:
 	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC) $(BLS256_LIB) $(BLS256_SLIB) $(BLS384_LIB) $(BLS384_SLIB) $(BLS384_256_LIB) $(BLS384_256_SLIB) $(BLS512_LIB) $(BLS512_SLIB)
 
@@ -169,7 +210,7 @@ install: lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.
 	$(MKDIR) $(PREFIX)/lib
 	cp -a lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.$(LIB_SUF) lib/libbls384_256.a lib/libbls384_256.$(LIB_SUF) $(PREFIX)/lib/
 
-.PHONY: test bls-wasm
+.PHONY: test bls-wasm ios
 
 # don't remove these files automatically
 .SECONDARY: $(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.o))
