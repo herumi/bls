@@ -177,7 +177,6 @@ ios:
 	$(eval IOS_SDK_PATH=$(XCODEPATH)/Platforms/$(PLATFORM).platform/Developer/SDKs/$(PLATFORM).sdk)
 	$(eval IOS_COMMON=-arch $(ARCH) -isysroot $(IOS_SDK_PATH) -mios-version-min=$(IOS_MIN_VERSION))
 	@$(MKDIR) $(IOS_OUTDIR)
-	$(MAKE) -C ../mcl src/base64.ll
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c ../mcl/src/fp.cpp -o $(IOS_OUTDIR)/fp.o
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c ../mcl/src/base64.ll -o $(IOS_OUTDIR)/base64.o
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c src/bls_c$(CURVE_BIT).cpp -o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
@@ -186,6 +185,7 @@ ios:
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB).a
 
 gomobile:
+	$(MAKE) -C ../mcl src/base64.ll
 	@for target in $(GOMOBILE_ARCHS); do \
 		if [ "$$target" == "i386" ] || [ "$$target" == "x86_64" ] ; then \
 			$(MAKE) ios ARCH=$$target PLATFORM="iPhoneSimulator"; \
