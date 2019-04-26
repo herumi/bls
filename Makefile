@@ -171,7 +171,10 @@ IOS_LIB=libbls$(CURVE_BIT)
 
 GOMOBILE_ARCHS=armv7 arm64 i386 x86_64
 
-ios:
+../mcl/src/base64.ll:
+	$(MAKE) -C ../mcl src/base64.ll
+
+ios: ../mcl/src/base64.ll
 	@echo "Building iOS $(ARCH)..."
 	$(eval IOS_OUTDIR=ios/$(ARCH))
 	$(eval IOS_SDK_PATH=$(XCODEPATH)/Platforms/$(PLATFORM).platform/Developer/SDKs/$(PLATFORM).sdk)
@@ -185,7 +188,6 @@ ios:
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB).a
 
 gomobile:
-	$(MAKE) -C ../mcl src/base64.ll
 	@for target in $(GOMOBILE_ARCHS); do \
 		if [ "$$target" == "i386" ] || [ "$$target" == "x86_64" ] ; then \
 			$(MAKE) ios ARCH=$$target PLATFORM="iPhoneSimulator"; \
