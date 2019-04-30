@@ -187,7 +187,7 @@ ios: ../mcl/src/base64.ll
 	ar cru $(IOS_OUTDIR)/$(IOS_LIB).a $(IOS_OBJS)
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB).a
 
-gomobile:
+gomobile: ../mcl/src/base64.ll
 	@for target in $(GOMOBILE_ARCHS); do \
 		if [ "$$target" == "i386" ] || [ "$$target" == "x86_64" ] ; then \
 			$(MAKE) ios ARCH=$$target PLATFORM="iPhoneSimulator"; \
