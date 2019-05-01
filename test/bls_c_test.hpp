@@ -113,9 +113,9 @@ struct Thread {
 
 CYBOZU_TEST_AUTO(multipleInit)
 {
-	const size_t n = 100;
 #if MCLBN_FP_UNIT_SIZE == 4
 	{
+		const size_t n = 100;
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
 			vt[i].run(blsInit, MCL_BN254, MCLBN_COMPILED_TIME_VAR);
@@ -125,6 +125,7 @@ CYBOZU_TEST_AUTO(multipleInit)
 #endif
 #if MCLBN_FP_UNIT_SIZE == 6
 	{
+		const size_t n = 100;
 		std::vector<Thread> vt(n);
 		for (size_t i = 0; i < n; i++) {
 			vt[i].run(blsInit, MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);

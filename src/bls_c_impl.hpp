@@ -89,6 +89,7 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 		mapToG2(&b, g_Q, 1);
 	}
 	if (!b) return -100;
+#if MCL_SIZEOF_UNIT == 8
 	if (curve == MCL_BN254) {
 		#include "./qcoeff-bn254.hpp"
 		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
@@ -103,7 +104,9 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 				}
 			}
 		}
-	} else {
+	} else
+#endif
+	{
 		precomputeG2(&b, g_Qcoeff, getBasePoint());
 	}
 #endif
