@@ -1,6 +1,6 @@
 ifeq ($(findstring MINGW64,$(shell uname -s)),MINGW64)
   # cgo accepts not '/c/path' but 'c:/path'
-  PWD=$(shell pwd|sed s'@^/\([a-z]\)@\1:@')
+  PWD=$(shell pwd|sed s'@^/\([a-z]\)/@\1:/@')
 else
   PWD=$(shell pwd)
 endif
