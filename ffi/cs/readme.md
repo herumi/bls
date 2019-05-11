@@ -23,8 +23,6 @@ bls/bin/*.dll are created
 
 Open bls/ffi/cs/bls.sln and exec it.
 
-* Remark. bls256 is obsolete. Please use bls.sln.
-
 # class and API
 
 ## API

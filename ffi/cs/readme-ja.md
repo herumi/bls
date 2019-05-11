@@ -24,8 +24,6 @@ mklib dll
 
 bls/ffi/cs/bls.slnを開いて実行する。
 
-* 注意 bls256.slnは古いため使わないでください。
-
 # クラスとAPI
 
 ## API
