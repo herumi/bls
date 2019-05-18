@@ -16,6 +16,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* blsInit() is not thread safe (pthread is not used)
 * -tags option for Go bindings is always necessary
 * support Android
 * (Break backward compatibility) The suffix `_dy` of library name is removed and bls\*.a requires libmcl.so set LD_LIBRARY_PATH to the directory.

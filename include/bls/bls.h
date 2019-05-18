@@ -80,8 +80,7 @@ typedef struct {
 	which macro is used to make sure that the values
 	are the same when the library is built and used
 	@return 0 if success
-	@note blsInit() is thread safe and serialized if it is called simultaneously
-	but don't call it while using other functions.
+	@note blsInit() is not thread safe
 */
 BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
 

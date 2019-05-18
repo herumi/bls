@@ -10,7 +10,6 @@ LIB_DIR=lib
 OBJ_DIR=obj
 EXE_DIR=bin
 CFLAGS += -std=c++11
-LDFLAGS += -lpthread
 
 SRC_SRC=bls_c256.cpp bls_c384.cpp bls_c384_256.cpp bls_c512.cpp
 TEST_SRC=bls256_test.cpp bls384_test.cpp bls384_256_test.cpp bls_c256_test.cpp bls_c384_test.cpp bls_c384_256_test.cpp bls_c512_test.cpp
@@ -19,9 +18,6 @@ SAMPLE_SRC=bls256_smpl.cpp bls384_smpl.cpp
 CFLAGS+=-I$(MCL_DIR)/include
 ifneq ($(MCL_MAX_BIT_SIZE),)
   CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
-endif
-ifeq ($(DISABLE_THREAD_TEST),1)
-  CFLAGS+=-DDISABLE_THREAD_TEST
 endif
 ifeq ($(BLS_SWAP_G),1)
   CFLAGS+=-DBLS_SWAP_G

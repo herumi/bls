@@ -65,7 +65,7 @@ inline const G2& getBasePoint() { return g_Q; }
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
-int blsInitNotThreadSafe(int curve, int compiledTimeVar)
+int blsInit(int curve, int compiledTimeVar)
 {
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
 		return -(compiledTimeVar | (MCLBN_COMPILED_TIME_VAR * 100));
@@ -124,34 +124,6 @@ extern "C" BLS_DLL_API void blsFree(void *p)
 	free(p);
 }
 #endif
-
-#if !defined(__EMSCRIPTEN__) && !defined(__wasm__)
-	#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
-	#include <mutex>
-		#define USE_STD_MUTEX
-	#else
-	#include <cybozu/mutex.hpp>
-		#define USE_CYBOZU_MUTEX
-	#endif
-#endif
-
-int blsInit(int curve, int compiledTimeVar)
-{
-	int ret = 0;
-#ifdef USE_STD_MUTEX
-	static std::mutex m;
-	std::lock_guard<std::mutex> lock(m);
-#elif defined(USE_CYBOZU_MUTEX)
-	static cybozu::Mutex m;
-	cybozu::AutoLock lock(m);
-#endif
-	static int g_curve = -1;
-	if (g_curve != curve) {
-		ret = blsInitNotThreadSafe(curve, compiledTimeVar);
-		g_curve = curve;
-	}
-	return ret;
-}
 
 static inline const mclBnG1 *cast(const G1* x) { return (const mclBnG1*)x; }
 static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }

@@ -23,7 +23,7 @@ install(TARGETS bls_c384 DESTINATION lib)
 install(TARGETS bls_c384_256 DESTINATION lib)
 install(FILES ${BLS_HEADERS} DESTINATION include/bls)
 
-set(TEST_LIBS pthread gmpxx)
+set(TEST_LIBS gmpxx)
 
 add_executable(bls_c256_test test/bls_c256_test.cpp)
 target_link_libraries(bls_c256_test bls_c256 ${TEST_LIBS})
