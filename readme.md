@@ -16,12 +16,13 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* -tags option for Go bindings is always necessary
 * support Android
 * (Break backward compatibility) The suffix `_dy` of library name is removed and bls\*.a requires libmcl.so set LD_LIBRARY_PATH to the directory.
 * -tags option for Go bindings
     * -tags bn256
     * -tags bn384\_256
-    * -tags bn384 ; default mode
+    * -tags bn384
 * Support swap of G1 and G2
     * `make BLS_SWAP_G=1` then G1 is assigned to PublicKey and G2 is assigned to Signature.
     * golang binding does not support this feature yet.
