@@ -469,17 +469,10 @@ int blsGetFrByteSize()
 	return (int)Fr::getByteSize();
 }
 
-#ifdef BLS_SWAP_G
-void blsGetGeneratorOfG1(blsPublicKey *pub)
+void blsGetGeneratorOfPublicKey(blsPublicKey *pub)
 {
 	*cast(&pub->v) = getBasePoint();
 }
-#else
-void blsGetGeneratorOfG2(blsPublicKey *pub)
-{
-	*cast(&pub->v) = getBasePoint();
-}
-#endif
 
 int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize)
 {

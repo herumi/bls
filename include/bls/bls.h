@@ -199,13 +199,8 @@ BLS_DLL_API int blsGetG1ByteSize(void);
 // return bytes for serialized Fr
 BLS_DLL_API int blsGetFrByteSize(void);
 
-#ifdef BLS_SWAP_G
-// get a generator of G1
-BLS_DLL_API void blsGetGeneratorOfG1(blsPublicKey *pub);
-#else
-// get a generator of G2
-BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
-#endif
+// get a generator of PublicKey
+BLS_DLL_API void blsGetGeneratorOfPublicKey(blsPublicKey *pub);
 
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);

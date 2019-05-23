@@ -16,6 +16,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
 * add blsSetETHserialization(1) to use ETH serialization for BLS12-381
 * blsInit() is not thread safe (pthread is not used)
 * -tags option for Go bindings is always necessary
