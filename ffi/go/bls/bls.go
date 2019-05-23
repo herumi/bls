@@ -211,10 +211,10 @@ func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
 }
 
 // GetPop --
-func (sec *SecretKey) GetPop() (sign *Sign) {
-	sign = new(Sign)
-	C.blsGetPop(sign.getPointer(), sec.getPointer())
-	return sign
+func (sec *SecretKey) GetPop() (sig *Sign) {
+	sig = new(Sign)
+	C.blsGetPop(&sig.v, sec.getPointer())
+	return sig
 }
 
 // PublicKey --
@@ -296,60 +296,69 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 		return fmt.Errorf("err PublicKey.Recover bad size")
 	}
 	// #nosec
-	ret := C.blsPublicKeyRecover(&pub.v, &pubVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(pubVec)))
+	ret := C.blsPublicKeyRecover(&pub.v, &pubVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(idVec)))
 	if ret != 0 {
-		return fmt.Errorf("err blsPublicKeyShare")
+		return fmt.Errorf("err blsPublicKeyRecover")
 	}
 	return nil
 }
 
 // Sign  --
 type Sign struct {
-	v G1
-}
-
-// getPointer --
-func (sign *Sign) getPointer() (p *C.blsSignature) {
-	// #nosec
-	return (*C.blsSignature)(unsafe.Pointer(sign))
+	v C.blsSignature
 }
 
 // Serialize --
-func (sign *Sign) Serialize() []byte {
-	return sign.v.Serialize()
+func (sig *Sign) Serialize() []byte {
+	buf := make([]byte, 2048)
+	// #nosec
+	n := C.blsSignatureSerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &sig.v)
+	if n == 0 {
+		panic("err blsSignatureSerialize")
+	}
+	return buf[:n]
 }
 
 // Deserialize --
-func (sign *Sign) Deserialize(buf []byte) error {
-	return sign.v.Deserialize(buf)
+func (sig *Sign) Deserialize(buf []byte) error {
+	// #nosec
+	err := C.blsSignatureDeserialize(&sig.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if err == 0 {
+		return fmt.Errorf("err blsSignatureDeserialize %x", buf)
+	}
+	return nil
 }
 
 // SerializeToHexStr --
-func (sign *Sign) SerializeToHexStr() string {
-	return sign.v.GetString(IoSerializeHexStr)
+func (sig *Sign) SerializeToHexStr() string {
+	return hex.EncodeToString(sig.Serialize())
 }
 
 // DeserializeHexStr --
-func (sign *Sign) DeserializeHexStr(s string) error {
-	return sign.v.SetString(s, IoSerializeHexStr)
+func (sig *Sign) DeserializeHexStr(s string) error {
+	a, err := hex2byte(s)
+	if err != nil {
+		return err
+	}
+	return sig.Deserialize(a)
 }
 
-// GetHexString --
-func (sign *Sign) GetHexString() string {
-	return sign.v.GetString(16)
+// GetHexString -- alias of SerializeToHexStr
+func (sig *Sign) GetHexString() string {
+	return sig.SerializeToHexStr()
 }
 
-// SetHexString --
-func (sign *Sign) SetHexString(s string) error {
-	return sign.v.SetString(s, 16)
+// SetHexString -- alias of DeserializeHexStr
+func (sig *Sign) SetHexString(s string) error {
+	return sig.DeserializeHexStr(s)
 }
 
 // IsEqual --
-func (sign *Sign) IsEqual(rhs *Sign) bool {
-	if sign == nil || rhs == nil {
+func (sig *Sign) IsEqual(rhs *Sign) bool {
+	if sig == nil || rhs == nil {
 		return false
 	}
-	return sign.v.IsEqual(&rhs.v)
+	return C.blsSignatureIsEqual(&sig.v, &rhs.v) == 1
 }
 
 // GetPublicKey --
@@ -360,38 +369,48 @@ func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 }
 
 // Sign -- Constant Time version
-func (sec *SecretKey) Sign(m string) (sign *Sign) {
-	sign = new(Sign)
+func (sec *SecretKey) Sign(m string) (sig *Sign) {
+	sig = new(Sign)
 	buf := []byte(m)
 	// #nosec
-	C.blsSign(sign.getPointer(), sec.getPointer(), unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
-	return sign
+	C.blsSign(&sig.v, sec.getPointer(), unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	return sig
 }
 
 // Add --
-func (sign *Sign) Add(rhs *Sign) {
-	C.blsSignatureAdd(sign.getPointer(), rhs.getPointer())
+func (sig *Sign) Add(rhs *Sign) {
+	C.blsSignatureAdd(&sig.v, &rhs.v)
 }
 
 // Recover --
-func (sign *Sign) Recover(signVec []Sign, idVec []ID) error {
+func (sig *Sign) Recover(sigVec []Sign, idVec []ID) error {
+	if len(sigVec) != len(idVec) {
+		return fmt.Errorf("err Sign.Recover bad size")
+	}
 	// #nosec
-	return G1LagrangeInterpolation(&sign.v, *(*[]Fr)(unsafe.Pointer(&idVec)), *(*[]G1)(unsafe.Pointer(&signVec)))
+	ret := C.blsSignatureRecover(&sig.v, &sigVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(idVec)))
+	if ret != 0 {
+		return fmt.Errorf("err blsSignatureRecover")
+	}
+	return nil
 }
 
 // Verify --
-func (sign *Sign) Verify(pub *PublicKey, m string) bool {
+func (sig *Sign) Verify(pub *PublicKey, m string) bool {
+	if sig == nil || pub == nil {
+		return false
+	}
 	buf := []byte(m)
 	// #nosec
-	return C.blsVerify(sign.getPointer(), &pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf))) == 1
+	return C.blsVerify(&sig.v, &pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf))) == 1
 }
 
 // VerifyPop --
-func (sign *Sign) VerifyPop(pub *PublicKey) bool {
-	if pub == nil {
+func (sig *Sign) VerifyPop(pub *PublicKey) bool {
+	if sig == nil || pub == nil {
 		return false
 	}
-	return C.blsVerifyPop(sign.getPointer(), &pub.v) == 1
+	return C.blsVerifyPop(&sig.v, &pub.v) == 1
 }
 
 // DHKeyExchange --
@@ -403,44 +422,43 @@ func DHKeyExchange(sec *SecretKey, pub *PublicKey) (out PublicKey) {
 // HashAndMapToSignature --
 func HashAndMapToSignature(buf []byte) *Sign {
 	sig := new(Sign)
-	err := sig.v.HashAndMapTo(buf)
-	if err == nil {
-		return sig
-	} else {
+	// #nosec
+	err := C.blsHashToSignature(&sig.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if err != 0 {
 		return nil
 	}
+	return sig
 }
 
 // VerifyPairing --
 func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
-	if X.getPointer() == nil || Y.getPointer() == nil || pub == nil {
+	if X == nil || Y == nil || pub == nil {
 		return false
 	}
-	return C.blsVerifyPairing(X.getPointer(), Y.getPointer(), &pub.v) == 1
+	return C.blsVerifyPairing(&X.v, &Y.v, &pub.v) == 1
 }
 
 // SignHash --
-func (sec *SecretKey) SignHash(hash []byte) (sign *Sign) {
-	sign = new(Sign)
+func (sec *SecretKey) SignHash(hash []byte) (sig *Sign) {
+	sig = new(Sign)
 	// #nosec
-	err := C.blsSignHash(sign.getPointer(), sec.getPointer(), unsafe.Pointer(&hash[0]), C.mclSize(len(hash)))
+	err := C.blsSignHash(&sig.v, sec.getPointer(), unsafe.Pointer(&hash[0]), C.mclSize(len(hash)))
 	if err == 0 {
-		return sign
-	} else {
-		return nil
+		return sig
 	}
+	return nil
 }
 
 // VerifyHash --
-func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
+func (sig *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
 	if pub == nil {
 		return false
 	}
 	// #nosec
-	return C.blsVerifyHash(sign.getPointer(), &pub.v, unsafe.Pointer(&hash[0]), C.mclSize(len(hash))) == 1
+	return C.blsVerifyHash(&sig.v, &pub.v, unsafe.Pointer(&hash[0]), C.mclSize(len(hash))) == 1
 }
 
-func Min(x, y int) int {
+func min(x, y int) int {
 	if x < y {
 		return x
 	}
@@ -448,23 +466,26 @@ func Min(x, y int) int {
 }
 
 // VerifyAggregateHashes --
-func (sign *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
+func (sig *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
 	if pubVec == nil {
 		return false
 	}
-	hashByte := GetOpUnitSize() * 8
 	n := len(hash)
+	if n == 0 {
+		return false
+	}
+	hashByte := GetOpUnitSize() * 8
 	h := make([]byte, n*hashByte)
 	for i := 0; i < n; i++ {
 		hn := len(hash[i])
-		copy(h[i*hashByte:(i+1)*hashByte], hash[i][0:Min(hn, hashByte)])
+		copy(h[i*hashByte:(i+1)*hashByte], hash[i][0:min(hn, hashByte)])
 	}
-	return C.blsVerifyAggregatedHashes(sign.getPointer(), &pubVec[0].v, unsafe.Pointer(&h[0]), C.mclSize(hashByte), C.mclSize(n)) == 1
+	return C.blsVerifyAggregatedHashes(&sig.v, &pubVec[0].v, unsafe.Pointer(&h[0]), C.mclSize(hashByte), C.mclSize(n)) == 1
 }
 
 ///
 
-var s_randReader io.Reader
+var sRandReader io.Reader
 
 func createSlice(buf *C.char, n C.uint) []byte {
 	size := int(n)
@@ -475,7 +496,7 @@ func createSlice(buf *C.char, n C.uint) []byte {
 //export wrapReadRandGo
 func wrapReadRandGo(buf *C.char, n C.uint) C.uint {
 	slice := createSlice(buf, n)
-	ret, err := s_randReader.Read(slice)
+	ret, err := sRandReader.Read(slice)
 	if ret == int(n) && err == nil {
 		return n
 	}
@@ -484,7 +505,7 @@ func wrapReadRandGo(buf *C.char, n C.uint) C.uint {
 
 // SetRandFunc --
 func SetRandFunc(randReader io.Reader) {
-	s_randReader = randReader
+	sRandReader = randReader
 	if randReader != nil {
 		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(C.wrapReadRandCgo)))
 	} else {
