@@ -35,10 +35,12 @@ inline Fp6 *cast(uint64_t *p) { return reinterpret_cast<Fp6*>(p); }
 inline const Fp6 *cast(const uint64_t *p) { return reinterpret_cast<const Fp6*>(p); }
 #endif
 
-void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
-void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
-void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
-void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
+inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
+inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
+inline void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
+inline void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
+inline void hashAndMapToG(G1& z, const void *m, mclSize size) { hashAndMapToG1(z, m, size); }
+inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z, m, size); }
 
 /*
 	BLS signature
@@ -55,9 +57,11 @@ void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
 */
 
 #ifdef BLS_SWAP_G
+typedef G2 G;
 static G1 g_P;
 inline const G1& getBasePoint() { return g_P; }
 #else
+typedef G1 G;
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
@@ -155,16 +159,16 @@ void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 	Gmul(*cast(&pub->v), getBasePoint(), *cast(&sec->v));
 }
 
+int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
+{
+	hashAndMapToG(*cast(&sig->v), buf, bufSize);
+	return 0;
+}
+
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
-#ifdef BLS_SWAP_G
-	G2 Hm;
-	hashAndMapToG2(Hm, m, size);
-#else
-	G1 Hm;
-	hashAndMapToG1(Hm, m, size);
-#endif
-	GmulCT(*cast(&sig->v), Hm, *cast(&sec->v));
+	blsHashToSignature(sig, m, size);
+	GmulCT(*cast(&sig->v), *cast(&sig->v), *cast(&sec->v));
 }
 
 #ifdef BLS_SWAP_G
@@ -202,13 +206,11 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
+	G Hm;
+	hashAndMapToG(Hm, m, size);
 #ifdef BLS_SWAP_G
-	G2 Hm;
-	hashAndMapToG2(Hm, m, size);
 	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
 #else
-	G1 Hm;
-	hashAndMapToG1(Hm, m, size);
 	/*
 		e(sHm, Q) = e(Hm, sQ)
 		e(sig, Q) = e(Hm, pub)
@@ -405,11 +407,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
-#ifdef BLS_SWAP_G
-	G2 Hm;
-#else
-	G1 Hm;
-#endif
+	G Hm;
 	if (!toG(Hm, h, size)) return -1;
 	GmulCT(*cast(&sig->v), Hm, *cast(&sec->v));
 	return 0;
@@ -511,16 +509,6 @@ mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id)
 int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
 	cast(&sec->v)->setHashOf(buf, bufSize);
-	return 0;
-}
-
-int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
-{
-#ifdef BLS_SWAP_G
-	hashAndMapToG2(*cast(&sig->v), buf, bufSize);
-#else
-	hashAndMapToG1(*cast(&sig->v), buf, bufSize);
-#endif
 	return 0;
 }
 
