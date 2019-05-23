@@ -8,7 +8,6 @@ package bls
 #cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
 #cgo bn384_256 LDFLAGS:-lbls384_256
 #cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
-#include "config.h"
 typedef unsigned int (*ReadRandFunc)(void *, void *, unsigned int);
 int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
