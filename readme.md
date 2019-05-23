@@ -18,6 +18,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 # News
 * blsInit() is not thread safe (pthread is not used)
 * -tags option for Go bindings is always necessary
+    * use -tags bn384\_256 for BLS12-381
 * support Android
 * (Break backward compatibility) The suffix `_dy` of library name is removed and bls\*.a requires libmcl.so set LD_LIBRARY_PATH to the directory.
 * -tags option for Go bindings
@@ -72,6 +73,10 @@ see [readme.md](ffi/android/readme.md)
 * libbls384_256.a/libbls384_256.so ; for BN254/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6 and MCLBN_FR_UNIT_SIZE=4
 
 See `mcl/include/curve_type.h` for curve parameter
+
+## Remark for static library
+If there are both a shared library both and static library having the same name in the same directory, then the shared library is linked.
+So if you want to link a static library, then remove the shared library in the directory.
 
 # API
 
