@@ -83,6 +83,12 @@ typedef struct {
 	@note blsInit() is not thread safe
 */
 BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
+/*
+	set ETH serialization mode for BLS12-381
+	@param ETHserialization [in] 1:enable,  0:disable
+	@note ignore the flag if curve is not BLS12-381
+*/
+BLS_DLL_API void blsSetETHserialization(int ETHserialization);
 
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 

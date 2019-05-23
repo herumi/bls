@@ -114,6 +114,11 @@ int blsInit(int curve, int compiledTimeVar)
 	return 0;
 }
 
+void blsSetETHserialization(int ETHserialization)
+{
+	mclBn_setETHserialization(ETHserialization);
+}
+
 #ifdef __EMSCRIPTEN__
 extern "C" BLS_DLL_API void *blsMalloc(size_t n)
 {
