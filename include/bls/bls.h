@@ -218,8 +218,10 @@ BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize);
 BLS_DLL_API mclSize blsIdGetDecStr(char *buf, mclSize maxBufSize, const blsId *id);
 BLS_DLL_API mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id);
 
-// hash buf and set
+// hash buf and set SecretKey
 BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize);
+// hash buf and set Signature
+BLS_DLL_API int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize);
 #ifndef MCL_DONT_USE_CSPRNG
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom

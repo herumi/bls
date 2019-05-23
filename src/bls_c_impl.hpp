@@ -514,6 +514,16 @@ int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize)
 	return 0;
 }
 
+int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
+{
+#ifdef BLS_SWAP_G
+	hashAndMapToG2(*cast(&sig->v), buf, bufSize);
+#else
+	hashAndMapToG1(*cast(&sig->v), buf, bufSize);
+#endif
+	return 0;
+}
+
 #ifndef MCL_DONT_USE_CSPRNG
 int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
 {
