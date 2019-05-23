@@ -39,9 +39,19 @@ func (id *ID) getPointer() (p *C.blsId) {
 	return (*C.blsId)(unsafe.Pointer(id))
 }
 
-// GetLittleEndian --
-func (id *ID) GetLittleEndian() []byte {
+// Serialize --
+func (id *ID) Serialize() []byte {
 	return id.v.Serialize()
+}
+
+// Deserialize --
+func (id *ID) Deserialize(buf []byte) error {
+	return id.v.Deserialize(buf)
+}
+
+// GetLittleEndian -- alias of Serialize
+func (id *ID) GetLittleEndian() []byte {
+	return id.Serialize()
 }
 
 // SetLittleEndian --
@@ -88,9 +98,19 @@ func (sec *SecretKey) getPointer() (p *C.blsSecretKey) {
 	return (*C.blsSecretKey)(unsafe.Pointer(sec))
 }
 
-// GetLittleEndian --
-func (sec *SecretKey) GetLittleEndian() []byte {
+// Serialize --
+func (sec *SecretKey) Serialize() []byte {
 	return sec.v.Serialize()
+}
+
+// Deserialize --
+func (sec *SecretKey) Deserialize(buf []byte) error {
+	return sec.v.Deserialize(buf)
+}
+
+// GetLittleEndian -- alias of Serialize
+func (sec *SecretKey) GetLittleEndian() []byte {
+	return sec.Serialize()
 }
 
 // SetLittleEndian --
