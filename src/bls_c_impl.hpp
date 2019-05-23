@@ -459,6 +459,29 @@ int blsGetFieldOrder(char *buf, mclSize maxBufSize)
 	return (int)Fp::getModulo(buf, maxBufSize);
 }
 
+int blsGetSerializedSecretKeyByteSize()
+{
+	return blsGetFrByteSize();
+}
+
+int blsGetSerializedPublicKeyByteSize()
+{
+#ifdef BLS_SWAP_G
+	return blsGetG1ByteSize();
+#else
+	return blsGetG1ByteSize() * 2;
+#endif
+}
+
+int blsGetSerializedSignatureByteSize()
+{
+#ifdef BLS_SWAP_G
+	return blsGetG1ByteSize() * 2;
+#else
+	return blsGetG1ByteSize();
+#endif
+}
+
 int blsGetG1ByteSize()
 {
 	return (int)Fp::getByteSize();

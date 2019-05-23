@@ -193,6 +193,13 @@ BLS_DLL_API mclSize blsGetOpUnitSize(void);
 BLS_DLL_API int blsGetCurveOrder(char *buf, mclSize maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, mclSize maxBufSize);
 
+// return serialized secretKey size
+BLS_DLL_API int blsGetSerializedSecretKeyByteSize(void);
+// return serialized publicKey size
+BLS_DLL_API int blsGetSerializedPublicKeyByteSize(void);
+// return serialized signature size
+BLS_DLL_API int blsGetSerializedSignatureByteSize(void);
+
 // return bytes for serialized G1(=Fp)
 BLS_DLL_API int blsGetG1ByteSize(void);
 

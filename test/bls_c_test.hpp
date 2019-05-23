@@ -59,6 +59,7 @@ void blsDataTest()
 	memset(&sec2, 0, sizeof(sec2));
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_EQUAL(n, FrSize);
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedSecretKeyByteSize());
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
@@ -67,6 +68,7 @@ void blsDataTest()
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, pubSize(FpSize));
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedPublicKeyByteSize());
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
@@ -74,6 +76,7 @@ void blsDataTest()
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, sigSize(FpSize));
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedSignatureByteSize());
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
