@@ -361,14 +361,26 @@ func (pub *PublicKey) DeserializeHexStr(s string) error {
 	return pub.Deserialize(a)
 }
 
-// GetHexString -- alias of SerializeToHexStr
+// GetHexString --
 func (pub *PublicKey) GetHexString() string {
-	return pub.SerializeToHexStr()
+	buf := make([]byte, 2048)
+	// #nosec
+	n := C.blsPublicKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &pub.v)
+	if n == 0 {
+		panic("err blsPublicKeyGetHexStr")
+	}
+	return string(buf[:n])
 }
 
-// SetHexString -- alias of DeserializeHexStr
+// SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
-	return pub.DeserializeHexStr(s)
+	buf := []byte(s)
+	// #nosec
+	err := C.blsPublicKeySetHexStr(&pub.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err blsPublicKeySetHexStr %s", s)
+	}
+	return nil
 }
 
 // IsEqual --
@@ -447,14 +459,26 @@ func (sig *Sign) DeserializeHexStr(s string) error {
 	return sig.Deserialize(a)
 }
 
-// GetHexString -- alias of SerializeToHexStr
+// GetHexString --
 func (sig *Sign) GetHexString() string {
-	return sig.SerializeToHexStr()
+	buf := make([]byte, 2048)
+	// #nosec
+	n := C.blsSignatureGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &sig.v)
+	if n == 0 {
+		panic("err blsSignatureGetHexStr")
+	}
+	return string(buf[:n])
 }
 
-// SetHexString -- alias of DeserializeHexStr
+// SetHexString --
 func (sig *Sign) SetHexString(s string) error {
-	return sig.DeserializeHexStr(s)
+	buf := []byte(s)
+	// #nosec
+	err := C.blsSignatureSetHexStr(&sig.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err blsSignatureSetHexStr %s", s)
+	}
+	return nil
 }
 
 // IsEqual --
