@@ -4,6 +4,20 @@
 
 An implementation of BLS threshold signature
 
+# Support architectures
+
+* Windows Visual Studio / MSYS2(MinGW-w64)
+* Linux
+* macOS
+* Android
+* iOS
+* WebAssembly
+
+# Support languages
+
+* Go
+* C#
+
 # Installation Requirements
 
 Create a working directory (e.g., work) and clone the following repositories.
@@ -66,8 +80,15 @@ mk -d test\bls_c384_test.cpp
 bin\bls_c384_test.exe
 ```
 
-# Build for Androdi
+# Build for Android
 see [readme.md](ffi/android/readme.md)
+
+# Build for iOS
+
+```
+cd bls
+make gomobile
+```
 
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
@@ -188,7 +209,8 @@ make test_go
 mkdir ../bls-wasm
 make bls-wasm
 ```
-see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
+* see [bls-wasm](https://github.com/herumi/bls-wasm/)
+* see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
 
 # License
 
