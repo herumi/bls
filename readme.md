@@ -32,6 +32,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 # News
 * rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
 * add blsSetETHserialization(1) to use ETH serialization for BLS12-381
+* Support swap of G1 and G2 for Go (-tags bn384_256_swapg)
 * blsInit() is not thread safe (pthread is not used)
 * -tags option for Go bindings is always necessary
     * use -tags bn384\_256 for BLS12-381
@@ -43,7 +44,6 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
     * -tags bn384
 * Support swap of G1 and G2
     * `make BLS_SWAP_G=1` then G1 is assigned to PublicKey and G2 is assigned to Signature.
-    * golang binding does not support this feature yet.
 * Build option without GMP
     * `make MCL_USE_GMP=0`
 * Build option without OpenSSL
