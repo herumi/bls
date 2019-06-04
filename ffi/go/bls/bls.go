@@ -450,6 +450,9 @@ func (sign *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
 	if pub.getPointer() == nil {
 		return false
 	}
+	if len(hash) == 0 {
+		return false
+	}
 	return C.blsVerifyHash(sign.getPointer(), pub.getPointer(), unsafe.Pointer(&hash[0]), C.size_t(len(hash))) == 1
 }
 
