@@ -6,6 +6,7 @@
 	@license modified new BSD license
 	http://opensource.org/licenses/BSD-3-Clause
 */
+#define MCLBN_NO_AUTOLINK
 #include <mcl/bn.h>
 
 #ifdef BLS_SWAP_G
@@ -29,7 +30,9 @@
 	#ifndef BLS_NO_AUTOLINK
 		#if MCLBN_FP_UNIT_SIZE == 4
 			#pragma comment(lib, "bls256.lib")
-		#elif MCLBN_FP_UNIT_SIZE == 6
+		#elif (MCLBN_FP_UNIT_SIZE == 6) && (MCLBN_FR_UNIT_SIZE == 4)
+			#pragma comment(lib, "bls384_256.lib")
+		#elif (MCLBN_FP_UNIT_SIZE == 6) && (MCLBN_FR_UNIT_SIZE == 6)
 			#pragma comment(lib, "bls384.lib")
 		#endif
 	#endif
@@ -77,16 +80,25 @@ typedef struct {
 	which macro is used to make sure that the values
 	are the same when the library is built and used
 	@return 0 if success
-	@note blsInit() is thread safe and serialized if it is called simultaneously
-	but don't call it while using other functions.
+	@note blsInit() is not thread safe
 */
 BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
+/*
+	set ETH serialization mode for BLS12-381
+	@param ETHserialization [in] 1:enable,  0:disable
+	@note ignore the flag if curve is not BLS12-381
+*/
+BLS_DLL_API void blsSetETHserialization(int ETHserialization);
 
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 
-// return 0 if success
-// mask buf with (1 << (bitLen(r) - 1)) - 1 if buf >= r
+// sec = buf & (1 << bitLen(r)) - 1
+// if (sec >= r) sec &= (1 << (bitLen(r) - 1)) - 1
+// always return 0
 BLS_DLL_API int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize);
+// return 0 if success (bufSize <= 64) else -1
+// set (buf mod r) to sec
+BLS_DLL_API int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize);
 
 BLS_DLL_API void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec);
 
@@ -181,19 +193,21 @@ BLS_DLL_API mclSize blsGetOpUnitSize(void);
 BLS_DLL_API int blsGetCurveOrder(char *buf, mclSize maxBufSize);
 BLS_DLL_API int blsGetFieldOrder(char *buf, mclSize maxBufSize);
 
+// return serialized secretKey size
+BLS_DLL_API int blsGetSerializedSecretKeyByteSize(void);
+// return serialized publicKey size
+BLS_DLL_API int blsGetSerializedPublicKeyByteSize(void);
+// return serialized signature size
+BLS_DLL_API int blsGetSerializedSignatureByteSize(void);
+
 // return bytes for serialized G1(=Fp)
 BLS_DLL_API int blsGetG1ByteSize(void);
 
 // return bytes for serialized Fr
 BLS_DLL_API int blsGetFrByteSize(void);
 
-#ifdef BLS_SWAP_G
-// get a generator of G1
-BLS_DLL_API void blsGetGeneratorOfG1(blsPublicKey *pub);
-#else
-// get a generator of G2
-BLS_DLL_API void blsGetGeneratorOfG2(blsPublicKey *pub);
-#endif
+// get a generator of PublicKey
+BLS_DLL_API void blsGetGeneratorOfPublicKey(blsPublicKey *pub);
 
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);
@@ -206,8 +220,10 @@ BLS_DLL_API int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize);
 BLS_DLL_API mclSize blsIdGetDecStr(char *buf, mclSize maxBufSize, const blsId *id);
 BLS_DLL_API mclSize blsIdGetHexStr(char *buf, mclSize maxBufSize, const blsId *id);
 
-// hash buf and set
+// hash buf and set SecretKey
 BLS_DLL_API int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize);
+// hash buf and set Signature
+BLS_DLL_API int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize);
 #ifndef MCL_DONT_USE_CSPRNG
 /*
 	set secretKey if system has /dev/urandom or CryptGenRandom

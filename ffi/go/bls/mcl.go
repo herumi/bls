@@ -4,8 +4,8 @@ package bls
 #cgo bn256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=4
 #cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
-#include "config.h"
 #include <mcl/bn.h>
+
 */
 import "C"
 import "fmt"

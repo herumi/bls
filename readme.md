@@ -4,6 +4,20 @@
 
 An implementation of BLS threshold signature
 
+# Support architectures
+
+* Windows Visual Studio / MSYS2(MinGW-w64)
+* Linux
+* macOS
+* Android
+* iOS
+* WebAssembly
+
+# Support languages
+
+* Go
+* C#
+
 # Installation Requirements
 
 Create a working directory (e.g., work) and clone the following repositories.
@@ -16,14 +30,20 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
+* add blsSetETHserialization(1) to use ETH serialization for BLS12-381
+* Support swap of G1 and G2 for Go (-tags bn384_256_swapg)
+* blsInit() is not thread safe (pthread is not used)
+* -tags option for Go bindings is always necessary
+    * use -tags bn384\_256 for BLS12-381
+* support Android
 * (Break backward compatibility) The suffix `_dy` of library name is removed and bls\*.a requires libmcl.so set LD_LIBRARY_PATH to the directory.
 * -tags option for Go bindings
     * -tags bn256
     * -tags bn384\_256
-    * -tags bn384 ; default mode
+    * -tags bn384
 * Support swap of G1 and G2
     * `make BLS_SWAP_G=1` then G1 is assigned to PublicKey and G2 is assigned to Signature.
-    * golang binding does not support this feature yet.
 * Build option without GMP
     * `make MCL_USE_GMP=0`
 * Build option without OpenSSL
@@ -60,12 +80,26 @@ mk -d test\bls_c384_test.cpp
 bin\bls_c384_test.exe
 ```
 
+# Build for Android
+see [readme.md](ffi/android/readme.md)
+
+# Build for iOS
+
+```
+cd bls
+make gomobile
+```
+
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
 * libbls384.a/libbls384.so ; for BN254/BN381_1/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6
 * libbls384_256.a/libbls384_256.so ; for BN254/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6 and MCLBN_FR_UNIT_SIZE=4
 
 See `mcl/include/curve_type.h` for curve parameter
+
+## Remark for static library
+If there are both a shared library both and static library having the same name in the same directory, then the shared library is linked.
+So if you want to link a static library, then remove the shared library in the directory.
 
 # API
 
@@ -81,6 +115,18 @@ sQ in G2; public key
 s H(m) in G1; signature of m
 verify ; e(sQ, H(m)) = e(Q, s H(m))
 ```
+
+### C
+
+```
+blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR); // use BLS12-381
+blsSignatureVerifyOrder(0); // disable to check the order of a point in deserializing
+blsPublicKeyVerifyOrder(0);
+blsSetETHserialization(1); // obey ETH serialization
+
+```
+
+### C++
 
 ```
 void bls::init();
@@ -175,7 +221,8 @@ make test_go
 mkdir ../bls-wasm
 make bls-wasm
 ```
-see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
+* see [bls-wasm](https://github.com/herumi/bls-wasm/)
+* see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
 
 # License
 
