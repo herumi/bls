@@ -427,7 +427,7 @@ func (pub *PublicKey) Sub(rhs *PublicKey) {
 	if pub == nil || rhs == nil {
 		return
 	}
-	G2Sub(&pub.v, &pub.v, &rhs.v)
+	C.blsPublicKeySub(&pub.v, &rhs.v)
 }
 
 // Set --
