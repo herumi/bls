@@ -116,6 +116,18 @@ s H(m) in G1; signature of m
 verify ; e(sQ, H(m)) = e(Q, s H(m))
 ```
 
+### C
+
+```
+blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR); // use BLS12-381
+blsSignatureVerifyOrder(0); // disable to check the order of a point in deserializing
+blsPublicKeyVerifyOrder(0);
+blsSetETHserialization(1); // obey ETH serialization
+
+```
+
+### C++
+
 ```
 void bls::init();
 ```
