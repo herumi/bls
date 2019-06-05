@@ -21,6 +21,7 @@ int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
 */
 import "C"
+import "errors"
 import "fmt"
 import "unsafe"
 import "io"
@@ -269,7 +270,14 @@ func (sec *SecretKey) SetByCSPRNG() {
 
 // Add --
 func (sec *SecretKey) Add(rhs *SecretKey) {
+<<<<<<< HEAD
 	C.blsSecretKeyAdd(&sec.v, &rhs.v)
+=======
+	if sec == nil || rhs == nil {
+		return
+	}
+	FrAdd(&sec.v, &sec.v, &rhs.v)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // GetMasterSecretKey --
@@ -329,6 +337,7 @@ type PublicKey struct {
 
 // Serialize --
 func (pub *PublicKey) Serialize() []byte {
+<<<<<<< HEAD
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.blsPublicKeySerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &pub.v)
@@ -336,34 +345,62 @@ func (pub *PublicKey) Serialize() []byte {
 		panic("err blsPublicKeySerialize")
 	}
 	return buf[:n]
+=======
+	if pub == nil {
+		return []byte{}
+	}
+	return pub.v.Serialize()
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // Deserialize --
 func (pub *PublicKey) Deserialize(buf []byte) error {
+<<<<<<< HEAD
 	// #nosec
 	err := C.blsPublicKeyDeserialize(&pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
 	if err == 0 {
 		return fmt.Errorf("err blsPublicKeyDeserialize %x", buf)
 	}
 	return nil
+=======
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
+	return pub.v.Deserialize(buf)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // SerializeToHexStr --
 func (pub *PublicKey) SerializeToHexStr() string {
+<<<<<<< HEAD
 	return hex.EncodeToString(pub.Serialize())
+=======
+	if pub == nil {
+		return ""
+	}
+	return pub.v.GetString(IoSerializeHexStr)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // DeserializeHexStr --
 func (pub *PublicKey) DeserializeHexStr(s string) error {
+<<<<<<< HEAD
 	a, err := hex2byte(s)
 	if err != nil {
 		return err
 	}
 	return pub.Deserialize(a)
+=======
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
+	return pub.v.SetString(s, IoSerializeHexStr)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // GetHexString --
 func (pub *PublicKey) GetHexString() string {
+<<<<<<< HEAD
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.blsPublicKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &pub.v)
@@ -371,10 +408,17 @@ func (pub *PublicKey) GetHexString() string {
 		panic("err blsPublicKeyGetHexStr")
 	}
 	return string(buf[:n])
+=======
+	if pub == nil {
+		return ""
+	}
+	return pub.v.GetString(16)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // SetHexString --
 func (pub *PublicKey) SetHexString(s string) error {
+<<<<<<< HEAD
 	buf := []byte(s)
 	// #nosec
 	err := C.blsPublicKeySetHexStr(&pub.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
@@ -382,6 +426,12 @@ func (pub *PublicKey) SetHexString(s string) error {
 		return fmt.Errorf("err blsPublicKeySetHexStr %s", s)
 	}
 	return nil
+=======
+	if pub == nil {
+		return errors.New("Public key is nil.")
+	}
+	return pub.v.SetString(s, 16)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // IsEqual --
@@ -394,11 +444,21 @@ func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
 
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
+<<<<<<< HEAD
 	C.blsPublicKeyAdd(&pub.v, &rhs.v)
+=======
+	if pub == nil || rhs == nil {
+		return
+	}
+	G2Add(&pub.v, &pub.v, &rhs.v)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // Sub --
 func (pub *PublicKey) Sub(rhs *PublicKey) {
+	if pub == nil || rhs == nil {
+		return
+	}
 	G2Sub(&pub.v, &pub.v, &rhs.v)
 }
 
@@ -439,6 +499,7 @@ type Sign struct {
 }
 
 // Serialize --
+<<<<<<< HEAD
 func (sig *Sign) Serialize() []byte {
 	buf := make([]byte, 2048)
 	// #nosec
@@ -493,6 +554,53 @@ func (sig *Sign) SetHexString(s string) error {
 		return fmt.Errorf("err blsSignatureSetHexStr %s", s)
 	}
 	return nil
+=======
+func (sign *Sign) Serialize() []byte {
+	if sign == nil {
+		return []byte{}
+	}
+	return sign.v.Serialize()
+}
+
+// Deserialize --
+func (sign *Sign) Deserialize(buf []byte) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
+	return sign.v.Deserialize(buf)
+}
+
+// SerializeToHexStr --
+func (sign *Sign) SerializeToHexStr() string {
+	if sign == nil {
+		return ""
+	}
+	return sign.v.GetString(IoSerializeHexStr)
+}
+
+// DeserializeHexStr --
+func (sign *Sign) DeserializeHexStr(s string) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
+	return sign.v.SetString(s, IoSerializeHexStr)
+}
+
+// GetHexString --
+func (sign *Sign) GetHexString() string {
+	if sign == nil {
+		return ""
+	}
+	return sign.v.GetString(16)
+}
+
+// SetHexString --
+func (sign *Sign) SetHexString(s string) error {
+	if sign == nil {
+		return errors.New("Signature is nil.")
+	}
+	return sign.v.SetString(s, 16)
+>>>>>>> afd66123584b44c287d1712e750ff8a9950adb41
 }
 
 // IsEqual --
@@ -594,6 +702,9 @@ func (sec *SecretKey) SignHash(hash []byte) (sig *Sign) {
 // VerifyHash --
 func (sig *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
 	if pub == nil {
+		return false
+	}
+	if len(hash) == 0 {
 		return false
 	}
 	// #nosec
