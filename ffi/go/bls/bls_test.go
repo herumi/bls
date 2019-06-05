@@ -400,11 +400,10 @@ func Hash(buf []byte) []byte {
 	if GetOpUnitSize() == 4 {
 		d := sha256.Sum256([]byte(buf))
 		return d[:]
-	} else {
-		// use SHA512 if bitSize > 256
-		d := sha512.Sum512([]byte(buf))
-		return d[:]
 	}
+	// use SHA512 if bitSize > 256
+	d := sha512.Sum512([]byte(buf))
+	return d[:]
 }
 
 func testHash(t *testing.T) {
@@ -452,7 +451,7 @@ func testAggregateHashes(t *testing.T) {
 type SeqRead struct {
 }
 
-func (self *SeqRead) Read(buf []byte) (int, error) {
+func (seq *SeqRead) Read(buf []byte) (int, error) {
 	n := len(buf)
 	for i := 0; i < n; i++ {
 		buf[i] = byte(i)

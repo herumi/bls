@@ -35,10 +35,12 @@ inline Fp6 *cast(uint64_t *p) { return reinterpret_cast<Fp6*>(p); }
 inline const Fp6 *cast(const uint64_t *p) { return reinterpret_cast<const Fp6*>(p); }
 #endif
 
-void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
-void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
-void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
-void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
+inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
+inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
+inline void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
+inline void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
+inline void hashAndMapToG(G1& z, const void *m, mclSize size) { hashAndMapToG1(z, m, size); }
+inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z, m, size); }
 
 /*
 	BLS signature
@@ -55,9 +57,11 @@ void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
 */
 
 #ifdef BLS_SWAP_G
+typedef G2 G;
 static G1 g_P;
 inline const G1& getBasePoint() { return g_P; }
 #else
+typedef G1 G;
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
@@ -65,7 +69,7 @@ inline const G2& getBasePoint() { return g_Q; }
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
-int blsInitNotThreadSafe(int curve, int compiledTimeVar)
+int blsInit(int curve, int compiledTimeVar)
 {
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
 		return -(compiledTimeVar | (MCLBN_COMPILED_TIME_VAR * 100));
@@ -89,6 +93,7 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 		mapToG2(&b, g_Q, 1);
 	}
 	if (!b) return -100;
+#if MCL_SIZEOF_UNIT == 8
 	if (curve == MCL_BN254) {
 		#include "./qcoeff-bn254.hpp"
 		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
@@ -103,12 +108,19 @@ int blsInitNotThreadSafe(int curve, int compiledTimeVar)
 				}
 			}
 		}
-	} else {
+	} else
+#endif
+	{
 		precomputeG2(&b, g_Qcoeff, getBasePoint());
 	}
 #endif
 	if (!b) return -101;
 	return 0;
+}
+
+void blsSetETHserialization(int ETHserialization)
+{
+	mclBn_setETHserialization(ETHserialization);
 }
 
 #ifdef __EMSCRIPTEN__
@@ -121,34 +133,6 @@ extern "C" BLS_DLL_API void blsFree(void *p)
 	free(p);
 }
 #endif
-
-#if !defined(__EMSCRIPTEN__) && !defined(__wasm__)
-	#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
-	#include <mutex>
-		#define USE_STD_MUTEX
-	#else
-	#include <cybozu/mutex.hpp>
-		#define USE_CYBOZU_MUTEX
-	#endif
-#endif
-
-int blsInit(int curve, int compiledTimeVar)
-{
-	int ret = 0;
-#ifdef USE_STD_MUTEX
-	static std::mutex m;
-	std::lock_guard<std::mutex> lock(m);
-#elif defined(USE_CYBOZU_MUTEX)
-	static cybozu::Mutex m;
-	cybozu::AutoLock lock(m);
-#endif
-	static int g_curve = -1;
-	if (g_curve != curve) {
-		ret = blsInitNotThreadSafe(curve, compiledTimeVar);
-		g_curve = curve;
-	}
-	return ret;
-}
 
 static inline const mclBnG1 *cast(const G1* x) { return (const mclBnG1*)x; }
 static inline const mclBnG2 *cast(const G2* x) { return (const mclBnG2*)x; }
@@ -163,22 +147,28 @@ int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufS
 	cast(&sec->v)->setArrayMask((const char *)buf, bufSize);
 	return 0;
 }
+int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize)
+{
+	bool b;
+	cast(&sec->v)->setArray(&b, (const char *)buf, bufSize, mcl::fp::Mod);
+	return b ? 0 : -1;
+}
 
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
 {
 	Gmul(*cast(&pub->v), getBasePoint(), *cast(&sec->v));
 }
 
+int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
+{
+	hashAndMapToG(*cast(&sig->v), buf, bufSize);
+	return 0;
+}
+
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
-#ifdef BLS_SWAP_G
-	G2 Hm;
-	hashAndMapToG2(Hm, m, size);
-#else
-	G1 Hm;
-	hashAndMapToG1(Hm, m, size);
-#endif
-	GmulCT(*cast(&sig->v), Hm, *cast(&sec->v));
+	blsHashToSignature(sig, m, size);
+	GmulCT(*cast(&sig->v), *cast(&sig->v), *cast(&sec->v));
 }
 
 #ifdef BLS_SWAP_G
@@ -216,13 +206,11 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
+	G Hm;
+	hashAndMapToG(Hm, m, size);
 #ifdef BLS_SWAP_G
-	G2 Hm;
-	hashAndMapToG2(Hm, m, size);
 	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
 #else
-	G1 Hm;
-	hashAndMapToG1(Hm, m, size);
 	/*
 		e(sHm, Q) = e(Hm, sQ)
 		e(sig, Q) = e(Hm, pub)
@@ -419,11 +407,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
-#ifdef BLS_SWAP_G
-	G2 Hm;
-#else
-	G1 Hm;
-#endif
+	G Hm;
 	if (!toG(Hm, h, size)) return -1;
 	GmulCT(*cast(&sig->v), Hm, *cast(&sec->v));
 	return 0;
@@ -475,6 +459,29 @@ int blsGetFieldOrder(char *buf, mclSize maxBufSize)
 	return (int)Fp::getModulo(buf, maxBufSize);
 }
 
+int blsGetSerializedSecretKeyByteSize()
+{
+	return blsGetFrByteSize();
+}
+
+int blsGetSerializedPublicKeyByteSize()
+{
+#ifdef BLS_SWAP_G
+	return blsGetG1ByteSize();
+#else
+	return blsGetG1ByteSize() * 2;
+#endif
+}
+
+int blsGetSerializedSignatureByteSize()
+{
+#ifdef BLS_SWAP_G
+	return blsGetG1ByteSize() * 2;
+#else
+	return blsGetG1ByteSize();
+#endif
+}
+
 int blsGetG1ByteSize()
 {
 	return (int)Fp::getByteSize();
@@ -485,17 +492,10 @@ int blsGetFrByteSize()
 	return (int)Fr::getByteSize();
 }
 
-#ifdef BLS_SWAP_G
-void blsGetGeneratorOfG1(blsPublicKey *pub)
+void blsGetGeneratorOfPublicKey(blsPublicKey *pub)
 {
 	*cast(&pub->v) = getBasePoint();
 }
-#else
-void blsGetGeneratorOfG2(blsPublicKey *pub)
-{
-	*cast(&pub->v) = getBasePoint();
-}
-#endif
 
 int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize)
 {

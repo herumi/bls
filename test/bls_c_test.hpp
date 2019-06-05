@@ -3,6 +3,7 @@
 #include <bls/bls.h>
 #include <string.h>
 #include <cybozu/benchmark.hpp>
+#include <mcl/gmp_util.hpp>
 
 size_t pubSize(size_t FrSize)
 {
@@ -58,6 +59,7 @@ void blsDataTest()
 	memset(&sec2, 0, sizeof(sec2));
 	n = blsSecretKeySerialize(buf, sizeof(buf), &sec1);
 	CYBOZU_TEST_EQUAL(n, FrSize);
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedSecretKeyByteSize());
 	ret = blsSecretKeyDeserialize(&sec2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSecretKeyIsEqual(&sec1, &sec2));
@@ -66,6 +68,7 @@ void blsDataTest()
 	blsGetPublicKey(&pub1, &sec1);
 	n = blsPublicKeySerialize(buf, sizeof(buf), &pub1);
 	CYBOZU_TEST_EQUAL(n, pubSize(FpSize));
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedPublicKeyByteSize());
 	ret = blsPublicKeyDeserialize(&pub2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
@@ -73,12 +76,13 @@ void blsDataTest()
 	blsSign(&sig1, &sec1, msg, msgSize);
 	n = blsSignatureSerialize(buf, sizeof(buf), &sig1);
 	CYBOZU_TEST_EQUAL(n, sigSize(FpSize));
+	CYBOZU_TEST_EQUAL(n, blsGetSerializedSignatureByteSize());
 	ret = blsSignatureDeserialize(&sig2, buf, n);
 	CYBOZU_TEST_EQUAL(ret, n);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig1, &sig2));
 }
 
-void blsOrderTest(const char *curveOrder, const char *fieldOrder)
+void blsOrderTest(const char *curveOrder/*Fr*/, const char *fieldOrder/*Fp*/)
 {
 	char buf[1024];
 	size_t len;
@@ -89,49 +93,6 @@ void blsOrderTest(const char *curveOrder, const char *fieldOrder)
 	CYBOZU_TEST_ASSERT(len > 0);
 	CYBOZU_TEST_EQUAL(buf, fieldOrder);
 }
-
-#if !defined(DISABLE_THREAD_TEST) || defined(__clang__)
-#if defined(CYBOZU_CPP_VERSION) && CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11
-#include <thread>
-#include <vector>
-struct Thread {
-	std::unique_ptr<std::thread> t;
-	Thread() : t() {}
-	~Thread()
-	{
-		if (t) {
-			t->join();
-		}
-	}
-	template<class F>
-	void run(F func, int p1, int p2)
-	{
-		t.reset(new std::thread(func, p1, p2));
-	}
-};
-
-CYBOZU_TEST_AUTO(multipleInit)
-{
-	const size_t n = 100;
-	{
-		std::vector<Thread> vt(n);
-		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, MCL_BN254, MCLBN_COMPILED_TIME_VAR);
-		}
-	}
-	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 4u);
-#if MCLBN_FP_UNIT_SIZE == 6
-	{
-		std::vector<Thread> vt(n);
-		for (size_t i = 0; i < n; i++) {
-			vt[i].run(blsInit, MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
-		}
-	}
-	CYBOZU_TEST_EQUAL(blsGetOpUnitSize(), 6u);
-#endif
-}
-#endif
-#endif
 
 void blsSerializeTest()
 {
@@ -350,6 +311,28 @@ void blsTrivialShareTest()
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 }
 
+void modTest(const char *rStr)
+{
+	unsigned char buf[1024] = {};
+	int ret;
+	blsSecretKey sec;
+	const size_t maxByte = 64; // 512-bit
+	memset(buf, 0xff, maxByte);
+	ret = blsSecretKeySetLittleEndianMod(&sec, buf, maxByte);
+	CYBOZU_TEST_EQUAL(ret, 0);
+	const mpz_class x = (mpz_class(1) << (maxByte * 8)) - 1; // 512-bit 0xff....ff
+	const mpz_class r(rStr);
+	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
+	CYBOZU_TEST_ASSERT(n > 0);
+	// serialized data to mpz_class
+	mpz_class y = 0;
+	for (size_t i = 0; i < n; i++) {
+		y <<= 8;
+		y += buf[n - 1 - i];
+	}
+	CYBOZU_TEST_EQUAL(y, x % r);
+}
+
 void blsBench()
 {
 	blsSecretKey sec;
@@ -370,8 +353,8 @@ CYBOZU_TEST_AUTO(all)
 {
 	const struct {
 		int curveType;
-		const char *p;
 		const char *r;
+		const char *p;
 	} tbl[] = {
 		{
 			MCL_BN254,
@@ -392,6 +375,13 @@ CYBOZU_TEST_AUTO(all)
 			"4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787",
 		},
 #endif
+#if MCLBN_FP_UNIT_SIZE == 8
+		{
+			MCL_BN462,
+			"6701817056313037086248947066310538444882082605308124576230408038843354961099564416871567745979441241809893679037520753402159179772451651597",
+			"6701817056313037086248947066310538444882082605308124576230408038843357549886356779857393369967010764802541005796711440355753503701056323603",
+		},
+#endif
 	};
 	for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
 		printf("i=%d\n", (int)i);
@@ -403,11 +393,12 @@ CYBOZU_TEST_AUTO(all)
 		}
 		bls_use_stackTest();
 		blsDataTest();
-		blsOrderTest(tbl[i].p, tbl[i].r);
+		blsOrderTest(tbl[i].r, tbl[i].p);
 		blsSerializeTest();
 		if (tbl[i].curveType == MCL_BLS12_381) blsVerifyOrderTest();
 		blsAddSubTest();
 		blsTrivialShareTest();
+		modTest(tbl[i].r);
 		blsBench();
 	}
 }
