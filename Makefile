@@ -143,6 +143,11 @@ test_go:
 	$(MAKE) test_go384
 	$(MAKE) test_go384_256
 
+test_go_swapg:
+	$(MAKE) test_go256_swapg
+	$(MAKE) test_go384_swapg
+	$(MAKE) test_go384_256_swapg
+
 EMCC_OPT=-I./include -I./src -I../mcl/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
 EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
