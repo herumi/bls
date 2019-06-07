@@ -90,6 +90,16 @@ cd bls
 make gomobile
 ```
 
+# Swap G1 and G2
+If you want to swap G1 and G2 for PublicKey and Signature, then type as the followings:
+```
+make clean
+make BLS_SWAP_G=1
+make test_go_swapg ; test for cgo
+```
+
+Remark: The library built with BLS_SWAP_G is not compatible with the library built without BLS_SWAP_G.
+
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
 * libbls384.a/libbls384.so ; for BN254/BN381_1/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6
