@@ -1,21 +1,8 @@
 package bls
 
 /*
-#cgo bn256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=4
-#cgo bn256 LDFLAGS:-lbls256
-#cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
-#cgo bn384 LDFLAGS:-lbls384
-#cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
-#cgo bn384_256 LDFLAGS:-lbls384_256
-#cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
-
-#cgo bn256_swapg CFLAGS:-DMCLBN_FP_UNIT_SIZE=4 -DBLS_SWAP_G
-#cgo bn256_swapg LDFLAGS:-lbls256
-#cgo bn384_swapg CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DBLS_SWAP_G
-#cgo bn384_swapg LDFLAGS:-lbls384
-#cgo bn384_256_swapg CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4 -DBLS_SWAP_G
-#cgo bn384_256_swapg LDFLAGS:-lbls384_256
-#cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
+#cgo CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4 -DBLS_SWAP_G
+#cgo LDFLAGS:-lbls384_256 -lcrypto -lgmp -lgmpxx -lstdc++
 typedef unsigned int (*ReadRandFunc)(void *, void *, unsigned int);
 int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
@@ -49,6 +36,14 @@ func Init(curve int) error {
 // ID --
 type ID struct {
 	v C.blsId
+}
+
+// GetAddress --
+func (pub *PublicKey) GetAddress() [20]byte {
+	address := [20]byte{}
+	hash := sha256.Sum256(pub.Serialize())
+	copy(address[:], hash[:20])
+	return address
 }
 
 // Serialize --
@@ -451,14 +446,6 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 		return fmt.Errorf("err blsPublicKeyRecover")
 	}
 	return nil
-}
-
-// GetAddress --
-func (pub *PublicKey) GetAddress() [20]byte {
-	address := [20]byte{}
-	hash := sha256.Sum256(pub.Serialize())
-	copy(address[:], hash[:20])
-	return address
 }
 
 // Sign  --
