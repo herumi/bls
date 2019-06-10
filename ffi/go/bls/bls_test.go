@@ -19,21 +19,14 @@ func testPre(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		t.Log("id :", id.GetHexString())
+		t.Log("id :", id.SerializeToHexStr())
 		var id2 ID
-		err = id2.SetHexString(id.GetHexString())
+		err = id2.DeserializeHexStr(id.SerializeToHexStr())
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !id.IsEqual(&id2) {
-			t.Errorf("not same id\n%s\n%s", id.GetHexString(), id2.GetHexString())
-		}
-		err = id2.SetDecString(id.GetDecString())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !id.IsEqual(&id2) {
-			t.Errorf("not same id\n%s\n%s", id.GetDecString(), id2.GetDecString())
+			t.Errorf("not same id\n%s\n%s", id.SerializeToHexStr(), id2.SerializeToHexStr())
 		}
 	}
 	{
@@ -42,19 +35,19 @@ func testPre(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		t.Log("sec=", sec.GetHexString())
+		t.Log("sec=", sec.SerializeToHexStr())
 	}
 
 	t.Log("create secret key")
 	m := "this is a bls sample for go"
 	var sec SecretKey
 	sec.SetByCSPRNG()
-	t.Log("sec:", sec.GetHexString())
+	t.Log("sec:", sec.SerializeToHexStr())
 	t.Log("create public key")
 	pub := sec.GetPublicKey()
-	t.Log("pub:", pub.GetHexString())
+	t.Log("pub:", pub.SerializeToHexStr())
 	sign := sec.Sign(m)
-	t.Log("sign:", sign.GetHexString())
+	t.Log("sign:", sign.SerializeToHexStr())
 	if !sign.Verify(pub, m) {
 		t.Error("Signature does not verify")
 	}
@@ -64,7 +57,7 @@ func testPre(t *testing.T) {
 		sec := make([]SecretKey, 3)
 		for i := 0; i < len(sec); i++ {
 			sec[i].SetByCSPRNG()
-			t.Log("sec=", sec[i].GetHexString())
+			t.Log("sec=", sec[i].SerializeToHexStr())
 		}
 	}
 }
@@ -72,22 +65,10 @@ func testPre(t *testing.T) {
 func testStringConversion(t *testing.T) {
 	t.Log("testRecoverSecretKey")
 	var sec SecretKey
-	var s string
-	if unitN == 6 {
-		s = "16798108731015832284940804142231733909759579603404752749028378864165570215949"
-	} else {
-		s = "40804142231733909759579603404752749028378864165570215949"
-	}
-	err := sec.SetDecString(s)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if s != sec.GetDecString() {
-		t.Error("not equal")
-	}
-	s = sec.GetHexString()
+	sec.SetByCSPRNG()
+	s := sec.SerializeToHexStr()
 	var sec2 SecretKey
-	err = sec2.SetHexString(s)
+	err := sec2.DeserializeHexStr(s)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +82,7 @@ func testRecoverSecretKey(t *testing.T) {
 	k := 3000
 	var sec SecretKey
 	sec.SetByCSPRNG()
-	t.Logf("sec=%s\n", sec.GetHexString())
+	t.Logf("sec=%s\n", sec.SerializeToHexStr())
 
 	// make master secret key
 	msk := sec.GetMasterSecretKey(k)
@@ -118,7 +99,7 @@ func testRecoverSecretKey(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		//		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
+		//		t.Logf("idVec[%d]=%s\n", i, idVec[i].SerializeToHexStr())
 	}
 	// recover sec2 from secVec and idVec
 	var sec2 SecretKey
@@ -127,7 +108,7 @@ func testRecoverSecretKey(t *testing.T) {
 		t.Error(err)
 	}
 	if !sec.IsEqual(&sec2) {
-		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.GetHexString(), sec2.GetHexString())
+		t.Errorf("Mismatch in recovered secret key:\n  %s\n  %s.", sec.SerializeToHexStr(), sec2.SerializeToHexStr())
 	}
 }
 
@@ -145,7 +126,7 @@ func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]I
 		if err != nil {
 			t.Error(err)
 		}
-		t.Logf("idVec[%d]=%s\n", i, idVec[i].GetHexString())
+		t.Logf("idVec[%d]=%s\n", i, idVec[i].SerializeToHexStr())
 
 		err = secVec[i].Set(msk, &idVec[i])
 		if err != nil {
@@ -156,10 +137,10 @@ func testEachSign(t *testing.T, m string, msk []SecretKey, mpk []PublicKey) ([]I
 		if err != nil {
 			t.Error(err)
 		}
-		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].GetHexString())
+		t.Logf("pubVec[%d]=%s\n", i, pubVec[i].SerializeToHexStr())
 
 		if !pubVec[i].IsEqual(secVec[i].GetPublicKey()) {
-			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].GetHexString(), secVec[i].GetPublicKey().GetHexString())
+			t.Errorf("Pubkey derivation does not match\n%s\n%s", pubVec[i].SerializeToHexStr(), secVec[i].GetPublicKey().SerializeToHexStr())
 		}
 
 		signVec[i] = *secVec[i].Sign(m)
@@ -226,9 +207,9 @@ func testAdd(t *testing.T) {
 	sign1 := sec1.Sign(m)
 	sign2 := sec2.Sign(m)
 
-	t.Log("sign1    :", sign1.GetHexString())
+	t.Log("sign1    :", sign1.SerializeToHexStr())
 	sign1.Add(sign2)
-	t.Log("sign1 add:", sign1.GetHexString())
+	t.Log("sign1 add:", sign1.SerializeToHexStr())
 	pub1.Add(pub2)
 	if !sign1.Verify(pub1, m) {
 		t.Fail()

@@ -96,50 +96,6 @@ func (id *ID) DeserializeHexStr(s string) error {
 	return id.Deserialize(a)
 }
 
-// GetHexString --
-func (id *ID) GetHexString() string {
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsIdGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &id.v)
-	if n == 0 {
-		panic("err blsIdGetHexStr")
-	}
-	return string(buf[:n])
-}
-
-// GetDecString --
-func (id *ID) GetDecString() string {
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsIdGetDecStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &id.v)
-	if n == 0 {
-		panic("err blsIdGetDecStr")
-	}
-	return string(buf[:n])
-}
-
-// SetHexString --
-func (id *ID) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsIdSetHexStr(&id.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsIdSetHexStr %s", s)
-	}
-	return nil
-}
-
-// SetDecString --
-func (id *ID) SetDecString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsIdSetDecStr(&id.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsIdSetDecStr %s", s)
-	}
-	return nil
-}
-
 // IsEqual --
 func (id *ID) IsEqual(rhs *ID) bool {
 	if id == nil || rhs == nil {
@@ -201,50 +157,6 @@ func (sec *SecretKey) DeserializeHexStr(s string) error {
 		return err
 	}
 	return sec.Deserialize(a)
-}
-
-// GetHexString --
-func (sec *SecretKey) GetHexString() string {
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsSecretKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &sec.v)
-	if n == 0 {
-		panic("err blsSecretKeyGetHexStr")
-	}
-	return string(buf[:n])
-}
-
-// GetDecString --
-func (sec *SecretKey) GetDecString() string {
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsSecretKeyGetDecStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &sec.v)
-	if n == 0 {
-		panic("err blsSecretKeyGetDecStr")
-	}
-	return string(buf[:n])
-}
-
-// SetHexString --
-func (sec *SecretKey) SetHexString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSecretKeySetHexStr(&sec.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSecretKeySetHexStr %s", s)
-	}
-	return nil
-}
-
-// SetDecString --
-func (sec *SecretKey) SetDecString(s string) error {
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSecretKeySetDecStr(&sec.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSecretKeySetDecStr %s", s)
-	}
-	return nil
 }
 
 // IsEqual --
@@ -373,34 +285,6 @@ func (pub *PublicKey) DeserializeHexStr(s string) error {
 	return pub.Deserialize(a)
 }
 
-// GetHexString --
-func (pub *PublicKey) GetHexString() string {
-	if pub == nil {
-		return ""
-	}
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsPublicKeyGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &pub.v)
-	if n == 0 {
-		panic("err blsPublicKeyGetHexStr")
-	}
-	return string(buf[:n])
-}
-
-// SetHexString --
-func (pub *PublicKey) SetHexString(s string) error {
-	if pub == nil {
-		return errors.New("Public key is nil.")
-	}
-	buf := []byte(s)
-	// #nosec
-	err := C.blsPublicKeySetHexStr(&pub.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsPublicKeySetHexStr %s", s)
-	}
-	return nil
-}
-
 // IsEqual --
 func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
 	if pub == nil || rhs == nil {
@@ -498,34 +382,6 @@ func (sig *Sign) DeserializeHexStr(s string) error {
 		return err
 	}
 	return sig.Deserialize(a)
-}
-
-// GetHexString --
-func (sig *Sign) GetHexString() string {
-	if sig == nil {
-		return ""
-	}
-	buf := make([]byte, 2048)
-	// #nosec
-	n := C.blsSignatureGetHexStr((*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)), &sig.v)
-	if n == 0 {
-		panic("err blsSignatureGetHexStr")
-	}
-	return string(buf[:n])
-}
-
-// SetHexString --
-func (sig *Sign) SetHexString(s string) error {
-	if sig == nil {
-		return errors.New("Signature is nil.")
-	}
-	buf := []byte(s)
-	// #nosec
-	err := C.blsSignatureSetHexStr(&sig.v, (*C.char)(unsafe.Pointer(&buf[0])), C.mclSize(len(buf)))
-	if err != 0 {
-		return fmt.Errorf("err blsSignatureSetHexStr %s", s)
-	}
-	return nil
 }
 
 // IsEqual --
