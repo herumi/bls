@@ -15,6 +15,11 @@ import "io"
 import "crypto/sha256"
 import "encoding/hex"
 
+// We need to run this before any bls usage externally.
+func init() {
+	Init(BLS12_381)
+}
+
 func hex2byte(s string) ([]byte, error) {
 	if (len(s) & 1) == 1 {
 		return nil, fmt.Errorf("odd length")
