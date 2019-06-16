@@ -64,6 +64,9 @@ func (id *ID) Serialize() []byte {
 
 // Deserialize --
 func (id *ID) Deserialize(buf []byte) error {
+	if len(buf) == 0 {
+		return fmt.Errorf("Empty bytes")
+	}
 	// #nosec
 	err := C.blsIdDeserialize(&id.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
 	if err == 0 {
@@ -79,6 +82,9 @@ func (id *ID) GetLittleEndian() []byte {
 
 // SetLittleEndian --
 func (id *ID) SetLittleEndian(buf []byte) error {
+	if len(buf) == 0 {
+		return fmt.Errorf("Empty bytes")
+	}
 	// #nosec
 	err := C.blsIdSetLittleEndian(&id.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
 	if err != 0 {
@@ -127,6 +133,9 @@ func (sec *SecretKey) Serialize() []byte {
 
 // Deserialize --
 func (sec *SecretKey) Deserialize(buf []byte) error {
+	if len(buf) == 0 {
+		return fmt.Errorf("Empty bytes")
+	}
 	// #nosec
 	err := C.blsSecretKeyDeserialize(&sec.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
 	if err == 0 {
@@ -142,6 +151,9 @@ func (sec *SecretKey) GetLittleEndian() []byte {
 
 // SetLittleEndian --
 func (sec *SecretKey) SetLittleEndian(buf []byte) error {
+	if len(buf) == 0 {
+		return fmt.Errorf("Empty bytes")
+	}
 	// #nosec
 	err := C.blsSecretKeySetLittleEndian(&sec.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
 	if err != 0 {
@@ -191,6 +203,9 @@ func (sec *SecretKey) Add(rhs *SecretKey) {
 // GetMasterSecretKey --
 func (sec *SecretKey) GetMasterSecretKey(k int) (msk []SecretKey) {
 	msk = make([]SecretKey, k)
+	if k == 0 {
+		return msk
+	}
 	msk[0] = *sec
 	for i := 1; i < k; i++ {
 		msk[i].SetByCSPRNG()
@@ -210,6 +225,9 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 
 // Set --
 func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
+	if len(msk) == 0 {
+		return fmt.Errorf("Empty msk")
+	}
 	// #nosec
 	ret := C.blsSecretKeyShare(&sec.v, &msk[0].v, (C.mclSize)(len(msk)), &id.v)
 	if ret != 0 {
@@ -222,6 +240,9 @@ func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
 func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
 	if len(secVec) != len(idVec) {
 		return fmt.Errorf("err SecretKey.Recover bad size")
+	}
+	if len(secVec) == 0 {
+		return fmt.Errorf("Empty secVec")
 	}
 	// #nosec
 	ret := C.blsSecretKeyRecover(&sec.v, &secVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(idVec)))
@@ -261,6 +282,9 @@ func (pub *PublicKey) Serialize() []byte {
 func (pub *PublicKey) Deserialize(buf []byte) error {
 	if pub == nil {
 		return errors.New("Public key is nil.")
+	}
+	if len(buf) == 0 {
+		return errors.New("Empty bytes")
 	}
 	// #nosec
 	err := C.blsPublicKeyDeserialize(&pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
@@ -316,6 +340,9 @@ func (pub *PublicKey) Sub(rhs *PublicKey) {
 
 // Set --
 func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
+	if len(mpk) == 0 {
+		return errors.New("Empty mpk")
+	}
 	// #nosec
 	ret := C.blsPublicKeyShare(&pub.v, &mpk[0].v, (C.mclSize)(len(mpk)), &id.v)
 	if ret != 0 {
@@ -328,6 +355,9 @@ func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
 func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 	if len(pubVec) != len(idVec) {
 		return fmt.Errorf("err PublicKey.Recover bad size")
+	}
+	if len(pubVec) == 0 {
+		return errors.New("Empty pubVec")
 	}
 	// #nosec
 	ret := C.blsPublicKeyRecover(&pub.v, &pubVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(idVec)))
@@ -360,6 +390,9 @@ func (sig *Sign) Serialize() []byte {
 func (sig *Sign) Deserialize(buf []byte) error {
 	if sig == nil {
 		return errors.New("Signature is nil.")
+	}
+	if len(buf) == 0 {
+		return errors.New("Empty buf")
 	}
 	// #nosec
 	err := C.blsSignatureDeserialize(&sig.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
@@ -423,6 +456,9 @@ func (sig *Sign) Recover(sigVec []Sign, idVec []ID) error {
 	if len(sigVec) != len(idVec) {
 		return fmt.Errorf("err Sign.Recover bad size")
 	}
+	if len(sigVec) == 0 {
+		return errors.New("Empty sigVec")
+	}
 	// #nosec
 	ret := C.blsSignatureRecover(&sig.v, &sigVec[0].v, (*C.blsId)(&idVec[0].v), (C.mclSize)(len(idVec)))
 	if ret != 0 {
@@ -477,6 +513,9 @@ func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
 // SignHash --
 func (sec *SecretKey) SignHash(hash []byte) (sig *Sign) {
 	sig = new(Sign)
+	if len(hash) == 0 {
+		return nil
+	}
 	// #nosec
 	err := C.blsSignHash(&sig.v, &sec.v, unsafe.Pointer(&hash[0]), C.mclSize(len(hash)))
 	if err == 0 {
@@ -506,7 +545,7 @@ func min(x, y int) int {
 
 // VerifyAggregateHashes --
 func (sig *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
-	if pubVec == nil {
+	if pubVec == nil || len(pubVec) == 0{
 		return false
 	}
 	n := len(hash)
