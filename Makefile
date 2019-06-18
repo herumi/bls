@@ -66,13 +66,13 @@ ifeq ($(OS),mingw64)
   BLS384_256_SLIB_LDFLAGS+=-Wl,--out-implib,$(LIB_DIR)/lib$(BLS384_256_SNAME).a
 endif
 $(BLS256_SLIB): $(OBJ_DIR)/bls_c256.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(BLS256_SLIB_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(LDFLAGS) $(BLS256_SLIB_LDFLAGS)
 $(BLS384_SLIB): $(OBJ_DIR)/bls_c384.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(BLS384_SLIB_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(LDFLAGS) $(BLS384_SLIB_LDFLAGS)
 $(BLS512_SLIB): $(OBJ_DIR)/bls_c512.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(BLS512_SLIB_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(LDFLAGS) $(BLS512_SLIB_LDFLAGS)
 $(BLS384_256_SLIB): $(OBJ_DIR)/bls_c384_256.o $(MCL_LIB)
-	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(BLS384_256_SLIB_LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $< -L$(MCL_DIR)/lib -lmcl $(LDFLAGS) $(BLS384_256_SLIB_LDFLAGS)
 
 VPATH=test sample src
 
@@ -124,7 +124,7 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 
 # PATH is for mingw, LD_LIBRARY_PATH is for linux, DYLD_LIBRARY_PATH is for mac
 COMMON_LIB_PATH="../../../lib:../../../../mcl/lib"
-PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) CGO_LDFLAGS="-L../../../lib" CGO_CFLAGS="-I$(PWD)/include -I$(MCL_DIR)/include"
+PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) CGO_LDFLAGS="-L../../../lib -L$(OPENSSL_DIR)/lib" CGO_CFLAGS="-I$(PWD)/include -I$(MCL_DIR)/include"
 test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
 	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn256 .
 test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
