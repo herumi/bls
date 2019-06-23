@@ -122,6 +122,9 @@ type SecretKey struct {
 
 // Serialize --
 func (sec *SecretKey) Serialize() []byte {
+	if sec == nil {
+		return []byte{}
+	}
 	buf := make([]byte, 2048)
 	// #nosec
 	n := C.blsSecretKeySerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &sec.v)
@@ -133,6 +136,9 @@ func (sec *SecretKey) Serialize() []byte {
 
 // Deserialize --
 func (sec *SecretKey) Deserialize(buf []byte) error {
+	if sec == nil {
+		return fmt.Errorf("err nil secret key")
+	}
 	if len(buf) == 0 {
 		return fmt.Errorf("Empty bytes")
 	}
@@ -151,6 +157,9 @@ func (sec *SecretKey) GetLittleEndian() []byte {
 
 // SetLittleEndian --
 func (sec *SecretKey) SetLittleEndian(buf []byte) error {
+	if sec == nil {
+		return fmt.Errorf("err nil secret key")
+	}
 	if len(buf) == 0 {
 		return fmt.Errorf("Empty bytes")
 	}
@@ -225,6 +234,9 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 
 // Set --
 func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
+	if sec == nil {
+		return fmt.Errorf("err nil secret key")
+	}
 	if len(msk) == 0 {
 		return fmt.Errorf("Empty msk")
 	}
@@ -238,6 +250,9 @@ func (sec *SecretKey) Set(msk []SecretKey, id *ID) error {
 
 // Recover --
 func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
+	if sec == nil {
+		return fmt.Errorf("err nil secret key")
+	}
 	if len(secVec) != len(idVec) {
 		return fmt.Errorf("err SecretKey.Recover bad size")
 	}
@@ -254,6 +269,9 @@ func (sec *SecretKey) Recover(secVec []SecretKey, idVec []ID) error {
 
 // GetPop --
 func (sec *SecretKey) GetPop() (sig *Sign) {
+	if sec == nil {
+		return nil
+	}
 	sig = new(Sign)
 	C.blsGetPop(&sig.v, &sec.v)
 	return sig
@@ -340,6 +358,9 @@ func (pub *PublicKey) Sub(rhs *PublicKey) {
 
 // Set --
 func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
+	if pub == nil {
+		return errors.New("err nil public key")
+	}
 	if len(mpk) == 0 {
 		return errors.New("Empty mpk")
 	}
@@ -353,6 +374,9 @@ func (pub *PublicKey) Set(mpk []PublicKey, id *ID) error {
 
 // Recover --
 func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
+	if pub == nil {
+		return errors.New("err nil public key")
+	}
 	if len(pubVec) != len(idVec) {
 		return fmt.Errorf("err PublicKey.Recover bad size")
 	}
@@ -432,6 +456,9 @@ func (sig *Sign) IsEqual(rhs *Sign) bool {
 
 // GetPublicKey --
 func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
+	if sec == nil {
+		return nil
+	}
 	pub = new(PublicKey)
 	C.blsGetPublicKey(&pub.v, &sec.v)
 	return pub
@@ -439,6 +466,9 @@ func (sec *SecretKey) GetPublicKey() (pub *PublicKey) {
 
 // Sign -- Constant Time version
 func (sec *SecretKey) Sign(m string) (sig *Sign) {
+	if sec == nil {
+		return nil
+	}
 	sig = new(Sign)
 	buf := []byte(m)
 	// #nosec
@@ -448,11 +478,17 @@ func (sec *SecretKey) Sign(m string) (sig *Sign) {
 
 // Add --
 func (sig *Sign) Add(rhs *Sign) {
+	if sig == nil {
+		return
+	}
 	C.blsSignatureAdd(&sig.v, &rhs.v)
 }
 
 // Recover --
 func (sig *Sign) Recover(sigVec []Sign, idVec []ID) error {
+	if sig == nil {
+		return fmt.Errorf("err nil signature")
+	}
 	if len(sigVec) != len(idVec) {
 		return fmt.Errorf("err Sign.Recover bad size")
 	}
@@ -512,6 +548,9 @@ func VerifyPairing(X *Sign, Y *Sign, pub *PublicKey) bool {
 
 // SignHash --
 func (sec *SecretKey) SignHash(hash []byte) (sig *Sign) {
+	if sec == nil {
+		return nil
+	}
 	sig = new(Sign)
 	if len(hash) == 0 {
 		return nil
@@ -526,6 +565,9 @@ func (sec *SecretKey) SignHash(hash []byte) (sig *Sign) {
 
 // VerifyHash --
 func (sig *Sign) VerifyHash(pub *PublicKey, hash []byte) bool {
+	if sig == nil {
+		return false
+	}
 	if pub == nil {
 		return false
 	}
@@ -545,6 +587,9 @@ func min(x, y int) int {
 
 // VerifyAggregateHashes --
 func (sig *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
+	if sig == nil {
+		return false
+	}
 	if pubVec == nil || len(pubVec) == 0{
 		return false
 	}
