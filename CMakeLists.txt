@@ -7,6 +7,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(LIBS mcl gmp)
 
+option(
+	BLS_SWAP_G
+	"swap G1 and G2"
+	"OFF"
+)
+
+if(BLS_SWAP_G)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBLS_SWAP_G")
+endif()
+
 include_directories(include/)
 
 add_library(bls_c256 SHARED src/bls_c256.cpp)
