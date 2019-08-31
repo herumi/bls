@@ -13,7 +13,7 @@ CFLAGS += -std=c++11
 
 SRC_SRC=bls_c256.cpp bls_c384.cpp bls_c384_256.cpp bls_c512.cpp
 TEST_SRC=bls256_test.cpp bls384_test.cpp bls384_256_test.cpp bls_c256_test.cpp bls_c384_test.cpp bls_c384_256_test.cpp bls_c512_test.cpp
-SAMPLE_SRC=bls256_smpl.cpp bls384_smpl.cpp
+SAMPLE_SRC=bls_smpl.cpp bls12_381_smpl.cpp
 
 CFLAGS+=-I$(MCL_DIR)/include
 ifneq ($(MCL_MAX_BIT_SIZE),)
@@ -93,9 +93,9 @@ $(EXE_DIR)/%512_test.exe: $(OBJ_DIR)/%512_test.o $(BLS512_LIB) $(MCL_LIB)
 $(EXE_DIR)/%256_test.exe: $(OBJ_DIR)/%256_test.o $(BLS256_LIB) $(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(BLS256_LIB) -L$(MCL_DIR)/lib -lmcl $(LDFLAGS)
 
-# sample exe links libbls256.a
-$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS256_LIB) $(MCL_LIB)
-	$(PRE)$(CXX) $< -o $@ $(BLS256_LIB) -L$(MCL_DIR)/lib -lmcl $(LDFLAGS)
+# sample exe links libbls384_256.a
+$(EXE_DIR)/%.exe: $(OBJ_DIR)/%.o $(BLS384_256_LIB) $(MCL_LIB)
+	$(PRE)$(CXX) $< -o $@ $(BLS384_256_LIB) -L$(MCL_DIR)/lib -lmcl $(LDFLAGS)
 ifeq ($(OS),mac)
 	install_name_tool bin/bls_smpl.exe -change lib/libmcl.dylib $(MCL_DIR)/lib/libmcl.dylib
 endif
