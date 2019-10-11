@@ -205,7 +205,10 @@ gomobile: ../mcl/src/base64.ll
 	@lipo "ios/armv7/libbls$(CURVE_BIT).a"  "ios/arm64/libbls$(CURVE_BIT).a" "ios/i386/libbls$(CURVE_BIT).a" "ios/x86_64/libbls$(CURVE_BIT).a" -create -output ios/libbls$(CURVE_BIT).a
 	@lipo "ios/armv7/libbls$(CURVE_BIT).dylib"  "ios/arm64/libbls$(CURVE_BIT).dylib" "ios/i386/libbls$(CURVE_BIT).dylib" "ios/x86_64/libbls$(CURVE_BIT).dylib" -create -output lib/libbls$(CURVE_BIT).dylib
 
-MIN_CFLAGS=-O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I../mcl/include -DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++ -std=c++03
+MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I../mcl/include
+ifneq ($(MIN_WITH_XBYAK),1)
+    MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
+endif
 minimized_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(MIN_CFLAGS)
 	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(MIN_CFLAGS)
