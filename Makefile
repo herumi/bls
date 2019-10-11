@@ -161,6 +161,11 @@ JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
+CLANG_WASM_OPT=-O3 -DNDEBUG -fPIC -DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -DMCL_LLVM_BMI2=0 -DMCL_USE_LLVM=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_MINIMUM_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -I./include -I./src -I../mcl/include -fno-builtin  --target=wasm32-unknown-unknown-wasm  -Wstrict-prototypes -Wno-unused-parameter -ffreestanding -fno-exceptions -fvisibility=hidden -Wall -Wextra -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -fno-rtti -nostdinc++ -std=c++03 -DLLONG_MIN=-0x8000000000000000LL
+bls-wasm-by-clang:
+	clang++-8 -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(CLANG_WASM_OPT)
+	clang++-8 -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(CLANG_WASM_OPT)
+	#ld.gold -o ../bls-wasm $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
 # ios
 XCODEPATH=$(shell xcode-select -p)
