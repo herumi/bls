@@ -16,7 +16,6 @@ test: ./sample
 	./sample
 
 update:
-	cp ../../../mcl/ffi/go/mcl/mcl.go bls/
-	patch -p0 < mcl.patch
+	patch -o - -p0 ../../../mcl/ffi/go/mcl/mcl.go < mcl.patch > bls/mcl.go
 clean:
 	$(RM) ./sample
