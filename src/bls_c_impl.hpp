@@ -178,14 +178,14 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 */
 bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 {
-	GT e1, e2;
-	millerLoop(e1, getBasePoint(), sHm);
-	G1 neg_sP;
-	G1::neg(neg_sP, sP);
-	millerLoop(e2, neg_sP, Hm);
-	e1 *= e2;
-	finalExp(e1, e1);
-	return e1.isOne();
+	GT e;
+	G1 v1[2];
+	G2 v2[2] = { sHm, Hm };
+	v1[0] = getBasePoint();
+	G1::neg(v1[1], sP);
+	millerLoopVec(e, v1, v2, 2);
+	finalExp(e, e);
+	return e.isOne();
 }
 #else
 /*
