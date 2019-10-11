@@ -15,5 +15,8 @@ PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRA
 test: ./sample
 	./sample
 
+update:
+	cp ../../../mcl/ffi/go/mcl/mcl.go bls/
+	patch -p0 < mcl.patch
 clean:
 	$(RM) ./sample

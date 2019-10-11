@@ -5,7 +5,6 @@ package bls
 #cgo bn384 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6
 #cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
 #include <mcl/bn.h>
-
 */
 import "C"
 import "fmt"
@@ -312,6 +311,14 @@ func G1Mul(out *G1, x *G1, y *Fr) {
 	C.mclBnG1_mul(out.getPointer(), x.getPointer(), y.getPointer())
 }
 
+// G1MulVec -- multi scalar multiplication out = sum mul(xVec[i], yVec[i])
+func G1MulVec(out *G1, xVec []G1, yVec []Fr) {
+	if len(xVec) != len(yVec) {
+		panic("xVec and yVec have the same size")
+	}
+	C.mclBnG1_mulVec(out.getPointer(), (*C.mclBnG1)(unsafe.Pointer(&xVec[0])), (*C.mclBnFr)(unsafe.Pointer(&yVec[0])), (C.size_t)(len(xVec)))
+}
+
 // G1MulCT -- constant time (depending on bit lengh of y)
 func G1MulCT(out *G1, x *G1, y *Fr) {
 	C.mclBnG1_mulCT(out.getPointer(), x.getPointer(), y.getPointer())
@@ -420,6 +427,14 @@ func G2Sub(out *G2, x *G2, y *G2) {
 // G2Mul --
 func G2Mul(out *G2, x *G2, y *Fr) {
 	C.mclBnG2_mul(out.getPointer(), x.getPointer(), y.getPointer())
+}
+
+// G2MulVec -- multi scalar multiplication out = sum mul(xVec[i], yVec[i])
+func G2MulVec(out *G2, xVec []G2, yVec []Fr) {
+	if len(xVec) != len(yVec) {
+		panic("xVec and yVec have the same size")
+	}
+	C.mclBnG2_mulVec(out.getPointer(), (*C.mclBnG2)(unsafe.Pointer(&xVec[0])), (*C.mclBnFr)(unsafe.Pointer(&yVec[0])), (C.size_t)(len(xVec)))
 }
 
 // GT --
@@ -551,6 +566,14 @@ func FinalExp(out *GT, x *GT) {
 // MillerLoop --
 func MillerLoop(out *GT, x *G1, y *G2) {
 	C.mclBn_millerLoop(out.getPointer(), x.getPointer(), y.getPointer())
+}
+
+// MillerLoopVec -- multi pairings ; out = prod_i e(xVec[i], yVec[i])
+func MillerLoopVec(out *GT, xVec []G1, yVec []G2) {
+	if len(xVec) != len(yVec) {
+		panic("xVec and yVec have the same size")
+	}
+	C.mclBn_millerLoopVec(out.getPointer(), (*C.mclBnG1)(unsafe.Pointer(&xVec[0])), (*C.mclBnG2)(unsafe.Pointer(&yVec[0])), (C.size_t)(len(xVec)))
 }
 
 // GetUint64NumToPrecompute --
