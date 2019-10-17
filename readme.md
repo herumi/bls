@@ -98,7 +98,9 @@ make BLS_SWAP_G=1
 make test_go_swapg ; test for cgo
 ```
 
-Remark: The library built with BLS_SWAP_G is not compatible with the library built without BLS_SWAP_G.
+Remark:
+- The library built with BLS_SWAP_G is not compatible with the library built without BLS_SWAP_G.
+- Define `-DBLS_SWAP_G' before including `bls/bn.h`.
 
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
