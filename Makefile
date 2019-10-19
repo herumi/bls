@@ -22,6 +22,9 @@ endif
 ifeq ($(BLS_SWAP_G),1)
   CFLAGS+=-DBLS_SWAP_G
 endif
+ifeq ($(BLS_ETH),1)
+  CFLAGS+=-DBLS_ETH -DBLS_SWAP_G
+endif
 
 BLS256_LIB=$(LIB_DIR)/libbls256.a
 BLS384_LIB=$(LIB_DIR)/libbls384.a
@@ -212,7 +215,10 @@ gomobile: ../mcl/src/base64.ll
 
 MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I../mcl/include
 ifneq ($(MIN_WITH_XBYAK),1)
-    MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
+  MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
+endif
+ifeq ($(BLS_ETH),1)
+  MIN_CFLAGS+=-DBLS_ETH -DBLS_SWAP_G
 endif
 minimized_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(MIN_CFLAGS)

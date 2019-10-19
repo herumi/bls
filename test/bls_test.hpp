@@ -74,9 +74,11 @@ void hashTest(int type)
 	CYBOZU_TEST_ASSERT(sig.verifyHash(pub, h));
 	CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, "\x01\x02\04"));
 	if (type == MCL_BN254) {
+#ifndef BLS_ETH
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "", 0), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00", 1), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00\x00", 2), std::exception);
+#endif
 #ifndef BLS_SWAP_G
 		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
 		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
@@ -467,8 +469,10 @@ void verifyAggregateTest()
 	CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
 	bls::Signature invalidSig = sigs[0] + sigs[1];
 	CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+#ifndef BLS_ETH
 	h[0].data[0]++;
 	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+#endif
 }
 
 unsigned int writeSeq(void *self, void *buf, unsigned int bufSize)

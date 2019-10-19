@@ -9,6 +9,11 @@
 #define MCLBN_NO_AUTOLINK
 #include <mcl/bn.h>
 
+#ifdef BLS_ETH
+	#ifndef BLS_SWAP_G
+		#define BLS_SWAP_G
+	#endif
+#endif
 #ifdef BLS_SWAP_G
 	/*
 		error if BLS_SWAP_G is inconsistently used between library and exe

@@ -395,7 +395,9 @@ CYBOZU_TEST_AUTO(all)
 		blsDataTest();
 		blsOrderTest(tbl[i].r, tbl[i].p);
 		blsSerializeTest();
+#ifndef BLS_ETH
 		if (tbl[i].curveType == MCL_BLS12_381) blsVerifyOrderTest();
+#endif
 		blsAddSubTest();
 		blsTrivialShareTest();
 		modTest(tbl[i].r);
