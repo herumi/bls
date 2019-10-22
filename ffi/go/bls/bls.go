@@ -192,6 +192,16 @@ func (sec *SecretKey) SetLittleEndian(buf []byte) error {
 	return nil
 }
 
+// SetLittleEndianMod --
+func (sec *SecretKey) SetLittleEndianMod(buf []byte) error {
+	// #nosec
+	err := C.blsSecretKeySetLittleEndianMod(&sec.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err blsSecretKeySetLittleEndianMod %x", err)
+	}
+	return nil
+}
+
 // SerializeToHexStr --
 func (sec *SecretKey) SerializeToHexStr() string {
 	return hex.EncodeToString(sec.Serialize())
