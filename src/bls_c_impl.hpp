@@ -124,7 +124,7 @@ int blsInit(int curve, int compiledTimeVar)
 	if (!b) return -101;
 #ifdef BLS_ETH
 	mclBn_setETHserialization(1);
-	mclBn_setETHmaptTo(1);
+	mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 #endif
 	return 0;
 }
@@ -369,12 +369,18 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 template<class G>
 inline bool toG(G& Hm, const void *h, mclSize size)
 {
+	bool b;
+#ifdef BLS_ETH
+	Fp2 t;
+	if (t.deserialize(h, size) == 0) return false;
+	BN::mapToG2(&b, Hm, t);
+#elif defined(BLS_SWAP_G)
 	Fp t;
 	t.setArrayMask((const char *)h, size);
-	bool b;
-#ifdef BLS_SWAP_G
 	BN::mapToG2(&b, Hm, Fp2(t, 0));
 #else
+	Fp t;
+	t.setArrayMask((const char *)h, size);
 	BN::mapToG1(&b, Hm, t);
 #endif
 	return b;
