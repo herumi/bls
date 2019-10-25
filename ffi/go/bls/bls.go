@@ -612,7 +612,7 @@ func (sig *Sign) VerifyAggregateHashes(pubVec []PublicKey, hash [][]byte) bool {
 	if n == 0 {
 		return false
 	}
-	hashByte := GetOpUnitSize() * 8
+	hashByte := len(hash[0])
 	h := make([]byte, n*hashByte)
 	for i := 0; i < n; i++ {
 		hn := len(hash[i])
