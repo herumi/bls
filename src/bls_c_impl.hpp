@@ -55,17 +55,32 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 	swap G1 and G2 if BLS_SWAP_G is defined
 	@note the current implementation does not support precomputed miller loop
 */
+/*
+	ETH2 spec requires the original G2cofactor
+	original cofactor = mulByCofactorBLS12fast * adj
+	adj H(m) ; original version
+	H(m) ; fast version
+	PublicKey = s P
+	Signature = s (adj H(m)) ; slow
+	          = (s adj) H(m) ; fast
+	Verify original ; e(P, s adj H(m)) == e(s P, adj H(m))
+	fast version    ; e((1/adj) P, s H(m)) == e(s P, H(m))
+*/
 
+static int g_curveType;
 #ifdef BLS_SWAP_G
 typedef G2 G;
 static G1 g_P;
+static G1 g_PadjInv;
 inline const G1& getBasePoint() { return g_P; }
+inline const G1& getBasePointAdjInv() { return g_PadjInv; } // for only BLS12-381
 #else
 typedef G1 G;
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
 inline const G2& getBasePoint() { return g_Q; }
+inline const G2& getBasePointAdjInv() { return getBasePoint(); } // same
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
@@ -78,6 +93,7 @@ int blsInit(int curve, int compiledTimeVar)
 	bool b;
 	initPairing(&b, cp);
 	if (!b) return -1;
+	g_curveType = curve;
 
 #ifdef BLS_SWAP_G
 	#ifdef BLS_ETH
@@ -85,10 +101,12 @@ int blsInit(int curve, int compiledTimeVar)
 		mclBn_setETHserialization(1);
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
+		G1::mul(g_PadjInv, g_P, mcl::bn::getG2cofactorAdjInv());
 	} else
 	#endif
 	{
 		mapToG1(&b, g_P, 1);
+		g_PadjInv = g_P;
 	}
 #else
 
@@ -177,7 +195,13 @@ int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
 	blsHashToSignature(sig, m, size);
-	GmulCT(*cast(&sig->v), *cast(&sig->v), *cast(&sec->v));
+	Fr s = *cast(&sec->v);
+#ifdef BLS_ETH
+	if (g_curveType == MCL_BLS12_381) {
+		s *= mcl::bn::getG2cofactorAdj();
+	}
+#endif
+	GmulCT(*cast(&sig->v), *cast(&sig->v), s);
 }
 
 #ifdef BLS_SWAP_G
@@ -190,7 +214,7 @@ bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 	GT e;
 	G1 v1[2];
 	G2 v2[2] = { sHm, Hm };
-	v1[0] = getBasePoint();
+	v1[0] = getBasePointAdjInv();
 	G1::neg(v1[1], sP);
 	millerLoopVec(e, v1, v2, 2);
 	finalExp(e, e);
@@ -371,7 +395,7 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 #ifdef BLS_ETH
 	Fp2 t;
 	if (t.deserialize(h, size) == 0) return false;
-	BN::mapToG2(&b, Hm, t);
+	BN::mapToG2(&b, Hm, t, true);
 #elif defined(BLS_SWAP_G)
 	Fp t;
 	t.setArrayMask((const char *)h, size);
@@ -390,7 +414,8 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 	GT e1, e2;
 	const char *ph = (const char*)hVec;
 #ifdef BLS_SWAP_G
-	millerLoop(e1, getBasePoint(), -*cast(&aggSig->v));
+	const G1& gen = getBasePointAdjInv();
+	millerLoop(e1, gen, -*cast(&aggSig->v));
 	G2 h;
 	if (!toG(h, &ph[0], sizeofHash)) return 0;
 	BN::millerLoop(e2, *cast(&pubVec[0].v), h);
@@ -424,7 +449,13 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 {
 	G Hm;
 	if (!toG(Hm, h, size)) return -1;
-	GmulCT(*cast(&sig->v), Hm, *cast(&sec->v));
+	Fr s = *cast(&sec->v);
+#ifdef BLS_ETH
+	if (g_curveType == MCL_BLS12_381) {
+		s *= mcl::bn::getG2cofactorAdj();
+	}
+#endif
+	GmulCT(*cast(&sig->v), Hm, s);
 	return 0;
 }
 
