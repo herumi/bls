@@ -206,6 +206,9 @@ gomobile: ../mcl/src/base64.ll
 	@lipo "ios/armv7/libbls$(CURVE_BIT).dylib"  "ios/arm64/libbls$(CURVE_BIT).dylib" "ios/i386/libbls$(CURVE_BIT).dylib" "ios/x86_64/libbls$(CURVE_BIT).dylib" -create -output lib/libbls$(CURVE_BIT).dylib
 
 MIN_CFLAGS=-O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -fno-rtti -I./include -I../mcl/include #-fno-exceptions
+ifeq ($(BLS_SWAP_G),1)
+    MIN_CFLAGS+=-DBLS_SWAP_G
+endif
 minimised_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(MIN_CFLAGS)
 	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(MIN_CFLAGS)
