@@ -62,8 +62,30 @@ void testForBN254()
 	testSetForBN254<bls::SecretKey>();
 }
 
+void setFp2Serialize(char s[96])
+{
+	mclBnFp r;
+	mclBnFp_setByCSPRNG(&r);
+	mclBnFp_serialize(s, 48, &r);
+	mclBnFp_setByCSPRNG(&r);
+	mclBnFp_serialize(s + 48, 48, &r);
+}
+
 void hashTest(int type)
 {
+#ifdef BLS_ETH
+	if (type != MCL_BLS12_381) return;
+	bls::SecretKey sec;
+	sec.init();
+	bls::PublicKey pub;
+	sec.getPublicKey(pub);
+	char h[96];
+	setFp2Serialize(h);
+	bls::Signature sig;
+	sec.signHash(sig, h, sizeof(h));
+	CYBOZU_TEST_ASSERT(sig.verifyHash(pub, h, sizeof(h)));
+	CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, "\x01\x02\04"));
+#else
 	bls::SecretKey sec;
 	sec.init();
 	bls::PublicKey pub;
@@ -74,11 +96,9 @@ void hashTest(int type)
 	CYBOZU_TEST_ASSERT(sig.verifyHash(pub, h));
 	CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, "\x01\x02\04"));
 	if (type == MCL_BN254) {
-#ifndef BLS_ETH
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "", 0), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00", 1), std::exception);
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, "\x00\x00", 2), std::exception);
-#endif
 #ifndef BLS_SWAP_G
 		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
 		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
@@ -86,6 +106,7 @@ void hashTest(int type)
 		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, mc1, 24), std::exception);
 #endif
 	}
+#endif
 }
 
 void blsTest()
@@ -104,8 +125,8 @@ void blsTest()
 		CYBOZU_TEST_ASSERT(sig.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!sig.verify(pub, m + "a"));
 		streamTest(sig);
-		CYBOZU_BENCH_C("sign", 10000, sec.sign, sig, m);
-		CYBOZU_BENCH_C("verify", 1000, sig.verify, pub, m);
+		CYBOZU_BENCH_C("sign", 300, sec.sign, sig, m);
+		CYBOZU_BENCH_C("verify", 300, sig.verify, pub, m);
 	}
 }
 
@@ -444,20 +465,30 @@ void dataTest()
 	}
 }
 
-void verifyAggregateTest()
+void verifyAggregateTest(int type)
 {
+	(void)type;
 	const size_t n = 10;
 	bls::SecretKey secs[n];
 	bls::PublicKey pubs[n];
 	bls::Signature sigs[n], sig;
+#ifdef BLS_ETH
+	if (type != MCL_BLS12_381) return;
+	const size_t sizeofHash = 48 * 2;
+#else
 	const size_t sizeofHash = 32;
+#endif
 	struct Hash { char data[sizeofHash]; };
 	std::vector<Hash> h(n);
 	for (size_t i = 0; i < n; i++) {
+#ifdef BLS_ETH
+		setFp2Serialize(h[i].data);
+#else
 		char msg[128];
 		CYBOZU_SNPRINTF(msg, sizeof(msg), "abc-%d", (int)i);
 		const size_t msgSize = strlen(msg);
 		cybozu::Sha256().digest(h[i].data, sizeofHash, msg, msgSize);
+#endif
 		secs[i].init();
 		secs[i].getPublicKey(pubs[i]);
 		secs[i].signHash(sigs[i], h[i].data, sizeofHash);
@@ -485,8 +516,12 @@ unsigned int writeSeq(void *self, void *buf, unsigned int bufSize)
 	return bufSize;
 }
 
-void setRandFuncTest()
+void setRandFuncTest(int type)
 {
+	(void)type;
+#ifdef BLS_ETH
+	if (type == MCL_BLS12_381) return;
+#endif
 	blsSecretKey sec;
 	const int seqInit1 = 5;
 	int seq = seqInit1;
@@ -511,7 +546,7 @@ void setRandFuncTest()
 	printf("\n");
 }
 
-void testAll()
+void testAll(int type)
 {
 	blsTest();
 	k_of_nTest();
@@ -519,8 +554,9 @@ void testAll()
 	addTest();
 	dataTest();
 	aggregateTest();
-	verifyAggregateTest();
-	setRandFuncTest();
+	verifyAggregateTest(type);
+	setRandFuncTest(type);
+	hashTest(type);
 }
 CYBOZU_TEST_AUTO(all)
 {
@@ -543,7 +579,6 @@ CYBOZU_TEST_AUTO(all)
 		if (type == MCL_BN254) {
 			testForBN254();
 		}
-		testAll();
-		hashTest(type);
+		testAll(type);
 	}
 }

@@ -82,6 +82,8 @@ int blsInit(int curve, int compiledTimeVar)
 #ifdef BLS_SWAP_G
 	#ifdef BLS_ETH
 	if (curve == MCL_BLS12_381) {
+		mclBn_setETHserialization(1);
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
 	} else
 	#endif
@@ -122,10 +124,6 @@ int blsInit(int curve, int compiledTimeVar)
 	}
 #endif
 	if (!b) return -101;
-#ifdef BLS_ETH
-	mclBn_setETHserialization(1);
-	mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
-#endif
 	return 0;
 }
 

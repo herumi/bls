@@ -324,6 +324,7 @@ void modTest(const char *rStr)
 	const mpz_class r(rStr);
 	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
 	CYBOZU_TEST_ASSERT(n > 0);
+#ifndef BLS_ETH
 	// serialized data to mpz_class
 	mpz_class y = 0;
 	for (size_t i = 0; i < n; i++) {
@@ -331,6 +332,7 @@ void modTest(const char *rStr)
 		y += buf[n - 1 - i];
 	}
 	CYBOZU_TEST_EQUAL(y, x % r);
+#endif
 }
 
 void blsBench()
@@ -345,8 +347,8 @@ void blsBench()
 
 	blsGetPublicKey(&pub, &sec);
 
-	CYBOZU_BENCH_C("sign", 10000, blsSign, &sig, &sec, msg, msgSize);
-	CYBOZU_BENCH_C("verify", 1000, blsVerify, &sig, &pub, msg, msgSize);
+	CYBOZU_BENCH_C("sign", 300, blsSign, &sig, &sec, msg, msgSize);
+	CYBOZU_BENCH_C("verify", 300, blsVerify, &sig, &pub, msg, msgSize);
 }
 
 CYBOZU_TEST_AUTO(all)
