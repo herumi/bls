@@ -465,22 +465,20 @@ void dataTest()
 	}
 }
 
-void verifyAggregateTest(int type)
+void testAggregatedHashes(size_t n)
 {
-	(void)type;
-	const size_t n = 10;
-	bls::SecretKey secs[n];
-	bls::PublicKey pubs[n];
-	bls::Signature sigs[n], sig;
 #ifdef BLS_ETH
-	if (type != MCL_BLS12_381) return;
 	const size_t sizeofHash = 48 * 2;
 #else
 	const size_t sizeofHash = 32;
 #endif
 	struct Hash { char data[sizeofHash]; };
+	std::vector<bls::PublicKey> pubs(n);
+	std::vector<bls::Signature> sigs(n);
 	std::vector<Hash> h(n);
 	for (size_t i = 0; i < n; i++) {
+		bls::SecretKey sec;
+		sec.init();
 #ifdef BLS_ETH
 		setFp2Serialize(h[i].data);
 #else
@@ -489,21 +487,34 @@ void verifyAggregateTest(int type)
 		const size_t msgSize = strlen(msg);
 		cybozu::Sha256().digest(h[i].data, sizeofHash, msg, msgSize);
 #endif
-		secs[i].init();
-		secs[i].getPublicKey(pubs[i]);
-		secs[i].signHash(sigs[i], h[i].data, sizeofHash);
+		sec.getPublicKey(pubs[i]);
+		sec.signHash(sigs[i], h[i].data, sizeofHash);
 	}
-	sig = sigs[0];
+	bls::Signature sig = sigs[0];
 	for (size_t i = 1; i < n; i++) {
 		sig.add(sigs[i]);
 	}
-	CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
-	bls::Signature invalidSig = sigs[0] + sigs[1];
-	CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+	CYBOZU_TEST_ASSERT(sig.verifyAggregatedHashes(pubs.data(), h.data(), sizeofHash, n));
+	bls::Signature invalidSig = sigs[0] + sigs[0];
+	CYBOZU_TEST_ASSERT(!invalidSig.verifyAggregatedHashes(pubs.data(), h.data(), sizeofHash, n));
 #ifndef BLS_ETH
 	h[0].data[0]++;
-	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs, h.data(), sizeofHash, n));
+	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs.data(), h.data(), sizeofHash, n));
 #endif
+	printf("n=%2d ", (int)n);
+	CYBOZU_BENCH_C("aggregate", 50, sig.verifyAggregatedHashes, pubs.data(), h.data(), sizeofHash, n);
+}
+
+void verifyAggregateTest(int type)
+{
+	(void)type;
+#ifdef BLS_ETH
+	if (type != MCL_BLS12_381) return;
+#endif
+	const size_t nTbl[] = { 1, 2, 15, 16, 17, 50 };
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
+		testAggregatedHashes(nTbl[i]);
+	}
 }
 
 unsigned int writeSeq(void *self, void *buf, unsigned int bufSize)

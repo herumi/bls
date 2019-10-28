@@ -411,19 +411,34 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
 {
 	if (n == 0) return 0;
-	GT e1, e2;
+	GT e1;
 	const char *ph = (const char*)hVec;
+	const size_t N = 16;
+	G1 g1Vec[N];
+	G2 g2Vec[N];
 #ifdef BLS_SWAP_G
-	const G1& gen = getBasePointAdjInv();
-	millerLoop(e1, gen, -*cast(&aggSig->v));
-	G2 h;
-	if (!toG(h, &ph[0], sizeofHash)) return 0;
-	BN::millerLoop(e2, *cast(&pubVec[0].v), h);
-	e1 *= e2;
-	for (size_t i = 1; i < n; i++) {
-		if (!toG(h, &ph[i * sizeofHash], sizeofHash)) return 0;
-		millerLoop(e2, *cast(&pubVec[i].v), h);
-		e1 *= e2;
+	size_t start = 1; // 1 if first else 0
+
+	g1Vec[0] = getBasePointAdjInv();
+	G2::neg(g2Vec[0], *cast(&aggSig->v));
+	while (n > 0) {
+		size_t m = N - start;
+		if (n < m) m = n;
+		for (size_t i = 0; i < m; i++) {
+			g1Vec[i + start] = *cast(&pubVec[i].v);
+			if (!toG(g2Vec[i + start], &ph[i * sizeofHash], sizeofHash)) return 0;
+		}
+		if (start) {
+			millerLoopVec(e1, g1Vec, g2Vec, m + start);
+			start = 0;
+		} else {
+			GT e2;
+			millerLoopVec(e2, g1Vec, g2Vec, m);
+			e1 *= e2;
+		}
+		pubVec += m;
+		ph += m * sizeofHash;
+		n -= m;
 	}
 #else
 	/*
@@ -431,14 +446,19 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		<=> finalExp(ML(-aggSig, Q) * prod_i ML(hVec[i], pubVec[i])) == 1
 	*/
 	BN::precomputedMillerLoop(e1, -*cast(&aggSig->v), g_Qcoeff.data());
-	G1 h;
-	if (!toG(h, &ph[0], sizeofHash)) return 0;
-	BN::millerLoop(e2, h, *cast(&pubVec[0].v));
-	e1 *= e2;
-	for (size_t i = 1; i < n; i++) {
-		if (!toG(h, &ph[i * sizeofHash], sizeofHash)) return 0;
-		BN::millerLoop(e2, h, *cast(&pubVec[i].v));
+	while (n > 0) {
+		size_t m = N;
+		if (n < m) m = n;
+		for (size_t i = 0; i < m; i++) {
+			if (!toG(g1Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
+			g2Vec[i] = *cast(&pubVec[i].v);
+		}
+		GT e2;
+		millerLoopVec(e2, g1Vec, g2Vec, m);
 		e1 *= e2;
+		pubVec += m;
+		ph += m * sizeofHash;
+		n -= m;
 	}
 #endif
 	BN::finalExp(e1, e1);
