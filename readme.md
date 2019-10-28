@@ -113,6 +113,11 @@ See `mcl/include/curve_type.h` for curve parameter
 If there are both a shared library both and static library having the same name in the same directory, then the shared library is linked.
 So if you want to link a static library, then remove the shared library in the directory.
 
+# Compiled binary for eth2
+[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary) contains `make BLS_ETH=1`.
+This library has compatibility with [eth2 spec](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md)
+
+
 # API
 
 ## Basic API
