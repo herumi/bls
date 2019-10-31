@@ -17,5 +17,8 @@ test: ./sample
 
 update:
 	patch -o - -p0 ../../../mcl/ffi/go/mcl/mcl.go < mcl.patch > bls/mcl.go
+update_patch:
+	-diff -upN ../../../mcl/ffi/go/mcl/mcl.go bls/mcl.go > mcl.patch
+
 clean:
 	$(RM) ./sample

@@ -21,10 +21,12 @@ int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 #include <bls/bls.h>
 */
 import "C"
-import "fmt"
-import "unsafe"
-import "io"
-import "encoding/hex"
+import (
+ "fmt"
+ "unsafe"
+ "io"
+ "encoding/hex"
+)
 
 func hex2byte(s string) ([]byte, error) {
 	if (len(s) & 1) == 1 {
