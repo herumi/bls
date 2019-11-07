@@ -22,10 +22,10 @@ int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 */
 import "C"
 import (
- "fmt"
- "unsafe"
- "io"
- "encoding/hex"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"unsafe"
 )
 
 func hex2byte(s string) ([]byte, error) {
