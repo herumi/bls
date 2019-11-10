@@ -23,6 +23,7 @@ int wrapReadRandCgo(void *self, void *buf, unsigned int n);
 import "C"
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"unsafe"
@@ -336,6 +337,23 @@ func (sec *SecretKey) GetPop() (sig *Sign) {
 // PublicKey --
 type PublicKey struct {
 	v C.blsPublicKey
+}
+
+// PublicKeys ..
+type PublicKeys []PublicKey
+
+// JSON provides a JSON string dump of slice of PublicKeys in Hexformat
+func (keys PublicKeys) JSON() string {
+	type T struct {
+		Count      int      `json:"count"`
+		PublicKeys []string `json:"public-keys"`
+	}
+	t := T{len(keys), make([]string, len(keys))}
+	for i := range keys {
+		t.PublicKeys[i] = keys[i].SerializeToHexStr()
+	}
+	b, _ := json.Marshal(t)
+	return string(b)
 }
 
 // Serialize --
