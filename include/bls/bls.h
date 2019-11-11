@@ -181,6 +181,18 @@ BLS_DLL_API int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const vo
 // return 1 if valid
 BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
 
+#ifdef BLS_ETH
+/*
+	sign hashWithDomain by sec
+	hashWithDomain[0:32] 32 bytes message
+	hashWithDomain[32:40] little endian 64-bit integer
+	see https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md#hash_to_g2
+*/
+BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint8_t hashWithDomain[40]);
+// return 1 if valid
+BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const uint8_t hashWithDomain[40]);
+#endif
+
 /*
 	verify aggSig with pubVec[0, n) and hVec[0, n)
 	e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])

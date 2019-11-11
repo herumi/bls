@@ -479,6 +479,41 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	return 0;
 }
 
+#ifdef BLS_ETH
+
+/*
+	0    16    48   64   96
+	0..0 H(im) 0..0 H(re)
+*/
+void hashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
+{
+	uint8_t msg[41];
+	memcpy(msg, hashWithDomain, 40);
+	memset(buf, 0, 16);
+
+	msg[40] = '\x02';
+	mcl::fp::sha256(buf + 16, 32, msg, 41); // im part
+
+	memset(buf + 48, 0, 16);
+	msg[40] = '\x01';
+	mcl::fp::sha256(buf + 64, 32, msg, 41); // re part
+}
+
+int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint8_t hashWithDomain[40])
+{
+	uint8_t msg[96];
+	hashWithDomainToFp2(msg, hashWithDomain);
+	return blsSignHash(sig, sec, msg, sizeof(msg));
+}
+
+int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const uint8_t hashWithDomain[40])
+{
+	uint8_t msg[96];
+	hashWithDomainToFp2(msg, hashWithDomain);
+	return blsVerifyHash(sig, pub, msg, sizeof(msg));
+}
+#endif
+
 int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub)
 {
 #ifdef BLS_SWAP_G
