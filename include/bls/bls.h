@@ -188,9 +188,15 @@ BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, 
 	hashWithDomain[32:40] little endian 64-bit integer
 	see https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md#hash_to_g2
 */
-BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint8_t hashWithDomain[40]);
+BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const unsigned char hashWithDomain[40]);
 // return 1 if valid
-BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const uint8_t hashWithDomain[40]);
+BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const unsigned char hashWithDomain[40]);
+
+/*
+	pubVec is an array of size n
+	hashWithDomain is an array of size (40 * n)
+*/
+BLS_DLL_API int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n);
 #endif
 
 /*

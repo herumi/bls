@@ -512,6 +512,43 @@ int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, co
 	hashWithDomainToFp2(msg, hashWithDomain);
 	return blsVerifyHash(sig, pub, msg, sizeof(msg));
 }
+
+int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n)
+{
+	if (n == 0) return 0;
+	GT e1;
+	const size_t N = 16;
+	G1 g1Vec[N];
+	G2 g2Vec[N];
+
+	size_t start = 1; // 1 if first else 0
+
+	g1Vec[0] = getBasePointAdjInv();
+	G2::neg(g2Vec[0], *cast(&aggSig->v));
+	while (n > 0) {
+		size_t m = N - start;
+		if (n < m) m = n;
+		for (size_t i = 0; i < m; i++) {
+			g1Vec[i + start] = *cast(&pubVec[i].v);
+			uint8_t buf[96];
+			hashWithDomainToFp2(buf, hashWithDomain[i]);
+			if (!toG(g2Vec[i + start], buf, sizeof(buf))) return 0;
+		}
+		if (start) {
+			millerLoopVec(e1, g1Vec, g2Vec, m + start);
+			start = 0;
+		} else {
+			GT e2;
+			millerLoopVec(e2, g1Vec, g2Vec, m);
+			e1 *= e2;
+		}
+		pubVec += m;
+		hashWithDomain += m;
+		n -= m;
+	}
+	BN::finalExp(e1, e1);
+	return e1.isOne();
+}
 #endif
 
 int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub)
