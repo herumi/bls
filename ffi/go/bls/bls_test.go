@@ -1,11 +1,14 @@
 package bls
 
-import "testing"
-import "strconv"
-import "crypto/sha256"
-import "crypto/sha512"
-import "fmt"
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"testing"
+)
 
 var unitN = 0
 
@@ -482,6 +485,35 @@ func testReadRand(t *testing.T) {
 	fmt.Printf("(default) buf=%x\n", buf)
 }
 
+func testJson(t *testing.T) {
+	n := 3
+	var pubs PublicKeys
+	pubs = make([]PublicKey, n)
+	var sec SecretKey
+	for i := 0; i < n; i++ {
+		sec.SetByCSPRNG()
+		pubs[i] = *sec.GetPublicKey()
+	}
+	s := pubs.JSON()
+	fmt.Printf("s=%s\n", s)
+	type T struct {
+		Count      int      `json:"count"`
+		PublicKeys []string `json:"public-keys"`
+	}
+	var dec T
+	if err := json.Unmarshal([]byte(s), &dec); err != nil {
+		t.Fatal(err)
+	}
+	if dec.Count != n {
+		t.Fatalf("Count=%d\n", dec.Count)
+	}
+	for i := 0; i < n; i++ {
+		if pubs[i].SerializeToHexStr() != dec.PublicKeys[i] {
+			t.Fatalf("IsEqual %d\n", i)
+		}
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -504,6 +536,7 @@ func test(t *testing.T, c int) {
 	testAggregate(t)
 	testHash(t)
 	testAggregateHashes(t)
+	testJson(t)
 }
 
 func TestMain(t *testing.T) {
