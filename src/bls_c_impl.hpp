@@ -480,12 +480,11 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 }
 
 #ifdef BLS_ETH
-
 /*
 	0    16    48   64   96
 	0..0 H(im) 0..0 H(re)
 */
-void hashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
+static void hashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
 {
 	uint8_t msg[41];
 	memcpy(msg, hashWithDomain, 40);
@@ -498,23 +497,42 @@ void hashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
 	msg[40] = '\x01';
 	mcl::fp::sha256(buf + 64, 32, msg, 41); // re part
 }
+#endif
 
 int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint8_t hashWithDomain[40])
 {
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return -1;
 	uint8_t msg[96];
 	hashWithDomainToFp2(msg, hashWithDomain);
 	return blsSignHash(sig, sec, msg, sizeof(msg));
+#else
+	(void)sig;
+	(void)sec;
+	(void)hashWithDomain;
+	return -1;
+#endif
 }
 
 int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const uint8_t hashWithDomain[40])
 {
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
 	uint8_t msg[96];
 	hashWithDomainToFp2(msg, hashWithDomain);
 	return blsVerifyHash(sig, pub, msg, sizeof(msg));
+#else
+	(void)sig;
+	(void)pub;
+	(void)hashWithDomain;
+	return 0;
+#endif
 }
 
 int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n)
 {
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
 	if (n == 0) return 0;
 	GT e1;
 	const size_t N = 16;
@@ -548,8 +566,14 @@ int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPubli
 	}
 	BN::finalExp(e1, e1);
 	return e1.isOne();
-}
+#else
+	(void)aggSig;
+	(void)pubVec;
+	(void)hashWithDomain;
+	(void)n;
+	return 0;
 #endif
+}
 
 int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub)
 {

@@ -181,12 +181,21 @@ BLS_DLL_API int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const vo
 // return 1 if valid
 BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size);
 
-#ifdef BLS_ETH
+/*
+	verify aggSig with pubVec[0, n) and hVec[0, n)
+	e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
+	return 1 if valid
+	@note do not check duplication of hVec
+*/
+BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n);
+
 /*
 	sign hashWithDomain by sec
 	hashWithDomain[0:32] 32 bytes message
 	hashWithDomain[32:40] 8 bytes data
 	see https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md#hash_to_g2
+	HashWithDomain apis support only for BLS_ETH=1 and BLS12_381
+	return 0 if success else -1
 */
 BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const unsigned char hashWithDomain[40]);
 // return 1 if valid
@@ -197,15 +206,6 @@ BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublic
 	hashWithDomain is an array of size (40 * n)
 */
 BLS_DLL_API int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n);
-#endif
-
-/*
-	verify aggSig with pubVec[0, n) and hVec[0, n)
-	e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
-	return 1 if valid
-	@note do not check duplication of hVec
-*/
-BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n);
 
 // sub
 BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);
