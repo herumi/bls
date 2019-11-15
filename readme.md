@@ -15,8 +15,9 @@ An implementation of BLS threshold signature
 
 # Support languages
 
-* Go
+* Go cf. [bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary) , [bls-go-binary](https://github.com/herumi/bls-go-binary/)
 * C#
+* [Rust](https://github.com/herumi/bls-eth-rust) (beta version)
 
 # Installation Requirements
 
@@ -30,7 +31,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
-* add blsSignHashWithDomain, blsVerifyHashWithDomain
+* add blsSignHashWithDomain, blsVerifyHashWithDomain(see (Ethereum 2.0 spec mode)[https://github.com/herumi/bls/#ethereum-2.0-spec-mode])
 * rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
 * add blsSetETHserialization(1) to use ETH serialization for BLS12-381
 * Support swap of G1 and G2 for Go (-tags bn384_256_swapg)
@@ -103,21 +104,58 @@ Remark:
 - The library built with BLS_SWAP_G is not compatible with the library built without BLS_SWAP_G.
 - Define `-DBLS_SWAP_G' before including `bls/bn.h`.
 
+# Ethereum 2.0 spec mode
+For [eth2](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md),
+```
+make clean
+make BLS_ETH=1 bin/libbls384_256.a
+```
+
+## APIs for sign/verify for eth2
+`uint8_t hashWithDomain[40]` in the following apis means a structure of 32 bytes msg and 8 bytes domain.
+
+```
+struct Message {
+  uint8_t hash[32];
+  uint8_t domain[8];
+};
+```
+
+### Sign `hashWithDomain` by `sec` and create `sig`
+```
+int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const unsigned char hashWithDomain[40]);
+```
+return 0 if sccess else -1
+
+### Verify `sig` for `hashWithDomain` by `pub`
+```
+int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const unsigned char hashWithDomain[40]);
+```
+return 1 if valid else 0
+
+### Verify `aggSig` for `{hashWithDomain[i]}` by `{pubVec[i]}`
+
+`aggSig` is aggregated signature of `{sig[i]}` corresponding to `{pubVec[i]}`.
+
+```
+int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n);
+```
+return 1 if valid else 0
+
+## Compiled static binary
+The precompiled static binary `libbls384_256.a` for some architectures is provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib).
+
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
 * libbls384.a/libbls384.so ; for BN254/BN381_1/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6
 * libbls384_256.a/libbls384_256.so ; for BN254/BLS12_381 compiled with MCLBN_FP_UNIT_SIZE=6 and MCLBN_FR_UNIT_SIZE=4
+  - precompiled static library is provided at [bls-go-binary](https://github.com/herumi/bls-go-binary/)
 
 See `mcl/include/curve_type.h` for curve parameter
 
 ## Remark for static library
 If there are both a shared library both and static library having the same name in the same directory, then the shared library is linked.
 So if you want to link a static library, then remove the shared library in the directory.
-
-# Compiled binary for eth2
-[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary) contains `make BLS_ETH=1`.
-This library has compatibility with [eth2 spec](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md)
-
 
 # API
 
