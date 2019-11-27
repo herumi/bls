@@ -156,7 +156,6 @@ EMCC_OPT+=-O3 -DNDEBUG
 EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s MODULARIZE=1 #-s ASSERTIONS=1
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION
 EMCC_OPT+=-s ABORTING_MALLOC=0
-EMCC_OPT+=-DMCLBN_FP_UNIT_SIZE=6
 JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
@@ -164,6 +163,12 @@ JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
+
+../bls-eth-wasm/bls_c.js: src/bls_c384_256.cpp ../mcl/src/fp.cpp Makefile
+	emcc -o $@ src/bls_c384_256.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DBLS_ETH -DBLS_SWAP_G -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384_256.d
+bls-eth-wasm:
+	$(MAKE) ../bls-eth-wasm/bls_c.js
+
 CLANG_WASM_OPT=-O3 -DNDEBUG -fPIC -DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -DMCL_LLVM_BMI2=0 -DMCL_USE_LLVM=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_MINIMUM_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -I./include -I./src -I../mcl/include -fno-builtin  --target=wasm32-unknown-unknown-wasm  -Wstrict-prototypes -Wno-unused-parameter -ffreestanding -fno-exceptions -fvisibility=hidden -Wall -Wextra -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -fno-rtti -nostdinc++ -std=c++03 -DLLONG_MIN=-0x8000000000000000LL
 bls-wasm-by-clang:
 	clang++-8 -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(CLANG_WASM_OPT)
