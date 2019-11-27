@@ -13,11 +13,17 @@ An implementation of BLS threshold signature
 * iOS
 * WebAssembly
 
+# precompiled version for Ethereum 2.0 spec
+
+- Go; [bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)
+  - the precompiled static binary `libbls384_256.a` for some architectures is provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib).
+- Rust; [bls-eth-rust](https://github.com/herumi/bls-eth-rust)
+- wasm; [bls-eth-wasm](https://github.com/herumi/bls-eth-wasm)
+
 # Support languages
 
-* Go cf. [bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary) , [bls-go-binary](https://github.com/herumi/bls-go-binary/)
-* C#
-* [Rust](https://github.com/herumi/bls-eth-rust) (beta version)
+* Go; in ffi/go or [bls-go-binary](https://github.com/herumi/bls-go-binary/)
+* C#; in ffi/cs
 
 # Installation Requirements
 
@@ -141,9 +147,6 @@ return 1 if valid else 0
 int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n);
 ```
 return 1 if valid else 0
-
-## Compiled static binary
-The precompiled static binary `libbls384_256.a` for some architectures is provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib).
 
 # Library
 * libbls256.a/libbls256.so ; for BN254 compiled with MCLBN_FP_UNIT_SIZE=4
