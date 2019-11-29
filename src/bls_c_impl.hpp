@@ -484,7 +484,7 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	0    16    48   64   96
 	0..0 H(im) 0..0 H(re)
 */
-static void hashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
+void blsHashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
 {
 	uint8_t msg[41];
 	memcpy(msg, hashWithDomain, 40);
@@ -504,7 +504,7 @@ int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return -1;
 	uint8_t msg[96];
-	hashWithDomainToFp2(msg, hashWithDomain);
+	blsHashWithDomainToFp2(msg, hashWithDomain);
 	return blsSignHash(sig, sec, msg, sizeof(msg));
 #else
 	(void)sig;
@@ -519,7 +519,7 @@ int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, co
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
 	uint8_t msg[96];
-	hashWithDomainToFp2(msg, hashWithDomain);
+	blsHashWithDomainToFp2(msg, hashWithDomain);
 	return blsVerifyHash(sig, pub, msg, sizeof(msg));
 #else
 	(void)sig;
@@ -549,7 +549,7 @@ int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPubli
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i + start] = *cast(&pubVec[i].v);
 			uint8_t buf[96];
-			hashWithDomainToFp2(buf, hashWithDomain[i]);
+			blsHashWithDomainToFp2(buf, hashWithDomain[i]);
 			if (!toG(g2Vec[i + start], buf, sizeof(buf))) return 0;
 		}
 		if (start) {
