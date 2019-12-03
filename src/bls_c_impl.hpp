@@ -87,7 +87,7 @@ inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 int blsInit(int curve, int compiledTimeVar)
 {
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
-		return -(compiledTimeVar | (MCLBN_COMPILED_TIME_VAR * 1000));
+		return -(compiledTimeVar + (MCLBN_COMPILED_TIME_VAR * 1000));
 	}
 	const mcl::CurveParam& cp = mcl::getCurveParam(curve);
 	bool b;
