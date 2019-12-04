@@ -18,3 +18,5 @@ script:
   - make clean && make -C ../mcl clean
   - make -j3 MCL_USE_OPENSSL=0
   - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
+  - make clean
+  - make test_ci BLS_ETH=1
