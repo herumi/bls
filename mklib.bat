@@ -1,13 +1,19 @@
 @echo off
-call ..\mcl\setvar.bat
-if "%1"=="dll" (
-  echo make dynamic library DLL
-) else (
-  echo make static library LIB
-)
 call setvar.bat
-
+set MAKE_DLL=0
+set BLS_ETH=0
 if "%1"=="dll" (
+  set MAKE_DLL=1
+  shift
+)
+if "%1"=="eth" (
+  echo make ETH mode
+  set CFLAGS=%CFLAGS% -DBLS_ETH=1
+  shift
+)
+
+if %MAKE_DLL%==1 (
+  echo make dynamic library DLL
   cl /c %CFLAGS% /Foobj/bls_c256.obj src/bls_c256.cpp /DBLS_NO_AUTOLINK
   cl /c %CFLAGS% /Foobj/bls_c384.obj src/bls_c384.cpp /DBLS_NO_AUTOLINK
   cl /c %CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp /DBLS_NO_AUTOLINK
@@ -16,6 +22,7 @@ if "%1"=="dll" (
   link /nologo /DLL /OUT:bin\bls384.dll obj\bls_c384.obj obj\fp.obj %LDFLAGS% /implib:lib\bls384.lib
   link /nologo /DLL /OUT:bin\bls384_256.dll obj\bls_c384_256.obj obj\fp.obj %LDFLAGS% /implib:lib\bls384_256.lib
 ) else (
+  echo make static library LIB
   cl /c %CFLAGS% /Foobj/bls_c256.obj src/bls_c256.cpp
   cl /c %CFLAGS% /Foobj/bls_c384.obj src/bls_c384.cpp
   cl /c %CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
