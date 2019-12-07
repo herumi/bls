@@ -37,6 +37,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* add uncompressed function to PubliKey and Sign
 * add blsSignHashWithDomain, blsVerifyHashWithDomain(see (Ethereum 2.0 spec mode)[https://github.com/herumi/bls/#ethereum-20-spec-mode])
 * rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
 * add blsSetETHserialization(1) to use ETH serialization for BLS12-381
