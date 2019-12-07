@@ -37,6 +37,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 ```
 
 # News
+* disabled to check the order in setStr/deserialize. call once `blsSignatureVerifyOrder(1)` or `blsPublicKeyVerifyOrder(1)` to check it.
 * add uncompressed function to PubliKey and Sign
 * add blsSignHashWithDomain, blsVerifyHashWithDomain(see (Ethereum 2.0 spec mode)[https://github.com/herumi/bls/#ethereum-20-spec-mode])
 * rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
