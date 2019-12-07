@@ -480,6 +480,120 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 }
 
 #ifdef BLS_ETH
+const uint8_t ZERO_HEADER = 1 << 6;
+const mclSize serializedPublicKeySize = 48;
+const mclSize serializedSignatureSize = 48 * 2;
+inline bool isZeroFormat(const uint8_t *buf, mclSize n)
+{
+	if (buf[0] != ZERO_HEADER) return false;
+	for (mclSize i = 1; i < n; i++) {
+		if (buf[i] != 0) return false;
+	}
+	return true;
+}
+#endif
+
+mclSize blsPublicKeySerializeUncompressed(void *buf, mclSize maxBufSize, const blsPublicKey *pub)
+{
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
+	const mclSize retSize = serializedPublicKeySize * 2;
+	if (maxBufSize < retSize) return 0;
+	uint8_t *dst = (uint8_t*)buf;
+	if (cast(&pub->v)->isZero()) {
+		dst[0] = ZERO_HEADER;
+		memset(dst + 1, 0, retSize - 1);
+	} else {
+		G1 x;
+		G1::normalize(x, *cast(&pub->v));
+		if (x.x.serialize(dst, serializedPublicKeySize) == 0) return 0;
+		if (x.y.serialize(dst + serializedPublicKeySize, serializedPublicKeySize) == 0) return 0;
+	}
+	return retSize;
+#else
+	(void)buf;
+	(void)maxBufSize;
+	(void)pub;
+	return 0;
+#endif
+}
+
+mclSize blsSignatureSerializeUncompressed(void *buf, mclSize maxBufSize, const blsSignature *sig)
+{
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
+	const mclSize retSize = serializedSignatureSize * 2;
+	if (maxBufSize < retSize) return 0;
+	uint8_t *dst = (uint8_t*)buf;
+	if (cast(&sig->v)->isZero()) {
+		dst[0] = ZERO_HEADER;
+		memset(dst + 1, 0, retSize - 1);
+	} else {
+		G2 x;
+		G2::normalize(x, *cast(&sig->v));
+		if (x.x.serialize(dst, serializedSignatureSize) == 0) return 0;
+		if (x.y.serialize(dst + serializedSignatureSize, serializedSignatureSize) == 0) return 0;
+	}
+	return retSize;
+#else
+	(void)buf;
+	(void)maxBufSize;
+	(void)sig;
+	return 0;
+#endif
+}
+
+mclSize blsPublicKeyDeserializeUncompressed(blsPublicKey *pub, const void *buf, mclSize bufSize)
+{
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
+	const mclSize retSize = serializedPublicKeySize * 2;
+	if (bufSize < retSize) return 0;
+	const uint8_t *src = (const uint8_t*)buf;
+	G1& x = *cast(&pub->v);
+	if (isZeroFormat(src, retSize)) {
+		x.clear();
+	} else {
+		if (x.x.deserialize(src, serializedPublicKeySize) == 0) return 0;
+		if (x.y.deserialize(src + serializedPublicKeySize, serializedPublicKeySize) == 0) return 0;
+		x.z = 1;
+	}
+	if (!x.isValid()) return 0;
+	return retSize;
+#else
+	(void)pub;
+	(void)buf;
+	(void)bufSize;
+	return 0;
+#endif
+}
+
+mclSize blsSignatureDeserializeUncompressed(blsSignature *sig, const void *buf, mclSize bufSize)
+{
+#ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return 0;
+	const mclSize retSize = serializedSignatureSize * 2;
+	if (bufSize < retSize) return 0;
+	const uint8_t *src = (const uint8_t*)buf;
+	G2& x = *cast(&sig->v);
+	if (isZeroFormat(src, retSize)) {
+		x.clear();
+	} else {
+		if (x.x.deserialize(src, serializedSignatureSize) == 0) return 0;
+		if (x.y.deserialize(src + serializedSignatureSize, serializedSignatureSize) == 0) return 0;
+		x.z = 1;
+	}
+	if (!x.isValid()) return 0;
+	return retSize;
+#else
+	(void)sig;
+	(void)buf;
+	(void)bufSize;
+	return 0;
+#endif
+}
+
+#ifdef BLS_ETH
 /*
 	0    16    48   64   96
 	0..0 H(im) 0..0 H(re)
