@@ -484,7 +484,7 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	0    16    48   64   96
 	0..0 H(im) 0..0 H(re)
 */
-void blsHashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
+inline void blsHashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
 {
 	uint8_t msg[41];
 	memcpy(msg, hashWithDomain, 40);

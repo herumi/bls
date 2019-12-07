@@ -201,9 +201,6 @@ BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec
 // return 1 if valid
 BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const unsigned char hashWithDomain[40]);
 
-// utility function: convert hashWithDomain to a serialized Fp2
-BLS_DLL_API void blsHashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40]);
-
 /*
 	pubVec is an array of size n
 	hashWithDomain is an array of size (40 * n)
