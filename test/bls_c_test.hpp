@@ -225,6 +225,7 @@ void blsVerifyOrderTest()
 	};
 	size_t n;
 	blsPublicKey pub;
+	blsPublicKeyVerifyOrder(1);
 	n = blsPublicKeyDeserialize(&pub, Ps, sizeof(Ps));
 	CYBOZU_TEST_EQUAL(n, 0);
 	blsPublicKeyVerifyOrder(0);
@@ -234,6 +235,7 @@ void blsVerifyOrderTest()
 	blsPublicKeyVerifyOrder(1);
 
 	blsSignature sig;
+	blsSignatureVerifyOrder(1);
 	n = blsSignatureDeserialize(&sig, Qs, sizeof(Qs));
 	CYBOZU_TEST_EQUAL(n, 0);
 	blsSignatureVerifyOrder(0);
