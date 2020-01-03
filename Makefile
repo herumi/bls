@@ -239,11 +239,16 @@ DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
 -include $(DEPEND_FILE)
 
 PREFIX?=/usr/local
+prefix?=$(PREFIX)
+includedir?=$(prefix)/include
+libdir?=$(prefix)/lib
+INSTALL?=install
+INSTALL_DATA?=$(INSTALL) -m 644
 install: lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.$(LIB_SUF) lib/libbls384_256.a lib/libbls384_256.$(LIB_SUF)
-	$(MKDIR) $(PREFIX)/include/bls
-	cp -a include/bls $(PREFIX)/include/
-	$(MKDIR) $(PREFIX)/lib
-	cp -a lib/libbls256.a lib/libbls256.$(LIB_SUF) lib/libbls384.a lib/libbls384.$(LIB_SUF) lib/libbls384_256.a lib/libbls384_256.$(LIB_SUF) $(PREFIX)/lib/
+	$(MKDIR) $(DESTDIR)$(includedir)/bls $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) include/bls/*.h* $(DESTDIR)$(includedir)/bls
+	$(INSTALL_DATA) lib/libbls*.a $(DESTDIR)$(libdir)
+	$(INSTALL) -m 755 lib/libbls*.$(LIB_SUF) $(DESTDIR)$(libdir)
 
 .PHONY: test bls-wasm ios
 
