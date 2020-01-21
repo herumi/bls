@@ -173,6 +173,8 @@ CLANG_WASM_OPT=-O3 -DNDEBUG -fPIC -DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -DM
 bls-wasm-by-clang:
 	clang++-8 -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(CLANG_WASM_OPT)
 	clang++-8 -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(CLANG_WASM_OPT)
+	clang++-8 -c -o $(OBJ_DIR)/base64.o ../mcl/src/base64.ll $(CLANG_WASM_OPT)
+	wasm-ld-8 --no-entry -o ../bls-wasm $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/base64.o
 	#ld.gold -o ../bls-wasm $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
 # ios
