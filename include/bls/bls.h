@@ -95,12 +95,13 @@ BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
 
 /*
 	use new eth 2.0 spec
+	@return 0 if success
 	@remark
 	this functions and the spec may change until it is fixed
 	the size of message <= 32
 */
 #define BLS_ETH_MODE_LATEST 1
-BLS_DLL_API bool blsSetETHmode(int mode);
+BLS_DLL_API int blsSetETHmode(int mode);
 
 /*
 	set ETH serialization mode for BLS12-381

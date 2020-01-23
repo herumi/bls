@@ -87,18 +87,18 @@ inline const G2& getBasePointAdjInv() { return getBasePoint(); } // same
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
-bool blsSetETHmode(int mode)
+int blsSetETHmode(int mode)
 {
 #ifdef BLS_ETH
-	if (g_curveType != MCL_BLS12_381) return false;
-	if (mode != BLS_ETH_MODE_LATEST) return false;
+	if (g_curveType != MCL_BLS12_381) return -1;
+	if (mode != BLS_ETH_MODE_LATEST) return -1;
 	g_newEth2 = true;
 	mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
 	g_PadjInv = g_P;
-	return true;
+	return 0;
 #else
 	(void)mode;
-	return false;
+	return -1;
 #endif
 }
 
