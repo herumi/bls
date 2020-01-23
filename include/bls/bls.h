@@ -82,6 +82,14 @@ typedef struct {
 } blsSignature;
 
 /*
+	use new eth 2.0 spec
+	@remark
+	call this function before blsInit()
+	this functions and the spec may change until it is fixed
+	the size of message <= 32
+*/
+BLS_DLL_API void blsNewEth2Spec();
+/*
 	initialize this library
 	call this once before using the other functions
 	@param curve [in] enum value defined in mcl/bn.h
@@ -92,6 +100,7 @@ typedef struct {
 	@note blsInit() is not thread safe
 */
 BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
+
 /*
 	set ETH serialization mode for BLS12-381
 	@param ETHserialization [in] 1:enable,  0:disable
