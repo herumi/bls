@@ -9,7 +9,8 @@ addons:
     packages:
       - libgmp-dev
 install:
-  - git clone --depth 1 https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
+#  - git clone --depth 1 https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
+  - git clone -b dev https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
 script:
   - make -j3
   - make test_ci
