@@ -87,10 +87,18 @@ inline const G2& getBasePointAdjInv() { return getBasePoint(); } // same
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
-void blsNewEth2Spec()
+bool blsSetETHmode(int mode)
 {
 #ifdef BLS_ETH
+	if (g_curveType != MCL_BLS12_381) return false;
+	if (mode != BLS_ETH_MODE_LATEST) return false;
 	g_newEth2 = true;
+	mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
+	g_PadjInv = g_P;
+	return true;
+#else
+	(void)mode;
+	return false;
 #endif
 }
 
@@ -110,12 +118,8 @@ int blsInit(int curve, int compiledTimeVar)
 	if (curve == MCL_BLS12_381) {
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
-		if (g_newEth2) {
-			mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
-		} else {
-			mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
-			G1::mul(g_PadjInv, g_P, mcl::bn::getG2cofactorAdjInv());
-		}
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
+		G1::mul(g_PadjInv, g_P, mcl::bn::getG2cofactorAdjInv());
 	} else
 	#endif
 	{
