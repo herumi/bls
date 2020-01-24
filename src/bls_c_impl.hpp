@@ -215,7 +215,7 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 	blsHashToSignature(sig, m, size);
 	Fr s = *cast(&sec->v);
 #ifdef BLS_ETH
-	if (g_curveType == MCL_BLS12_381) {
+	if (g_curveType == MCL_BLS12_381 && !g_newEth2) {
 		s *= mcl::bn::getG2cofactorAdj();
 	}
 #endif
