@@ -558,18 +558,52 @@ void setRandFuncTest(int type)
 }
 
 #if BLS_ETH
-#if 0
+void ethAggregateTest()
+{
+	puts("ethAggregateTest");
+	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate/small/aggregate_0x0000000000000000000000000000000000000000000000000000000000000000/data.yaml
+	const struct {
+		const char *s;
+	} tbl[] = {
+		"b2a0bd8e837fc2a1b28ee5bcf2cddea05f0f341b375e51de9d9ee6d977c2813a5c5583c19d4e7db8d245eebd4e502163076330c988c91493a61b97504d1af85fdc167277a1664d2a43af239f76f176b215e0ee81dc42f1c011dc02d8b0a31e32",
+		"b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441",
+		"a1db7274d8981999fee975159998ad1cc6d92cd8f4b559a8d29190dad41dc6c7d17f3be2056046a8bcbf4ff6f66f2a360860fdfaefa91b8eca875d54aca2b74ed7148f9e89e2913210a0d4107f68dbc9e034acfc386039ff99524faf2782de0e",
+	};
+	const char *expect = "973ab0d765b734b1cbb2557bcf52392c9c7be3cd21d5bd28572d99f618c65e921f0dd82560cc103feb9f000c23c00e660e1364ed094f137e1045e73116cd75903af446df3c357540a4970ec367a7f7fa7493a5db27ca322c48d57740908585e8";
+	const size_t n = CYBOZU_NUM_OF_ARRAY(tbl);
+	bls::Signature sig;
+	sig.clear();
+	for (size_t i = 0; i < n; i++) {
+		bls::Signature t;
+		t.deserializeHexStr(tbl[i].s);
+		sig.add(t);
+	}
+	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), expect);
+}
+
 void ethSignTest()
 {
-	{privkey: '0x47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138',
-  message: '0x0000000000000000000000000000000000000000000000000000000000000000'}
+	bls::SecretKey sec;
+	sec.setStr("0x47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138");
+	printf("sec=%s\n", sec.getStr(2048).c_str());
+	bls::PublicKey pub;
+	sec.getPublicKey(pub);
+	std::string msg = "0x0000000000000000000000000000000000000000000000000000000000000000";
+	std::string s = pub.getStr(2048) + msg;
+	bls::Signature sig;
+	sec.sign(sig, s);
+	printf("sig=%s\n", sig.getStr(2048).c_str());
+/*
 output: '0xb2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441'
+*/
 }
-#endif
 
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
+	blsSetETHmode(BLS_ETH_MODE_LATEST);
+	ethAggregateTest();
+//	ethSignTest();
 }
 #endif
 
