@@ -100,6 +100,7 @@ BLS_DLL_API int blsInit(int curve, int compiledTimeVar);
 	this functions and the spec may change until it is fixed
 	the size of message <= 32
 */
+#define BLS_ETH_MODE_OLD 0
 #define BLS_ETH_MODE_LATEST 1
 BLS_DLL_API int blsSetETHmode(int mode);
 

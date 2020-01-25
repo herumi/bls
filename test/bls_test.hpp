@@ -557,6 +557,22 @@ void setRandFuncTest(int type)
 	printf("\n");
 }
 
+#if BLS_ETH
+#if 0
+void ethSignTest()
+{
+	{privkey: '0x47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138',
+  message: '0x0000000000000000000000000000000000000000000000000000000000000000'}
+output: '0xb2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441'
+}
+#endif
+
+void ethTest(int type)
+{
+	if (type != MCL_BLS12_381) return;
+}
+#endif
+
 void testAll(int type)
 {
 	blsTest();
@@ -568,6 +584,9 @@ void testAll(int type)
 	verifyAggregateTest(type);
 	setRandFuncTest(type);
 	hashTest(type);
+#ifdef BLS_ETH
+	ethTest(type);
+#endif
 }
 CYBOZU_TEST_AUTO(all)
 {

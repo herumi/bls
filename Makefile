@@ -141,6 +141,9 @@ test_go384_swapg: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 test_go384_256_swapg: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
 	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384_256_swapg .
 
+test_eth: bin/bls_c384_256_test.exe
+	bin/bls_c384_256_test.exe
+
 test_go:
 	$(MAKE) test_go256
 	$(MAKE) test_go384

@@ -120,6 +120,12 @@ public:
 		if (n == 0) throw std::runtime_error("mclBnFr_getStr");
 		str.resize(n);
 	}
+	std::string getStr(int ioMode = 0) const
+	{
+		std::string str;
+		getStr(str, ioMode);
+		return str;
+	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 		int ret = mclBnFr_setStr(&self_.v, str.c_str(), str.size(), ioMode);
@@ -174,6 +180,12 @@ public:
 		size_t n = mclBnFr_getStr(&str[0], str.size(), &self_.v, ioMode);
 		if (n == 0) throw std::runtime_error("mclBnFr_getStr");
 		str.resize(n);
+	}
+	std::string getStr(int ioMode = 0) const
+	{
+		std::string str;
+		getStr(str, ioMode);
+		return str;
 	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{
@@ -325,6 +337,12 @@ public:
 		if (n == 0) throw std::runtime_error("PublicKey:getStr");
 		str.resize(n);
 	}
+	std::string getStr(int ioMode = 0) const
+	{
+		std::string str;
+		getStr(str, ioMode);
+		return str;
+	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 #ifdef BLS_SWAP_G
@@ -419,6 +437,12 @@ public:
 #endif
 		if (n == 0) throw std::runtime_error("Signature:tgetStr");
 		str.resize(n);
+	}
+	std::string getStr(int ioMode = 0) const
+	{
+		std::string str;
+		getStr(str, ioMode);
+		return str;
 	}
 	void setStr(const std::string& str, int ioMode = 0)
 	{

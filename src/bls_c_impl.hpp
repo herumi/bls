@@ -71,12 +71,13 @@ static int g_curveType;
 #ifdef BLS_SWAP_G
 typedef G2 G;
 static G1 g_P;
-static G1 g_PadjInv;
+static int g_adjInvIdx;
+static G1 g_PadjInv[2]; // 0:g_P, 1:g_P * adj
 #ifdef BLS_ETH
 static bool g_newEth2;
 #endif
 inline const G1& getBasePoint() { return g_P; }
-inline const G1& getBasePointAdjInv() { return g_PadjInv; } // for only BLS12-381
+inline const G1& getBasePointAdjInv() { return g_PadjInv[g_adjInvIdx]; } // for only BLS12-381
 #else
 typedef G1 G;
 static G2 g_Q;
@@ -91,10 +92,20 @@ int blsSetETHmode(int mode)
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return -1;
-	if (mode != BLS_ETH_MODE_LATEST) return -1;
-	g_newEth2 = true;
-	mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
-	g_PadjInv = g_P;
+	switch (mode) {
+	case BLS_ETH_MODE_OLD:
+		g_newEth2 = false;
+		g_adjInvIdx = 1;
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
+		break;
+	case BLS_ETH_MODE_LATEST:
+		g_newEth2 = true;
+		g_adjInvIdx = 0;
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
+		break;
+	default:
+		return -1;
+	}
 	return 0;
 #else
 	(void)mode;
@@ -115,16 +126,20 @@ int blsInit(int curve, int compiledTimeVar)
 
 #ifdef BLS_SWAP_G
 	#ifdef BLS_ETH
+	g_newEth2 = false;
 	if (curve == MCL_BLS12_381) {
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
-		G1::mul(g_PadjInv, g_P, mcl::bn::getG2cofactorAdjInv());
+		g_PadjInv[0] = g_P;
+		G1::mul(g_PadjInv[1], g_P, mcl::bn::getG2cofactorAdjInv());
+		g_adjInvIdx = 1;
 	} else
 	#endif
 	{
 		mapToG1(&b, g_P, 1);
-		g_PadjInv = g_P;
+		g_PadjInv[0] = g_P;
+		g_adjInvIdx = 0;
 	}
 #else
 
@@ -493,7 +508,7 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	if (!toG(Hm, h, size)) return -1;
 	Fr s = *cast(&sec->v);
 #ifdef BLS_ETH
-	if (g_curveType == MCL_BLS12_381) {
+	if (g_curveType == MCL_BLS12_381 && !g_newEth2) {
 		s *= mcl::bn::getG2cofactorAdj();
 	}
 #endif
