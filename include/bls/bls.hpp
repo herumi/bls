@@ -12,6 +12,7 @@
 #include <string>
 #include <iosfwd>
 #include <stdint.h>
+#include <memory.h>
 
 namespace bls {
 
@@ -126,6 +127,12 @@ public:
 		getStr(str, ioMode);
 		return str;
 	}
+	std::string serializeToHexStr() const { return getStr(2048); }
+	void deserializeHexStr(const std::string& str)
+	{
+		setStr(str, 2048);
+	}
+	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 		int ret = mclBnFr_setStr(&self_.v, str.c_str(), str.size(), ioMode);
@@ -187,6 +194,12 @@ public:
 		getStr(str, ioMode);
 		return str;
 	}
+	std::string serializeToHexStr() const { return getStr(2048); }
+	void deserializeHexStr(const std::string& str)
+	{
+		setStr(str, 2048);
+	}
+	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 		int ret = mclBnFr_setStr(&self_.v, str.c_str(), str.size(), ioMode);
@@ -343,6 +356,12 @@ public:
 		getStr(str, ioMode);
 		return str;
 	}
+	std::string serializeToHexStr() const { return getStr(2048); }
+	void deserializeHexStr(const std::string& str)
+	{
+		setStr(str, 2048);
+	}
+	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 #ifdef BLS_SWAP_G
@@ -444,6 +463,12 @@ public:
 		getStr(str, ioMode);
 		return str;
 	}
+	std::string serializeToHexStr() const { return getStr(2048); }
+	void deserializeHexStr(const std::string& str)
+	{
+		setStr(str, 2048);
+	}
+	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
 #ifdef BLS_SWAP_G
