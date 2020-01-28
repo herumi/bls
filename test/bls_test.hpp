@@ -584,18 +584,15 @@ void ethAggregateTest()
 void ethSignTest()
 {
 	bls::SecretKey sec;
+	const char *expect = "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441";
 	sec.setStr("0x47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138");
-	printf("sec=%s\n", sec.getStr(2048).c_str());
 	bls::PublicKey pub;
 	sec.getPublicKey(pub);
-	std::string msg = "0x0000000000000000000000000000000000000000000000000000000000000000";
-	std::string s = pub.getStr(2048) + msg;
+	std::string msg(32, '\x00');
 	bls::Signature sig;
-	sec.sign(sig, s);
-	printf("sig=%s\n", sig.getStr(2048).c_str());
-/*
-output: '0xb2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441'
-*/
+	sec.sign(sig, msg);
+	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), expect);
+	CYBOZU_TEST_ASSERT(sig.verify(pub, msg));
 }
 
 void ethTest(int type)
@@ -603,7 +600,7 @@ void ethTest(int type)
 	if (type != MCL_BLS12_381) return;
 	blsSetETHmode(BLS_ETH_MODE_LATEST);
 	ethAggregateTest();
-//	ethSignTest();
+	ethSignTest();
 }
 #endif
 
