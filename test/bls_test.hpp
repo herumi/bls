@@ -1,10 +1,24 @@
 #include <bls/bls.hpp>
 #include <cybozu/test.hpp>
 #include <cybozu/inttype.hpp>
-#include <iostream>
-#include <sstream>
 #include <cybozu/benchmark.hpp>
 #include <cybozu/sha2.hpp>
+#include <cybozu/atoi.hpp>
+#include <cybozu/file.hpp>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <sstream>
+
+typedef std::vector<uint8_t> Uint8Vec;
+Uint8Vec fromHexStr(const std::string& s)
+{
+	Uint8Vec ret(s.size() / 2);
+	for (size_t i = 0; i < s.size(); i += 2) {
+		ret[i / 2] = cybozu::hextoi(&s[i], 2);
+	}
+	return ret;
+}
 
 template<class T>
 void streamTest(const T& t)
@@ -581,18 +595,39 @@ void ethAggregateTest()
 	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), expect);
 }
 
-void ethSignTest()
+void ethSignOneTest(const std::string& secHex, const std::string& msgHex, const std::string& sigHex)
 {
+	const Uint8Vec msg = fromHexStr(msgHex);
 	bls::SecretKey sec;
-	const char *expect = "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441";
-	sec.setStr("0x47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138");
+	sec.setStr(secHex, 16);
 	bls::PublicKey pub;
 	sec.getPublicKey(pub);
-	std::string msg(32, '\x00');
 	bls::Signature sig;
-	sec.sign(sig, msg);
-	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), expect);
-	CYBOZU_TEST_ASSERT(sig.verify(pub, msg));
+	sec.sign(sig, msg.data(), msg.size());
+	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), sigHex);
+	CYBOZU_TEST_ASSERT(sig.verify(pub, msg.data(), msg.size()));
+}
+void ethSignTest()
+{
+	std::string fileName = cybozu::GetExePath() + "../test/eth/sign.txt";
+	std::ifstream ifs(fileName.c_str());
+	if (!ifs) {
+		fprintf(stderr, "skip ethSignTest because %s is not found\n", fileName.c_str());
+		return;
+	}
+	for (;;) {
+		std::string h1, h2, h3, sec, msg, sig;
+		ifs >>  h1 >> sec >> h2 >> msg >> h3 >> sig;
+		if (h1.empty()) break;
+		if (h1 != "sec" || h2 != "msg" || h3 != "out") {
+			throw cybozu::Exception("bad format") << fileName << h1 << h2 << h3;
+		}
+		ethSignOneTest(sec, msg, sig);
+	}
+	const char *secHex = "47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138";
+	const char *msgHex = "0000000000000000000000000000000000000000000000000000000000000000";
+	const char *sigHex = "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441";
+	ethSignOneTest(secHex, msgHex, sigHex);
 }
 
 void ethTest(int type)
