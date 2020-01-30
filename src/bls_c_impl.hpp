@@ -285,7 +285,7 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
-void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
+void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
 {
 	if (n == 0) {
 		memset(aggSig, 0, sizeof(*aggSig));

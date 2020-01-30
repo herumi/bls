@@ -131,7 +131,7 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void 
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
 
 // aggSig = sum of sigVec[0..n]
-BLS_DLL_API void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);
+BLS_DLL_API void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);
 
 // verify(sig, sum of pubVec[0..n], msg)
 BLS_DLL_API int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize);

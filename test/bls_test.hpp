@@ -426,10 +426,10 @@ void aggregateTest()
 	CYBOZU_TEST_ASSERT(sig.verify(pub, m));
 	blsSignature sig2;
 	const blsSignature *p = (const blsSignature *)&sigs[0];
-	blsAggregate(&sig2, p, n);
+	blsAggregateSignature(&sig2, p, n);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig2, (const blsSignature*)&sig));
 	memset(&sig, 0, sizeof(sig));
-	blsAggregate((blsSignature*)&sig2, 0, 0);
+	blsAggregateSignature((blsSignature*)&sig2, 0, 0);
 	CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&sig2, (const blsSignature*)&sig));
 }
 
