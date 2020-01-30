@@ -133,6 +133,16 @@ BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, cons
 // aggSig = sum of sigVec[0..n]
 BLS_DLL_API void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);
 
+// verify(sig, sum of pubVec[0..n], msg)
+BLS_DLL_API int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize);
+
+/*
+	all msg[i] has the same msgSize byte, so msgVec must have (msgSize * n) byte area
+	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
+	@note CHECK that sig has the valid order, all msg are different each other before calling this
+*/
+BLS_DLL_API int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, mclSize n);
+
 // return written byte size if success else 0
 BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
 BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);

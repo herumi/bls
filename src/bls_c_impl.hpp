@@ -297,6 +297,53 @@ void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
 	}
 }
 
+void blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
+{
+	if (n == 0) {
+		memset(aggPub, 0, sizeof(*aggPub));
+		return;
+	}
+	*aggPub = pubVec[0];
+	for (mclSize i = 1; i < n; i++) {
+		blsPublicKeyAdd(aggPub, &pubVec[i]);
+	}
+}
+
+int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize)
+{
+	if (n == 0) return 0;
+	blsPublicKey aggPub;
+	blsAggregatePublicKey(&aggPub, pubVec, n);
+	return blsVerify(sig, &aggPub, msg, msgSize);
+}
+
+int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, mclSize n)
+{
+#ifdef BLS_ETH
+	if (n == 0) return 0;
+	// ToD:use millerLoopVec
+	const char *p = (const char *)msgVec;
+	GT s(1), t;
+	for (mclSize i = 0; i < n; i++) {
+		G2 Q;
+		hashAndMapToG(Q, &p[msgSize * i], msgSize);
+		millerLoop(t, *cast(&pubVec[i].v), Q);
+		s *= t;
+	}
+	millerLoop(t, -getBasePoint(), *cast(&sig->v));
+	s *= t;
+	finalExp(s, s);
+	return s.isOne() ? 1 : 0;
+#else
+	(void)sig;
+	(void)pubVec;
+	(void)msgVec;
+	(void)msgSize;
+	(void)n;
+	return 0;
+#endif
+}
+
 mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id)
 {
 	return cast(&id->v)->serialize(buf, maxBufSize);
