@@ -23,9 +23,20 @@ blsSetETHmode(BLS_ETH_MODE_LATEST);
 then, [eth2.0-specs](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures)
 are available.
 
-- blsSign
-- blsVerify
-- blsAggregate
+bls.h | eth2.0 spec name|
+------|-----------------|
+blsSign|Sign|
+blsVerify|Verify|
+blsAggregateSignature|Aggregate|
+blsFastAggregateVerify|FastAggregateVerify|
+blsAggregateVerifyNoCheck|AggregateVerify|
+
+REMARK : `blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n)` does not check
+- sig has the correct order
+- every msgVec[0], ..., msgVec[n-1] with the size msgSize are different each other
+- msgSize may be 32
+
+Check them at the caller.
 
 # precompiled version for Ethereum 2.0 spec
 
