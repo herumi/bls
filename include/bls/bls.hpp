@@ -92,6 +92,7 @@ class Id {
 	friend class SecretKey;
 	friend class Signature;
 public:
+	const blsId *getPtr() const { return &self_; }
 	Id(unsigned int id = 0)
 	{
 		blsIdSetInt(&self_, id);
@@ -163,6 +164,7 @@ public:
 class SecretKey {
 	blsSecretKey self_;
 public:
+	const blsSecretKey *getPtr() const { return &self_; }
 	bool operator==(const SecretKey& rhs) const
 	{
 		return blsSecretKeyIsEqual(&self_, &rhs.self_) == 1;
@@ -307,6 +309,7 @@ class PublicKey {
 	friend class SecretKey;
 	friend class Signature;
 public:
+	const blsPublicKey *getPtr() const { return &self_; }
 	bool operator==(const PublicKey& rhs) const
 	{
 		return blsPublicKeyIsEqual(&self_, &rhs.self_) == 1;
@@ -414,6 +417,7 @@ class Signature {
 	blsSignature self_;
 	friend class SecretKey;
 public:
+	const blsSignature *getPtr() const { return &self_; }
 	bool operator==(const Signature& rhs) const
 	{
 		return blsSignatureIsEqual(&self_, &rhs.self_) == 1;
