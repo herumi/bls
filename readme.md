@@ -13,6 +13,20 @@ An implementation of BLS threshold signature
 * iOS
 * WebAssembly
 
+# News
+Init as the folloings:
+
+```
+blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+blsSetETHmode(BLS_ETH_MODE_LATEST);
+```
+then, [eth2.0-specs](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures)
+are available.
+
+- blsSign
+- blsVerify
+- blsAggregate
+
 # precompiled version for Ethereum 2.0 spec
 
 - Go; [bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)
