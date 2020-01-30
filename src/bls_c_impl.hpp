@@ -285,6 +285,18 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
+void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
+{
+	if (n == 0) {
+		memset(aggSig, 0, sizeof(*aggSig));
+		return;
+	}
+	*aggSig = sigVec[0];
+	for (mclSize i = 1; i < n; i++) {
+		blsSignatureAdd(aggSig, &sigVec[i]);
+	}
+}
+
 mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id)
 {
 	return cast(&id->v)->serialize(buf, maxBufSize);

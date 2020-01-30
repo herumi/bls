@@ -130,6 +130,9 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void 
 // return 1 if valid
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
 
+// aggSig = sum of sigVec[0..n]
+BLS_DLL_API void blsAggregate(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);
+
 // return written byte size if success else 0
 BLS_DLL_API mclSize blsIdSerialize(void *buf, mclSize maxBufSize, const blsId *id);
 BLS_DLL_API mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
