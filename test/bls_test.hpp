@@ -579,6 +579,42 @@ void setRandFuncTest(int type)
 }
 
 #if BLS_ETH
+void ethAggregateVerifyNoCheckTest()
+{
+	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate_verify/small/fast_aggregate_verify_valid/data.yaml
+	const struct Tbl {
+		const char *pub;
+		const char *msg;
+	} tbl[] = {
+		{
+			"a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+			"0000000000000000000000000000000000000000000000000000000000000000",
+		},
+		{
+			"b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+			"5656565656565656565656565656565656565656565656565656565656565656",
+		},
+		{
+			"b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+			"abababababababababababababababababababababababababababababababab",
+		}
+	};
+	const char *sigStr = "82f5bfe5550ce639985a46545e61d47c5dd1d5e015c1a82e20673698b8e02cde4f81d3d4801f5747ad8cfd7f96a8fe50171d84b5d1e2549851588a5971d52037218d4260b9e4428971a5c1969c65388873f1c49a4c4d513bdf2bc478048a18a8";
+	const size_t n = CYBOZU_NUM_OF_ARRAY(tbl);
+	bls::Signature sig;
+	bls::PublicKey pubVec[n];
+	Uint8Vec msgVec;
+	sig.deserializeHexStr(sigStr);
+	size_t msgSize = 0;
+	for (size_t i = 0; i < n; i++) {
+		pubVec[i].deserializeHexStr(tbl[i].pub);
+		const Uint8Vec t = fromHexStr(tbl[i].msg);
+		if (i == 0) msgSize = t.size();
+		msgVec.insert(msgVec.end(), t.begin(), t.end());
+	}
+	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(sig.getPtr(), pubVec[0].getPtr(), msgVec.data(), msgSize, n), 1);
+}
+
 void ethAggregateTest()
 {
 	puts("ethAggregateTest");
@@ -643,6 +679,7 @@ void ethTest(int type)
 	blsSetETHmode(BLS_ETH_MODE_LATEST);
 	ethAggregateTest();
 	ethSignTest();
+	ethAggregateVerifyNoCheckTest();
 }
 #endif
 
