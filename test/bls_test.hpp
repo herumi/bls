@@ -581,6 +581,7 @@ void setRandFuncTest(int type)
 #if BLS_ETH
 void ethAggregateVerifyNoCheckTest()
 {
+	puts("ethAggregateVerifyNoCheckTest");
 	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate_verify/small/fast_aggregate_verify_valid/data.yaml
 	const struct Tbl {
 		const char *pub;
@@ -650,8 +651,10 @@ void ethSignOneTest(const std::string& secHex, const std::string& msgHex, const 
 	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), sigHex);
 	CYBOZU_TEST_ASSERT(sig.verify(pub, msg.data(), msg.size()));
 }
+
 void ethSignTest()
 {
+	puts("ethSignTest");
 	std::string fileName = cybozu::GetExePath() + "../test/eth/sign.txt";
 	std::ifstream ifs(fileName.c_str());
 	if (!ifs) {
@@ -673,6 +676,61 @@ void ethSignTest()
 	ethSignOneTest(secHex, msgHex, sigHex);
 }
 
+void ethFastAggregateVerifyTest()
+{
+	puts("ethFastAggregateVerifyTest");
+	std::string fileName = cybozu::GetExePath() + "../test/eth/fast_aggregate_verify.txt";
+	std::ifstream ifs(fileName.c_str());
+	if (!ifs) {
+		fprintf(stderr, "skip ethFastAggregateVerifyTest because %s is not found\n", fileName.c_str());
+		return;
+	}
+	int i = 0;
+	for (;;) {
+		std::vector<bls::PublicKey> pubVec;
+		Uint8Vec msg;
+		bls::Signature sig;
+		int output;
+		std::string h;
+		std::string s;
+		for (;;) {
+			ifs >> h;
+			if (h.empty()) return;
+			if (h != "pub") break;
+			bls::PublicKey pub;
+			ifs >> s;
+			pub.deserializeHexStr(s);
+			pubVec.push_back(pub);
+		}
+		printf("i=%d\n", i++);
+		if (h != "msg") throw cybozu::Exception("bad msg") << h;
+		ifs >> s;
+		msg = fromHexStr(s);
+		ifs >> h;
+		if (h != "sig") throw cybozu::Exception("bad sig") << h;
+		ifs >> s;
+		try {
+			sig.deserializeHexStr(s);
+			CYBOZU_TEST_EQUAL(blsSignatureIsValidOrder(sig.getPtr()), 1);
+		} catch (...) {
+			printf("bad signature %s\n", s.c_str());
+			sig.clear();
+		}
+		ifs >> h;
+		if (h != "out") throw cybozu::Exception("bad out") << h;
+		ifs >> s;
+		if (s == "false") {
+			output = 0;
+		} else if (s == "true") {
+			output = 1;
+		} else {
+			throw cybozu::Exception("bad out") << s;
+		}
+		int r = blsFastAggregateVerify(sig.getPtr(), pubVec[0].getPtr(), pubVec.size(), msg.data(), msg.size());
+		CYBOZU_TEST_EQUAL(r, output);
+	}
+}
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
@@ -680,6 +738,7 @@ void ethTest(int type)
 	ethAggregateTest();
 	ethSignTest();
 	ethAggregateVerifyNoCheckTest();
+	ethFastAggregateVerifyTest();
 }
 #endif
 
