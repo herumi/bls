@@ -321,7 +321,38 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 {
 #ifdef BLS_ETH
 	if (n == 0) return 0;
-	// ToD:use millerLoopVec
+#if 1 // 1.1 times faster
+	GT e1;
+	const char *msg = (const char*)msgVec;
+	const size_t N = 16;
+	G1 g1Vec[N];
+	G2 g2Vec[N];
+	size_t start = 1; // 1 if first else 0
+
+	g1Vec[0] = getBasePoint();
+	G2::neg(g2Vec[0], *cast(&sig->v));
+	while (n > 0) {
+		size_t m = N - start;
+		if (n < m) m = n;
+		for (size_t i = 0; i < m; i++) {
+			g1Vec[i + start] = *cast(&pubVec[i].v);
+			hashAndMapToG(g2Vec[i + start], &msg[i * msgSize], msgSize);
+		}
+		if (start) {
+			millerLoopVec(e1, g1Vec, g2Vec, m + start);
+			start = 0;
+		} else {
+			GT e2;
+			millerLoopVec(e2, g1Vec, g2Vec, m);
+			e1 *= e2;
+		}
+		pubVec += m;
+		msg += m * msgSize;
+		n -= m;
+	}
+	BN::finalExp(e1, e1);
+	return e1.isOne();
+#else
 	const char *p = (const char *)msgVec;
 	GT s(1), t;
 	for (mclSize i = 0; i < n; i++) {
@@ -334,6 +365,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 	s *= t;
 	finalExp(s, s);
 	return s.isOne() ? 1 : 0;
+#endif
 #else
 	(void)sig;
 	(void)pubVec;
