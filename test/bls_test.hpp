@@ -731,6 +731,35 @@ void ethFastAggregateVerifyTest()
 	}
 }
 
+void blsAggregateVerifyNoCheckTestOne(size_t n)
+{
+	const size_t msgSize = 32;
+	std::vector<bls::PublicKey> pubs(n);
+	std::vector<bls::Signature> sigs(n);
+	std::string msgs(msgSize * n, 0);
+	for (size_t i = 0; i < n; i++) {
+		bls::SecretKey sec;
+		sec.init();
+		sec.getPublicKey(pubs[i]);
+		msgs[msgSize * i] = i;
+		sec.sign(sigs[i], &msgs[msgSize * i], msgSize);
+	}
+	blsSignature aggSig;
+	blsAggregateSignature(&aggSig, sigs[0].getPtr(), n);
+	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 1);
+	CYBOZU_BENCH_C("blsAggregateVerifyNoCheck", 50, blsAggregateVerifyNoCheck, &aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n);
+	(*(char*)(&aggSig))++;
+	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 0);
+}
+
+void blsAggregateVerifyNoCheckTest()
+{
+	const size_t nTbl[] = { 1, 2, 15, 16, 17, 50 };
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
+		blsAggregateVerifyNoCheckTestOne(nTbl[i]);
+	}
+}
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
@@ -739,11 +768,13 @@ void ethTest(int type)
 	ethSignTest();
 	ethAggregateVerifyNoCheckTest();
 	ethFastAggregateVerifyTest();
+	blsAggregateVerifyNoCheckTest();
 }
 #endif
 
 void testAll(int type)
 {
+#if 1
 	blsTest();
 	k_of_nTest();
 	popTest();
@@ -753,6 +784,7 @@ void testAll(int type)
 	verifyAggregateTest(type);
 	setRandFuncTest(type);
 	hashTest(type);
+#endif
 #ifdef BLS_ETH
 	ethTest(type);
 #endif
