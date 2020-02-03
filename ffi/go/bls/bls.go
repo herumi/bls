@@ -674,12 +674,11 @@ func (sig *Sign) VerifyAggregateHashWithDomain(pubVec []PublicKey, hashWithDomai
 		return false
 	}
 	n := len(pubVec)
-	if n == 0 || len(hashWithDomains) != n * 40 {
+	if n == 0 || len(hashWithDomains) != n*40 {
 		return false
 	}
 	return C.blsVerifyAggregatedHashWithDomain(&sig.v, &pubVec[0].v, (*[40]C.uchar)(unsafe.Pointer(&hashWithDomains[0])), C.mclSize(n)) == 1
 }
-
 
 ///
 
