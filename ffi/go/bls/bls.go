@@ -563,6 +563,33 @@ func (sig *Sign) Verify(pub *PublicKey, m string) bool {
 	return C.blsVerify(&sig.v, &pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf))) == 1
 }
 
+func bool2int(b bool) C.int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// VerifySignatureOrder --
+func VerifySignatureOrder(doVerify bool) {
+	C.blsSignatureVerifyOrder(bool2int(doVerify))
+}
+
+// VerifyPublicKeyOrder --
+func VerifyPublicKeyOrder(doVerify bool) {
+	C.blsPublicKeyVerifyOrder(bool2int(doVerify))
+}
+
+// IsValidOrder --
+func (pub *PublicKey) IsValidOrder() bool {
+	return C.blsPublicKeyIsValidOrder(&pub.v) == 1
+}
+
+// IsValidOrder --
+func (sig *Sign) IsValidOrder() bool {
+	return C.blsSignatureIsValidOrder(&sig.v) == 1
+}
+
 // VerifyPop --
 func (sig *Sign) VerifyPop(pub *PublicKey) bool {
 	if sig == nil || pub == nil {
