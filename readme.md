@@ -38,6 +38,15 @@ REMARK : `blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n)` does not c
 
 Check them at the caller.
 
+## Language binding
+
+language|repository|
+--|--|
+Go|[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary) ; contains precompiled static libraries|
+WebAssembly(Node.js)|[bls-eth-wasm](https://github.com/herumi/bls-eth-wasm)|
+Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|
+
+
 # precompiled version for Ethereum 2.0 spec
 
 - Go; [bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)
