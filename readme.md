@@ -14,7 +14,7 @@ An implementation of BLS threshold signature
 * WebAssembly
 
 # News
-Init as the folloings:
+Init as the followings:
 
 ```
 blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
@@ -72,7 +72,7 @@ git clone git://github.com/herumi/cybozulib_ext ; for only Windows
 
 # News
 * disabled to check the order in setStr/deserialize. call once `blsSignatureVerifyOrder(1)` or `blsPublicKeyVerifyOrder(1)` to check it.
-* add uncompressed function to PubliKey and Sign
+* add uncompressed function to PublicKey and Sign
 * add blsSignHashWithDomain, blsVerifyHashWithDomain(see (Ethereum 2.0 spec mode)[https://github.com/herumi/bls/#ethereum-20-spec-mode])
 * rename blsGetGeneratorOfG{1 or 2} to blsGetGeneratorOfPublicKey
 * add blsSetETHserialization(1) to use ETH serialization for BLS12-381
@@ -280,7 +280,7 @@ void Sign::recover(const SignVec& signVec, const IdVec& idVec);
 
 Collect k pair of sign `f(id) H(m)` and `id` for a message m and recover the original signature `s H(m)` for the secret key `s`.
 
-### PoP (Proof of Possesion)
+### PoP (Proof of Possession)
 
 ```
 void SecretKey::getPop(Sign& pop) const;
