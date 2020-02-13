@@ -157,7 +157,7 @@ Check them at the caller if necessary.
 
 ### Check order
 
-Check where `sig` and `pub` have the correct order `r`.
+Check whether `sig` and `pub` have the correct order `r`.
 
 ```
 // return 1 if it is valid else 0
