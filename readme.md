@@ -42,7 +42,7 @@ Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|
 #include <bls/bls.h>
 ```
 
-`bn384_256.h` is for 384-bit p and 256-bit r.
+`bn384_256.h` is for 384-bit `p` and 256-bit `r`, where the elliptic curve is defined over `Fp` and the order of `G1` and `G2` is `r`.
 
 ### Libraries
 
@@ -157,7 +157,7 @@ Check them at the caller if necessary.
 
 ### Check order
 
-Check the correctness of `sig`, `pub`.
+Check where `sig` and `pub` have the correct order `r`.
 
 ```
 // return 1 if it is valid else 0
