@@ -1,29 +1,38 @@
-sudo: true
 language: cpp
 os:
-  - linux
-  - osx
+- linux
+- osx
 compiler:
-  - gcc
-
+- gcc
 arch:
-  - amd64
-  - arm64
-    
+- amd64
+- arm64
 addons:
   apt:
     packages:
-      - libgmp-dev
+    - libgmp-dev
 install:
-  - git clone https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
-#  - git clone -b dev https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
+- git clone https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
+
 script:
-  - make -j3
-    #  - make test_ci
-    # - make test_go
-    #- env LD_LIBRARY_PATH=../mcl/lib bin/bls_c384_test.exe
-  - make clean && make -C ../mcl clean
-  - make -j3 MCL_USE_OPENSSL=0
-    # - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
-  - make clean
-    #- make test_ci BLS_ETH=1
+- make clean
+- make lib/libbls384_256.a
+
+global:
+- os=osx 
+before_deploy:
+- mv lib/libbls384_256.a lib/$TRAVIS_OS_NAME-$TRAVIS_CPU_ARCH-libbls384_256.a
+
+after_deploy:
+- rm lib/TRAVIS_OS_NAME-$TRAVIS_CPU_ARCH-libbls384_256.a
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: ZeVospElXa5g16dbO2MRAAmtLKIUJfja4obqDyDqRS/ijy6+tu1QJDMX0+Ke9vR00o3vBtUQch6AwckvXuVMysxvZxMyrRNApZABqQSGNK6oEJb6g1m1R5z28cv+qoeTM5fLUrJDqyDICTzPZAaP3IIBW9NI5EHvVjoG45S+a6B6UIDAgel0J4eATraHcI9zHJN+139DrCpekTqt/rJs/MfT5bkgOPp1yWLmCr8ScCnVSyQUHfu9HqWKwzjlYrtGyYexRwIWb01yiFqO7jPQIRsQMQLte7Of0IgwsLXhVqaKIpleNK6OgBgrbuP9df8lodJ8qgMspWAux85+5paj83oiM8BcJd4n4uY7P/c8++BDU1mtYk4aajQuAi8ZkD8JWgR5jO8GtgZIW2QKLkSkf+q3jpXiSTfch4l7vAhLXdZJRJy+d85YkH36yGyIDPaj64iKI0sWAH86mPBl9GB38vCJK4zdS7ylZK2nSFqnjIKuOiuEsUEtVj8pv2Vbdr6cixpUNLDKaxFdCil7JCeUZnPBqmLo8OoMKIq93iGhvTzA0C7494oY0yJnEjkKs2mcYGfbf6/9umTVQUNqfuLxtKoXORRnblIZZTh3/LTjl0EbmLnfqrK309apIpcH9UBPIui3FMGuP99OhJw16c5j9V4C/53ylK+K/Ms0g8v27+g=
+  file: lib/$TRAVIS_OS_NAME-$TRAVIS_CPU_ARCH-libbls384_256.a
+  draft: true
+  on:
+    repo: traian-schiau/bls
+    all_branches: true
