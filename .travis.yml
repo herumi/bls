@@ -5,7 +5,11 @@ os:
   - osx
 compiler:
   - gcc
-  - clang
+
+arch:
+  - amd64
+  - arm64
+    
 addons:
   apt:
     packages:
@@ -15,11 +19,11 @@ install:
 #  - git clone -b dev https://github.com/herumi/mcl.git $TRAVIS_BUILD_DIR/../mcl
 script:
   - make -j3
-  - make test_ci
-  - make test_go
-  - env LD_LIBRARY_PATH=../mcl/lib bin/bls_c384_test.exe
+    #  - make test_ci
+    # - make test_go
+    #- env LD_LIBRARY_PATH=../mcl/lib bin/bls_c384_test.exe
   - make clean && make -C ../mcl clean
   - make -j3 MCL_USE_OPENSSL=0
-  - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
+    # - make test_ci DISABLE_THREAD_TEST=1 MCL_USE_OPENSSL=0
   - make clean
-  - make test_ci BLS_ETH=1
+    #- make test_ci BLS_ETH=1
