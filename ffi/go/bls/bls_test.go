@@ -720,3 +720,111 @@ func BenchmarkRecoverSignature100(b *testing.B)  { benchmarkRecoverSignature(100
 func BenchmarkRecoverSignature200(b *testing.B)  { benchmarkRecoverSignature(200, b) }
 func BenchmarkRecoverSignature500(b *testing.B)  { benchmarkRecoverSignature(500, b) }
 func BenchmarkRecoverSignature1000(b *testing.B) { benchmarkRecoverSignature(1000, b) }
+
+func hasPanicked(f func()) (ret bool) {
+	defer func() {
+		p := recover()
+		ret = (p != nil)
+	}()
+
+	f()
+	return
+}
+
+func TestConvertPublicKey(t *testing.T) {
+	_ = Init(BLS12_381)
+	var sec SecretKey
+
+	sec.SetByCSPRNG()
+	t.Logf("sec:%s", sec.SerializeToHexStr())
+
+	pub := sec.GetPublicKey()
+	t.Logf("pub:%s", pub.SerializeToHexStr())
+
+	isSwap := IsSwapG()
+
+	pub2 := &PublicKey{}
+	var g1 *G1
+	var g2 *G2
+
+	g1ConvPanicked := hasPanicked(func() {
+		g1 = pub.ToG1()
+	})
+
+	g2ConvPanicked := hasPanicked(func() {
+		g2 = pub.ToG2()
+	})
+
+	switch {
+	case isSwap && !g1ConvPanicked:
+		pub2.SetG1(g1)
+	case !isSwap && !g2ConvPanicked:
+		pub2.SetG2(g2)
+	default:
+		t.Errorf("unexpected isSwap=%v, g1ConvPanicked=%v, g2ConvPanicked=%v",
+			isSwap, g1ConvPanicked, g2ConvPanicked)
+	}
+
+	if !pub.IsEqual(pub2) {
+		t.Error("public keys not equal")
+	}
+	t.Logf("pub2:%s", pub2.SerializeToHexStr())
+}
+
+func TestConvertSecretKey(t *testing.T) {
+	_ = Init(BLS12_381)
+	var sec SecretKey
+
+	sec.SetByCSPRNG()
+	t.Logf("sec:%s", sec.SerializeToHexStr())
+
+	fr := sec.ToFr()
+	sec2 := &SecretKey{}
+	sec2.SetFr(fr)
+
+	if !sec.IsEqual(sec2) {
+		t.Error("secret keys not equal")
+	}
+	t.Logf("sec2:%s", sec2.SerializeToHexStr())
+}
+
+func TestConverSign(t *testing.T) {
+	_ = Init(BLS12_381)
+	var sec SecretKey
+
+	sec.SetByCSPRNG()
+	t.Logf("sec:%s", sec.SerializeToHexStr())
+
+	isSwap := IsSwapG()
+
+	var g1 *G1
+	var g2 *G2
+
+	message := "message to sign"
+	sig := sec.Sign(message)
+	t.Logf("sig:%s", sig.SerializeToHexStr())
+	sig2 := &Sign{}
+
+	g1ConvPanicked := hasPanicked(func() {
+		g1 = sig.ToG1()
+	})
+
+	g2ConvPanicked := hasPanicked(func() {
+		g2 = sig.ToG2()
+	})
+
+	switch {
+	case !isSwap && !g1ConvPanicked:
+		sig2.SetG1(g1)
+	case isSwap && !g2ConvPanicked:
+		sig2.SetG2(g2)
+	default:
+		t.Errorf("unexpected isSwap=%v, g1ConvPanicked=%v, g2ConvPanicked=%v",
+			isSwap, g1ConvPanicked, g2ConvPanicked)
+	}
+
+	if !sig.IsEqual(sig2) {
+		t.Error("signatures not equal")
+	}
+	t.Logf("sig2:%s", sig2.SerializeToHexStr())
+}

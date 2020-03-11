@@ -334,6 +334,17 @@ func (sec *SecretKey) GetPop() (sig *Sign) {
 	return sig
 }
 
+// ToFr --
+func (sec *SecretKey) ToFr() *Fr {
+	f := &Fr{v: sec.v.v}
+	return f
+}
+
+// SetFr --
+func (sec *SecretKey) SetFr(f *Fr) {
+	sec.v.v = f.v
+}
+
 // PublicKey --
 type PublicKey struct {
 	v C.blsPublicKey
@@ -449,6 +460,50 @@ func (pub *PublicKey) Recover(pubVec []PublicKey, idVec []ID) error {
 	return nil
 }
 
+// ToG1 --
+func (pub *PublicKey) ToG1() *G1 {
+	switch v := interface{}(pub.v.v).(type) {
+	case C.mclBnG1:
+		g := &G1{}
+		*(g.getPointer()) = v
+		return g
+	default:
+		panic("cannot cast PK to G1")
+	}
+}
+
+// SetG1 --
+func (pub *PublicKey) SetG1(g *G1) {
+	switch p := interface{}(&pub.v.v).(type) {
+	case *C.mclBnG1:
+		*p = *(g.getPointer())
+	default:
+		panic("cannot cast G1 to PK")
+	}
+}
+
+// ToG2 --
+func (pub *PublicKey) ToG2() *G2 {
+	switch v := interface{}(pub.v.v).(type) {
+	case C.mclBnG2:
+		g := &G2{}
+		*(g.getPointer()) = v
+		return g
+	default:
+		panic("cannot cast PK to G2")
+	}
+}
+
+// SetG2 --
+func (pub *PublicKey) SetG2(g *G2) {
+	switch p := interface{}(&pub.v.v).(type) {
+	case *C.mclBnG2:
+		*p = *(g.getPointer())
+	default:
+		panic("cannot cast G2 to PK")
+	}
+}
+
 // Sign  --
 type Sign struct {
 	v C.blsSignature
@@ -561,6 +616,50 @@ func (sig *Sign) Verify(pub *PublicKey, m string) bool {
 	buf := []byte(m)
 	// #nosec
 	return C.blsVerify(&sig.v, &pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf))) == 1
+}
+
+// ToG1 --
+func (sig *Sign) ToG1() *G1 {
+	switch v := interface{}(sig.v.v).(type) {
+	case C.mclBnG1:
+		g := &G1{}
+		*(g.getPointer()) = v
+		return g
+	default:
+		panic("cannot cast SIG to G2")
+	}
+}
+
+// SetG1 --
+func (sig *Sign) SetG1(g *G1) {
+	switch p := interface{}(&sig.v.v).(type) {
+	case *C.mclBnG1:
+		*p = *(g.getPointer())
+	default:
+		panic("cannot cast G1 to SIG")
+	}
+}
+
+// ToG2 --
+func (sig *Sign) ToG2() *G2 {
+	switch v := interface{}(sig.v.v).(type) {
+	case C.mclBnG2:
+		g := &G2{}
+		*(g.getPointer()) = v
+		return g
+	default:
+		panic("cannot cast SIG to G2")
+	}
+}
+
+// SetG2 --
+func (sig *Sign) SetG2(g *G2) {
+	switch p := interface{}(&sig.v.v).(type) {
+	case *C.mclBnG2:
+		*p = *(g.getPointer())
+	default:
+		panic("cannot cast G2 to SIG")
+	}
 }
 
 func bool2int(b bool) C.int {
@@ -736,4 +835,16 @@ func SetRandFunc(randReader io.Reader) {
 		// use default random generator
 		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(nil)))
 	}
+}
+
+func IsSwapG() bool {
+	pk := C.blsPublicKey{}
+	v := interface{}(pk.v)
+	switch v.(type) {
+	case C.mclBnG1:
+		return true
+	case C.mclBnG2:
+		return false
+	}
+	panic("unable to determine library swap")
 }
