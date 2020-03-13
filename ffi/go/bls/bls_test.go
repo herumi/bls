@@ -514,6 +514,32 @@ func testJson(t *testing.T) {
 	}
 }
 
+func testCast(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	{
+		x := *CastFromSecretKey(&sec)
+		sec2 := *CastToSecretKey(&x)
+		if !sec.IsEqual(&sec2) {
+			t.Error("sec is not equal")
+		}
+	}
+	pub := *sec.GetPublicKey()
+	g2 := *CastFromPublicKey(&pub)
+	G2Add(&g2, &g2, &g2)
+	pub.Add(&pub)
+	if !pub.IsEqual(CastToPublicKey(&g2)) {
+		t.Error("pub not equal")
+	}
+	sig := sec.Sign("abc")
+	g1 := *CastFromSign(sig)
+	G1Add(&g1, &g1, &g1)
+	sig.Add(sig)
+	if !sig.IsEqual(CastToSign(&g1)) {
+		t.Error("sig not equal")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -537,6 +563,7 @@ func test(t *testing.T, c int) {
 	testHash(t)
 	testAggregateHashes(t)
 	testJson(t)
+	testCast(t)
 }
 
 func TestMain(t *testing.T) {
