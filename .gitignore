@@ -5,3 +5,4 @@ lib/*.so
 lib/*.dylib
 obj/*.d
 obj/*.o
+sample/*.txt
