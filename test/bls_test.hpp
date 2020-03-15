@@ -760,15 +760,31 @@ void blsAggregateVerifyNoCheckTest()
 	}
 }
 
+void draft06Test()
+{
+	blsSetETHmode(BLS_ETH_MODE_DRAFT_06);
+	blsSecretKey sec;
+	blsSecretKeySetHexStr(&sec, "1", 1);
+	blsSignature sig;
+	blsSign(&sig, &sec, "asdf", 4);
+	uint8_t buf[1024];
+	size_t n = blsSignatureSerializeUncompressed(&buf, sizeof(buf), &sig);
+	for (size_t i = 0; i < n; i++) {
+		printf("%02x", buf[i]);
+	}
+	printf("\n");
+}
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
-	blsSetETHmode(BLS_ETH_MODE_LATEST);
+	blsSetETHmode(BLS_ETH_MODE_DRAFT_05);
 	ethAggregateTest();
 	ethSignTest();
 	ethAggregateVerifyNoCheckTest();
 	ethFastAggregateVerifyTest();
 	blsAggregateVerifyNoCheckTest();
+//	draft06Test();
 }
 #endif
 

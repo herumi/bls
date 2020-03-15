@@ -98,10 +98,15 @@ int blsSetETHmode(int mode)
 		g_adjInvIdx = 1;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 		break;
-	case BLS_ETH_MODE_LATEST:
+	case BLS_ETH_MODE_DRAFT_05:
 		g_newEth2 = true;
 		g_adjInvIdx = 0;
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_WB19);
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_05);
+		break;
+	case BLS_ETH_MODE_DRAFT_06:
+		g_newEth2 = true;
+		g_adjInvIdx = 0;
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_06);
 		break;
 	default:
 		return -1;
