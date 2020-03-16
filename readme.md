@@ -14,6 +14,9 @@ An implementation of BLS threshold signature
 * WebAssembly
 
 # News
+`blsSetETHmode()` supports `BLS_ETH_MODE_DRAFT_06` defined at [draft-irtf-cfrg-hash-to-curve](https://cfrg.github.io/draft-irtf-cfrg-hash-to-curve/draft-irtf-cfrg-hash-to-curve.txt) at March 2020. But it has not yet fully tested.
+
+
 This library supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures).
 
 bls.h | eth2.0 spec name|

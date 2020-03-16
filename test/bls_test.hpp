@@ -766,9 +766,11 @@ void draft06Test()
 	blsSecretKey sec;
 	blsSecretKeySetHexStr(&sec, "1", 1);
 	blsSignature sig;
-	blsSign(&sig, &sec, "asdf", 4);
+	const char *msg = "asdf";
+	blsSign(&sig, &sec, msg, strlen(msg));
 	uint8_t buf[1024];
 	size_t n = blsSignatureSerializeUncompressed(&buf, sizeof(buf), &sig);
+	printf("hash(%s)=", msg);
 	for (size_t i = 0; i < n; i++) {
 		printf("%02x", buf[i]);
 	}
@@ -784,7 +786,7 @@ void ethTest(int type)
 	ethAggregateVerifyNoCheckTest();
 	ethFastAggregateVerifyTest();
 	blsAggregateVerifyNoCheckTest();
-//	draft06Test();
+	draft06Test();
 }
 #endif
 
