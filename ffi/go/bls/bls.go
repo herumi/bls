@@ -707,6 +707,20 @@ func (sig *Sign) VerifyAggregateHashWithDomain(pubVec []PublicKey, hashWithDomai
 	return C.blsVerifyAggregatedHashWithDomain(&sig.v, &pubVec[0].v, (*[40]C.uchar)(unsafe.Pointer(&hashWithDomains[0])), C.mclSize(n)) == 1
 }
 
+// Aggregate --
+func (sig *Sign) Aggregate(sigVec []Sign) {
+	C.blsAggregateSignature(&sig.v, &sigVec[0].v, C.mclSize(len(sigVec)))
+}
+
+// FastAggregateVerify --
+func (sig *Sign) FastAggregateVerify(pubVec []PublicKey, msg []byte) bool {
+	if pubVec == nil {
+		return false
+	}
+	n := len(pubVec)
+	return C.blsFastAggregateVerify(&sig.v, &pubVec[0].v, C.mclSize(n), unsafe.Pointer(&msg[0]), C.mclSize(len(msg))) == 1
+}
+
 ///
 
 var sRandReader io.Reader
