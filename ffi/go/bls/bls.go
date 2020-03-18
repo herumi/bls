@@ -737,3 +737,8 @@ func SetRandFunc(randReader io.Reader) {
 		C.blsSetRandFunc(nil, C.ReadRandFunc(unsafe.Pointer(nil)))
 	}
 }
+
+// BlsGetGeneratorOfPublicKey -
+func BlsGetGeneratorOfPublicKey(pub *PublicKey) {
+	C.blsGetGeneratorOfPublicKey(&pub.v)
+}
