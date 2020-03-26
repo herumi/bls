@@ -14,8 +14,8 @@ An implementation of BLS threshold signature
 * WebAssembly
 
 # News
-`blsSetETHmode()` supports `BLS_ETH_MODE_DRAFT_06` defined at [draft-irtf-cfrg-hash-to-curve](https://cfrg.github.io/draft-irtf-cfrg-hash-to-curve/draft-irtf-cfrg-hash-to-curve.txt) at March 2020. But it has not yet fully tested.
-
+- 2020/Mar/26 : DST of hash-to-curve of [mcl](https://github.com/herumi/mcl) is changed, so the output has also changed for `BLS_ETH_MODE_DRAFT_06`.
+- 2020/Mar/15 : `blsSetETHmode()` supports `BLS_ETH_MODE_DRAFT_06` defined at [draft-irtf-cfrg-hash-to-curve](https://cfrg.github.io/draft-irtf-cfrg-hash-to-curve/draft-irtf-cfrg-hash-to-curve.txt) at March 2020. But it has not yet fully tested.
 
 This library supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures).
 
@@ -29,14 +29,14 @@ blsAggregateVerifyNoCheck|AggregateVerify|
 
 ## Support language bindings
 
-language|repository|
---|--|
-Go|[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)|
-WebAssembly(Node.js)|[bls-eth-wasm](https://github.com/herumi/bls-eth-wasm)|
-Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|
+language|ETH2.0 spec(PublicKey=G1)|old(PublicKey = G2)|
+--|--|--|
+Go|[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)|[bls-go-binary](https://github.com/herumi/bls-go-binary)|
+WebAssembly(Node.js)|[bls-eth-wasm](https://github.com/herumi/bls-eth-wasm)|[bls-wasm](https://github.com/herumi/bls-wasm)|
+Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|-|
 
 
-## APIs for eth2.0-specs
+## APIs for the latest eth2.0-specs
 
 ### Header files
 
@@ -168,12 +168,11 @@ int blsSignatureIsValidOrder(const blsSignature *sig);
 int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 ```
 
-# End for eth2.0-spec
+# End for the latest eth2.0-spec
 <hr>
 
 # Support languages
 
-* Go; in ffi/go or [bls-go-binary](https://github.com/herumi/bls-go-binary/)
 * C#; in ffi/cs
 
 # Installation Requirements
@@ -263,14 +262,14 @@ Remark:
 - The library built with BLS_SWAP_G is not compatible with the library built without BLS_SWAP_G.
 - Define `-DBLS_SWAP_G' before including `bls/bn.h`.
 
-# Ethereum 2.0 spec mode
-For [eth2](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/bls_signature.md),
+# The older Ethereum 2.0 spec mode
+This mode will be removed in the future.
 ```
 make clean
 make BLS_ETH=1 bin/libbls384_256.a
 ```
 
-## APIs for sign/verify for eth2
+## APIs for sign/verify
 `uint8_t hashWithDomain[40]` in the following apis means a structure of 32 bytes msg and 8 bytes domain.
 
 ```
@@ -423,17 +422,7 @@ void blsPublicKeyVerifyOrder(false);
 
 cf. subgroup attack
 
-# Go
-```
-make test_go
-```
-
 # WASM(WebAssembly)
-```
-mkdir ../bls-wasm
-make bls-wasm
-```
-* see [bls-wasm](https://github.com/herumi/bls-wasm/)
 * see [BLS signature demo on browser](https://herumi.github.io/bls-wasm/bls-demo.html)
 
 # License
