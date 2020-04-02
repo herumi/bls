@@ -14,6 +14,8 @@ An implementation of BLS threshold signature
 * WebAssembly
 
 # News
+- 2020/Apr/02 : *experimental* add blsMultiAggregateSignature/blsMultiAggregatePublicKey [multiSig](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html)
+  - The hash function is temporary, which may be modified in the future.
 - 2020/Mar/26 : DST of hash-to-curve of [mcl](https://github.com/herumi/mcl) is changed, so the output has also changed for `BLS_ETH_MODE_DRAFT_06`.
 - 2020/Mar/15 : `blsSetETHmode()` supports `BLS_ETH_MODE_DRAFT_06` defined at [draft-irtf-cfrg-hash-to-curve](https://cfrg.github.io/draft-irtf-cfrg-hash-to-curve/draft-irtf-cfrg-hash-to-curve.txt) at March 2020. But it has not yet fully tested.
 

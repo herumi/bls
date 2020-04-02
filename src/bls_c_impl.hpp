@@ -70,6 +70,7 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 static int g_curveType;
 #ifdef BLS_SWAP_G
 typedef G2 G;
+typedef G1 Gother;
 static G1 g_P;
 static int g_adjInvIdx;
 static G1 g_PadjInv[2]; // 0:g_P, 1:g_P * adj
@@ -80,6 +81,7 @@ inline const G1& getBasePoint() { return g_P; }
 inline const G1& getBasePointAdjInv() { return g_PadjInv[g_adjInvIdx]; } // for only BLS12-381
 #else
 typedef G1 G;
+typedef G2 Gother;
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
@@ -1011,6 +1013,81 @@ mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const blsSignature 
 void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub)
 {
 	GmulCT(*cast(&out->v), *cast(&pub->v), *cast(&sec->v));
+}
+
+void normalizePubVec(blsPublicKey *pubVec, mclSize n)
+{
+	for (size_t i = 0; i < n; i++) {
+		cast(&pubVec[i].v)->normalize();
+	}
+}
+
+#define CYBOZU_DONT_USE_OPENSSL
+#include <cybozu/sha2.hpp>
+#include <cybozu/endian.hpp>
+void hashPublicKey(cybozu::Sha256& h, const blsPublicKey *pubVec, mclSize n)
+{
+	for (size_t i = 0; i < n; i++) {
+		const Gother& v = *cast(&pubVec[i].v);
+		char buf[sizeof(Gother) / 3];
+		size_t n = v.x.serialize(buf, sizeof(buf));
+		assert(n > 0);
+		h.update(buf, n);
+		n = v.y.serialize(buf, sizeof(buf));
+		assert(n > 0);
+		h.update(buf, n);
+	}
+}
+
+void hashToFr(Fr *out, const cybozu::Sha256& h0, mclSize begin, mclSize n)
+{
+	for (size_t i = 0; i < n; i++) {
+		cybozu::Sha256 h = h0;
+		char md[32];
+		char buf[4];
+		cybozu::Set32bitAsLE(buf, uint32_t(begin + i));
+		h.digest(md, sizeof(md), buf, sizeof(buf));
+		out[i].setArrayMask(md, sizeof(md));
+	}
+}
+
+template<class T, class U>
+void aggregate(T& out, const cybozu::Sha256& h0, const U *vec, mclSize n)
+{
+	out.clear();
+	const size_t N = 16;
+	Fr t[N];
+	size_t pos = 0;
+	while (pos < n) {
+		size_t m = n - pos;
+		if (m > N) m = N;
+		hashToFr(t, h0, pos, m);
+		T sub;
+		T::mulVec(sub, cast(&vec[pos].v), t, m);
+		out += sub;
+		pos += m;
+	}
+}
+
+// aggSig = sum sigVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
+void blsMultiAggregateSignature(blsSignature *aggSig, blsSignature *sigVec, blsPublicKey *pubVec, mclSize n)
+{
+	normalizePubVec(pubVec, n);
+	cybozu::Sha256 h0;
+	hashPublicKey(h0, pubVec, n);
+	G out;
+	aggregate(out, h0, sigVec, n);
+	*cast(&aggSig->v) = out;
+}
+// aggPub = sum pubVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
+void blsMultiAggregatePublicKey(blsPublicKey *aggPub, blsPublicKey *pubVec, mclSize n)
+{
+	normalizePubVec(pubVec, n);
+	cybozu::Sha256 h0;
+	hashPublicKey(h0, pubVec, n);
+	Gother out;
+	aggregate(out, h0, pubVec, n);
+	*cast(&aggPub->v) = out;
 }
 
 #endif

@@ -345,6 +345,18 @@ BLS_DLL_API mclSize blsSignatureGetHexStr(char *buf, mclSize maxBufSize, const b
 */
 BLS_DLL_API void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, const blsPublicKey *pub);
 
+/*
+	BLS Multi-Signatures With Public-Key Aggregation
+	https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html
+	H(pubVec)_i := SHA-256(pubVec[0], ..., pubVec[n-1], 4-byte little endian(i))
+	@note
+	1. this hash function will be modifed in the future
+	2. sigVec and pubVec are not const because they may be normalized (the value are not changed)
+*/
+// aggSig = sum sigVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
+BLS_DLL_API void blsMultiAggregateSignature(blsSignature *aggSig, blsSignature *sigVec, blsPublicKey *pubVec, mclSize n);
+// aggPub = sum pubVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
+BLS_DLL_API void blsMultiAggregatePublicKey(blsPublicKey *aggPub, blsPublicKey *pubVec, mclSize n);
 #endif // BLS_MINIMUM_API
 
 #ifdef __cplusplus

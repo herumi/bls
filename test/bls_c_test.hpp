@@ -353,6 +353,30 @@ void blsBench()
 	CYBOZU_BENCH_C("verify", 300, blsVerify, &sig, &pub, msg, msgSize);
 }
 
+void blsMultiAggregateTest()
+{
+	const size_t N = 40;
+	const size_t nTbl[] = { 0, 1, 2, 16, 17, N };
+	blsPublicKey pubVec[N];
+	blsSignature sigVec[N];
+	const char *msg = "abcdefg";
+	const size_t msgSize = strlen(msg);
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
+		const size_t n = nTbl[i];
+		for (size_t j = 0; j < n; j++) {
+			blsSecretKey sec;
+			blsSecretKeySetByCSPRNG(&sec);
+			blsGetPublicKey(&pubVec[j], &sec);
+			blsSign(&sigVec[j], &sec, msg, msgSize);
+		}
+		blsPublicKey aggPub;
+		blsSignature aggSig;
+		blsMultiAggregatePublicKey(&aggPub, pubVec, n);
+		blsMultiAggregateSignature(&aggSig, sigVec, pubVec, n);
+		CYBOZU_TEST_ASSERT(blsVerify(&aggSig, &aggPub, msg, msgSize));
+	}
+}
+
 CYBOZU_TEST_AUTO(all)
 {
 	const struct {
@@ -395,6 +419,7 @@ CYBOZU_TEST_AUTO(all)
 			printf("ERR %d\n", ret);
 			exit(1);
 		}
+		blsMultiAggregateTest();
 		bls_use_stackTest();
 		blsDataTest();
 		blsOrderTest(tbl[i].r, tbl[i].p);
