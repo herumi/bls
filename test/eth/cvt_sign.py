@@ -25,7 +25,7 @@ if len(sys.argv) == 1:
 	sys.exit(1)
 dir = sys.argv[1]
 
-fs = glob.glob(dir + '/*.yaml')
+fs = glob.glob(dir + '/*/*.yaml')
 for f in fs:
 	cvt_sign(f)
 

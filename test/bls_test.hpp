@@ -652,15 +652,11 @@ void ethSignOneTest(const std::string& secHex, const std::string& msgHex, const 
 	CYBOZU_TEST_ASSERT(sig.verify(pub, msg.data(), msg.size()));
 }
 
-void ethSignTest()
+void ethSignFileTest(const std::string& dir)
 {
-	puts("ethSignTest");
-	std::string fileName = cybozu::GetExePath() + "../test/eth/sign.txt";
+	std::string fileName = cybozu::GetExePath() + "../test/eth/" + dir + "/sign.txt";
 	std::ifstream ifs(fileName.c_str());
-	if (!ifs) {
-		fprintf(stderr, "skip ethSignTest because %s is not found\n", fileName.c_str());
-		return;
-	}
+	CYBOZU_TEST_ASSERT(ifs);
 	for (;;) {
 		std::string h1, h2, h3, sec, msg, sig;
 		ifs >>  h1 >> sec >> h2 >> msg >> h3 >> sig;
@@ -670,21 +666,24 @@ void ethSignTest()
 		}
 		ethSignOneTest(sec, msg, sig);
 	}
+}
+
+void ethSignTest()
+{
+	puts("ethSignTest");
+	ethSignFileTest("draft05");
 	const char *secHex = "47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138";
 	const char *msgHex = "0000000000000000000000000000000000000000000000000000000000000000";
 	const char *sigHex = "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441";
 	ethSignOneTest(secHex, msgHex, sigHex);
 }
 
-void ethFastAggregateVerifyTest()
+void ethFastAggregateVerifyTest(const std::string& dir)
 {
 	puts("ethFastAggregateVerifyTest");
-	std::string fileName = cybozu::GetExePath() + "../test/eth/fast_aggregate_verify.txt";
+	std::string fileName = cybozu::GetExePath() + "../test/eth/" + dir + "/fast_aggregate_verify.txt";
 	std::ifstream ifs(fileName.c_str());
-	if (!ifs) {
-		fprintf(stderr, "skip ethFastAggregateVerifyTest because %s is not found\n", fileName.c_str());
-		return;
-	}
+	CYBOZU_TEST_ASSERT(ifs);
 	int i = 0;
 	for (;;) {
 		std::vector<bls::PublicKey> pubVec;
@@ -784,7 +783,7 @@ void ethTest(int type)
 	ethAggregateTest();
 	ethSignTest();
 	ethAggregateVerifyNoCheckTest();
-	ethFastAggregateVerifyTest();
+	ethFastAggregateVerifyTest("draft05");
 	blsAggregateVerifyNoCheckTest();
 	draft06Test();
 }
