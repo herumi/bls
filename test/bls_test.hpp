@@ -766,14 +766,20 @@ void draft06Test()
 	blsSecretKeySetHexStr(&sec, "1", 1);
 	blsSignature sig;
 	const char *msg = "asdf";
+	const char *tbl[] = {
+		"991465766822328609851486184896183909315973720876657478886869638351620419080108037412710821468345199867495830514994",
+		"1927263325419177785864064254809595520594843896432194052293468762304708262511397472768048460101768845190689994385404",
+		"1809070181727662187520244137990122973104312257969329378620821268587650918986396248285565202085536393521872124028279",
+		"422840987629306440608451989474855096319159701852700504738670150565612981489044166427550429014138733315907834328002",
+	};
 	blsSign(&sig, &sec, msg, strlen(msg));
-	uint8_t buf[1024];
-	size_t n = blsSignatureSerializeUncompressed(&buf, sizeof(buf), &sig);
-	printf("hash(%s)=", msg);
-	for (size_t i = 0; i < n; i++) {
-		printf("%02x", buf[i]);
+	mclBnG2_normalize(&sig.v, &sig.v);
+	const mclBnFp *p = &sig.v.x.d[0];
+	for (int i = 0; i < 4; i++) {
+		char buf[128];
+		mclBnFp_getStr(buf, sizeof(buf), &p[i], 10);
+		CYBOZU_TEST_ASSERT(strcmp(buf, tbl[i]) == 0);
 	}
-	printf("\n");
 }
 
 void ethTest(int type)
