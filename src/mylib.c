@@ -51,3 +51,16 @@ BLS_DLL_API int atexit(void (*f)(void))
 	return 0;
 }
 
+BLS_DLL_API size_t getEndOffset()
+{
+	static char end[] = "DATA_END";
+	return (size_t)end;
+}
+
+// to get stack address (temporary)
+BLS_DLL_API size_t getStackAddress(int x)
+{
+	if (x == 0) x = 32;
+	char buf[x];
+	return (size_t)buf;
+}
