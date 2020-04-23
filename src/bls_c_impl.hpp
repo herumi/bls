@@ -128,6 +128,9 @@ int blsInit(int curve, int compiledTimeVar)
 	const mcl::CurveParam& cp = mcl::getCurveParam(curve);
 	bool b;
 	initPairing(&b, cp);
+#ifdef __wasm__
+//	G2::setMulArrayGLV(0);
+#endif
 	if (!b) return -1;
 	g_curveType = curve;
 

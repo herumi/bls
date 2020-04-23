@@ -172,14 +172,26 @@ bls-wasm:
 bls-eth-wasm:
 	$(MAKE) ../bls-eth-wasm/bls_c.js
 
-CLANG_WASM_OPT=-O3 -DNDEBUG -fPIC -DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -DMCL_LLVM_BMI2=0 -DMCL_USE_LLVM=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_MINIMUM_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -I./include -I./src -I../mcl/include -fno-builtin  --target=wasm32-unknown-unknown-wasm  -Wstrict-prototypes -Wno-unused-parameter -ffreestanding -fno-exceptions -fvisibility=hidden -Wall -Wextra -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -fno-rtti -nostdinc++ -DLLONG_MIN=-0x8000000000000000LL
+#CLANG_WASM_OPT= -fno-builtin  --target=wasm32-unknown-unknown-wasm -Wno-unused-parameter -ffreestanding -fno-exceptions -fvisibility=hidden -Wall -Wextra -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -fno-rtti -nostdinc++ -DLLONG_MIN=-0x8000000000000000LL
+
+BASE_CFLAGS=-O3 -g -DNDEBUG -I ./include -I ../mcl/include -I ./src -fPIC -DMCL_MAX_BIT_SIZE=384 -DMCL_SIZEOF_UNIT=8 -DMCL_LLVM_BMI2=0 -DCYBOZU_DONT_USE_EXCEPTION -DMCL_DONT_USE_CSPRNG -DCYBOZU_DONT_USE_STRING -DCYBOZU_MINIMUM_EXCEPTION -Wno-unused-parameter -Wall -Wextra -fno-threadsafe-statics -fno-use-cxa-atexit -fno-unwind-tables -fno-builtin -fvisibility=hidden -fno-rtti -fno-stack-protector -fno-exceptions -nostdinc++
+WASM_OUT_DIR=../bls-wasm/
+WASM_SRC_BASENAME=bls_c384
+ifeq ($(BLS_ETH),1)
+  BASE_CFLAGS+=-DBLS_ETH
+  WASM_OUT_DIR=../bls-eth-wasm/
+  WASM_SRC_BASENAME=bls_c384_256
+endif
+CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -DMCL_USE_LLVM=1 -DLLONG_MIN=-0x8000000000000000LL
 bls-wasm-by-clang: ../mcl/src/base64m.ll
-	$(CXX) -x c -c -o $(OBJ_DIR)/mylib.o src/mylib.c $(CLANG_WASM_OPT)
+	$(CXX) -x c -c -o $(OBJ_DIR)/mylib.o src/mylib.c $(CLANG_WASM_OPT) -Wstrict-prototypes
 	$(CXX) -c -o $(OBJ_DIR)/base64m.o ../mcl/src/base64m.ll $(CLANG_WASM_OPT) -std=c++03
-	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(CLANG_WASM_OPT) -std=c++03
+	$(CXX) -c -o $(OBJ_DIR)/$(WASM_SRC_BASENAME).o src/$(WASM_SRC_BASENAME).cpp $(CLANG_WASM_OPT) -std=c++03
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(CLANG_WASM_OPT) -std=c++03
-	wasm-ld-8 --no-entry --export-dynamic -o ../bls-wasm/bls.wasm $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/base64m.o $(OBJ_DIR)/mylib.o
-	#ld.gold -o ../bls-wasm $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
+	wasm-ld-8 --no-entry --export-dynamic -o $(WASM_OUT_DIR)/bls.wasm $(OBJ_DIR)/$(WASM_SRC_BASENAME).o $(OBJ_DIR)/fp.o $(OBJ_DIR)/mylib.o $(OBJ_DIR)/base64m.o #--stack-first
+
+bin/minsample: sample/minsample.c
+	$(CXX) -o bin/minsample sample/minsample.c src/mylib.c src/$(WASM_SRC_BASENAME).cpp ../mcl/src/fp.cpp $(BASE_CFLAGS) -std=c++03 -DMCL_DONT_USE_XBYAK -DMCL_USE_VINT -DMCL_VINT_FIXED_BUFFER -DMCL_DONT_USE_OPENSSL
 
 ../mcl/src/base64.ll:
 	$(MAKE) -C ../mcl src/base64.ll
