@@ -226,11 +226,9 @@ BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsP
 	HashWithDomain apis support only for BLS_ETH=1 and BLS12_381
 	return 0 if success else -1
 */
-// avoid compiling error by travi-ci on linux
-typedef unsigned char blsHashWithDomainType[40];
-BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const blsHashWithDomainType hashWithDomain);
+BLS_DLL_API int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const unsigned char hashWithDomain[40]);
 // return 1 if valid
-BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const blsHashWithDomainType hashWithDomain);
+BLS_DLL_API int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const unsigned char hashWithDomain[40]);
 
 /*
 	Uncompressed version of Serialize/Deserialize
@@ -245,7 +243,7 @@ BLS_DLL_API mclSize blsSignatureDeserializeUncompressed(blsSignature *sig, const
 	pubVec is an array of size n
 	hashWithDomain is an array of size (40 * n)
 */
-BLS_DLL_API int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const blsHashWithDomainType hashWithDomain[], mclSize n);
+BLS_DLL_API int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n);
 
 ///// to here only for BLS12-381 with BLS_ETH
 

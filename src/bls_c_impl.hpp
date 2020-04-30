@@ -736,23 +736,22 @@ mclSize blsSignatureDeserializeUncompressed(blsSignature *sig, const void *buf, 
 	0    16    48   64   96
 	0..0 H(im) 0..0 H(re)
 */
-inline void blsHashWithDomainToFp2(uint8_t buf[96], const blsHashWithDomainType hashWithDomain)
+inline void blsHashWithDomainToFp2(uint8_t buf[96], const uint8_t hashWithDomain[40])
 {
-	const size_t n = sizeof(blsHashWithDomainType);
-	uint8_t msg[n + 1];
-	memcpy(msg, hashWithDomain, n);
+	uint8_t msg[41];
+	memcpy(msg, hashWithDomain, 40);
 	memset(buf, 0, 16);
 
-	msg[n] = '\x02';
-	mcl::fp::sha256(buf + 16, 32, msg, n + 1); // im part
+	msg[40] = '\x02';
+	mcl::fp::sha256(buf + 16, 32, msg, 41); // im part
 
 	memset(buf + 48, 0, 16);
-	msg[n] = '\x01';
-	mcl::fp::sha256(buf + 64, 32, msg, n + 1); // re part
+	msg[40] = '\x01';
+	mcl::fp::sha256(buf + 64, 32, msg, 41); // re part
 }
 #endif
 
-int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const blsHashWithDomainType hashWithDomain)
+int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const uint8_t hashWithDomain[40])
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return -1;
@@ -767,7 +766,7 @@ int blsSignHashWithDomain(blsSignature *sig, const blsSecretKey *sec, const blsH
 #endif
 }
 
-int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const blsHashWithDomainType hashWithDomain)
+int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, const uint8_t hashWithDomain[40])
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
@@ -782,7 +781,7 @@ int blsVerifyHashWithDomain(const blsSignature *sig, const blsPublicKey *pub, co
 #endif
 }
 
-int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const blsHashWithDomainType hashWithDomain[], mclSize n)
+int blsVerifyAggregatedHashWithDomain(const blsSignature *aggSig, const blsPublicKey *pubVec, const unsigned char hashWithDomain[][40], mclSize n)
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
