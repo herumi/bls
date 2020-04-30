@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+	"unsafe"
 )
 
 var unitN = 0
@@ -524,8 +525,13 @@ func testCast(t *testing.T) {
 			t.Error("sec is not equal")
 		}
 	}
-	pub := *sec.GetPublicKey()
-	g2 := *CastFromPublicKey(&pub)
+	var pub PublicKey
+	var g2 G2
+	if unsafe.Sizeof(pub) != unsafe.Sizeof(g2) {
+		return
+	}
+	pub = *sec.GetPublicKey()
+	g2 = *CastFromPublicKey(&pub)
 	G2Add(&g2, &g2, &g2)
 	pub.Add(&pub)
 	if !pub.IsEqual(CastToPublicKey(&g2)) {
