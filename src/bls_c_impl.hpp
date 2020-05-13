@@ -110,6 +110,11 @@ int blsSetETHmode(int mode)
 		g_adjInvIdx = 0;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_06);
 		break;
+	case BLS_ETH_MODE_DRAFT_07:
+		g_newEth2 = true;
+		g_adjInvIdx = 0;
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
+		break;
 	default:
 		return -1;
 	}
