@@ -778,7 +778,30 @@ void draft06Test()
 	for (int i = 0; i < 4; i++) {
 		char buf[128];
 		mclBnFp_getStr(buf, sizeof(buf), &p[i], 10);
-		CYBOZU_TEST_ASSERT(strcmp(buf, tbl[i]) == 0);
+		CYBOZU_TEST_EQUAL(buf, tbl[i]);
+	}
+}
+
+void draft07Test()
+{
+	blsSetETHmode(BLS_ETH_MODE_DRAFT_07);
+	blsSecretKey sec;
+	blsSecretKeySetHexStr(&sec, "1", 1);
+	blsSignature sig;
+	const char *msg = "asdf";
+	const char *tbl[] = {
+		"2525875563870715639912451285996878827057943937903727288399283574780255586622124951113038778168766058972461529282986",
+		"3132482115871619853374334004070359337604487429071253737901486558733107203612153024147084489564256619439711974285977",
+		"2106640002084734620850657217129389007976098691731730501862206029008913488613958311385644530040820978748080676977912",
+		"2882649322619140307052211460282445786973517746532934590265600680988689024512167659295505342688129634612479405019290",
+	};
+	blsSign(&sig, &sec, msg, strlen(msg));
+	mclBnG2_normalize(&sig.v, &sig.v);
+	const mclBnFp *p = &sig.v.x.d[0];
+	for (int i = 0; i < 4; i++) {
+		char buf[128];
+		mclBnFp_getStr(buf, sizeof(buf), &p[i], 10);
+		CYBOZU_TEST_EQUAL(buf, tbl[i]);
 	}
 }
 
@@ -792,6 +815,7 @@ void ethTest(int type)
 	ethFastAggregateVerifyTest("draft05");
 	blsAggregateVerifyNoCheckTest();
 	draft06Test();
+	draft07Test();
 }
 #endif
 

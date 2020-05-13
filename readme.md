@@ -14,6 +14,7 @@ An implementation of BLS threshold signature
 * WebAssembly
 
 # News
+- 2020/May/13 : `blsSetETHmode()` supports `BLS_ETH_MODE_DRAFT_07` defined at [BLS12381G2_XMD:SHA-256_SSWU_RO_](https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-07.html#name-bls12381g2_xmdsha-256_sswu_).
 - 2020/Apr/02 : *experimental* add blsMultiAggregateSignature/blsMultiAggregatePublicKey [multiSig](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html)
   - The hash function is temporary, which may be modified in the future.
 - 2020/Mar/26 : DST of hash-to-curve of [mcl](https://github.com/herumi/mcl) is changed, so the output has also changed for `BLS_ETH_MODE_DRAFT_06`.
