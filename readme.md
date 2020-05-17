@@ -52,8 +52,10 @@ Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|-|
 
 ### Libraries
 
+At first, check [How to build on Linux and macOS](https://github.com/herumi/mcl/#how-to-build-on-linux-and-macos).
 The compiled static libraries for {linux, windows, darwin}/amd64 and android/{arm64-v8a, armeabi-v7a}
-are provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib)
+are provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib).
+See [How to build the static library](https://github.com/herumi/bls-eth-go-binary#how-to-build-the-static-library) for those platforms.
 
 On Linux, macOS
 
