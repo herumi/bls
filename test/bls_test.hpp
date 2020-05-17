@@ -797,6 +797,10 @@ void draft07Test()
 	};
 	blsSign(&sig, &sec, msg, strlen(msg));
 	mclBnG2_normalize(&sig.v, &sig.v);
+	{
+		const bls::Signature& b = *(const bls::Signature*)(&sig);
+		printf("draft07-sig(%s) by sec=1 =%s\n", msg, b.serializeToHexStr().c_str());
+	}
 	const mclBnFp *p = &sig.v.x.d[0];
 	for (int i = 0; i < 4; i++) {
 		char buf[128];
