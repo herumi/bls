@@ -1,5 +1,6 @@
 #include <bls/bls384_256.h>
 #include <stdio.h>
+#include <string.h>
 
 void simpleSample()
 {
