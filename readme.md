@@ -60,7 +60,11 @@ Remark: `BLS_ETH` must always be defined before including `bls/bls.h` if you nee
 
 ```
 // init library at once before calling the other APIs
-blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+int err = blsInit(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+if (err != 0) {
+  printf("blsInit err %d\n", err);
+  exit(1);
+}
 
 // use the latest eth2.0 spec
 blsSetETHmode(BLS_ETH_MODE_LATEST);
