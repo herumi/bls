@@ -19,7 +19,7 @@ which supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https:
 This library supports type-3 pairings such as BN curves and BLS curves.
 G1, G2, and GT are a cyclic group of prime order r.
 ```
-e : G1 x G2 -> GT
+e : G1 x G2 -> GT ; pairing
 ```
 
 There are two ways for BLS signature.
@@ -33,7 +33,7 @@ If you need ETH2.0 spec, then use this library with `BLS_ETH=1` mode.
 
 ## Support language bindings
 
-language|ETH2.0 spec (PublicKey = G1)|old (PublicKey = G2)|
+language|ETH2.0 spec (PublicKey = G1)|default (PublicKey = G2)|
 --|--|--|
 Go|[bls-eth-go-binary](https://github.com/herumi/bls-eth-go-binary)|[bls-go-binary](https://github.com/herumi/bls-go-binary)|
 WebAssembly (Node.js)|[bls-eth-wasm](https://github.com/herumi/bls-eth-wasm)|[bls-wasm](https://github.com/herumi/bls-wasm)|
@@ -69,8 +69,10 @@ if (err != 0) {
 // use the latest eth2.0 spec
 blsSetETHmode(BLS_ETH_MODE_LATEST);
 ```
-Remark: `blsInit` and some functions which modify global settings such as `blsSetETHmode` are NOT thread-safe.
+Remark:
+- `blsInit` and some functions which modify global settings such as `blsSetETHmode` are NOT thread-safe.
 The other functions are all thread-safe.
+- `blsSetETHmode` is available for only `BLS_ETH=1` mode.
 
 ### KeyGen
 
@@ -167,6 +169,31 @@ blsAggregateSignature|Aggregate|
 blsFastAggregateVerify|FastAggregateVerify|
 blsAggregateVerifyNoCheck|AggregateVerify|
 
+### Setter
+
+```
+int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize);
+```
+Set `sec` to (`buf[0..bufSize-1]` as little endian) mod r and return 0 if `bufSize <= 64` else -1.
+
+
+### Serialization
+
+```
+mclSize blsSecretKeySerialize(void *buf, mclSize maxBufSize, const blsSecretKey *sec);
+mclSize blsPublicKeySerialize(void *buf, mclSize maxBufSize, const blsPublicKey *pub);
+mclSize blsSignatureSerialize(void *buf, mclSize maxBufSize, const blsSignature *sig);
+```
+Serialize the instance to `buf[0..maxBufSize-1]` and return written byte size if success else 0.
+
+```
+mclSize blsSecretKeyDeserialize(blsSecretKey *sec, const void *buf, mclSize bufSize);
+mclSize blsPublicKeyDeserialize(blsPublicKey *pub, const void *buf, mclSize bufSize);
+mclSize blsSignatureDeserialize(blsSignature *sig, const void *buf, mclSize bufSize);
+```
+Deserialize `buf[0..bufSize-1]` to the instance and return read byte size if success else 0.
+
+
 ### Check order
 
 Check whether `sig` and `pub` have the correct order `r`.
@@ -187,11 +214,40 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub);
 
 See [sample/minsample.c](https://github.com/herumi/bls/blob/master/sample/minsample.c#L20) for the details.
 
+```
+int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey *msk, mclSize k, const blsId *id);
+```
+Make `sec` corresponding to `id` from `{msk[i] for i = 0, ..., k-1}`.
+
+```
+int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n);
+```
+Recover `sig` from `{(sigVec[i], idVec[i]) for i = 0, ..., n-1}`.
+
 ## Multi aggregate signature (experimental)
 
 `blsMultiAggregateSignature` and `blsMultiAggregatePublicKey` are provided for [BLS Multi-Signatures With Public-Key Aggregation](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html).
 The hash function is temporary.
 See [blsMultiAggregateTest](https://github.com/herumi/bls/blob/master/test/bls_c_test.hpp#L356).
+
+```
+void blsMultiAggregateSignature(
+  blsSignature *aggSig,
+  blsSignature *sigVec,
+  blsPublicKey *pubVec,
+  mclSize n
+);
+```
+Set `aggSig = sum_{i=0^n-1} sigVec[i] t_i, where (t_1, ..., t_n) = Hash({pubVec[0..n-1]})`.
+
+```
+void blsMultiAggregatePublicKey(
+  blsPublicKey *aggPub,
+  blsPublicKey *pubVec,
+  mclSize n
+);
+```
+Set `aggPub = sum_{i=0^n-1} pubVec[i] t_i, where (t_1, ..., t_n) = Hash({pubVec[0..n-1]})`.
 
 ## How to build a static library by ownself
 
