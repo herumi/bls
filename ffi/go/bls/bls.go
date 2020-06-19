@@ -271,11 +271,19 @@ func (sec *SecretKey) IsEqual(rhs *SecretKey) bool {
 	return C.blsSecretKeyIsEqual(&sec.v, &rhs.v) == 1
 }
 
+// IsZero --
+func (sec *SecretKey) IsZero() bool {
+	return C.blsSecretKeyIsZero(&sec.v) == 1
+}
+
 // SetByCSPRNG --
 func (sec *SecretKey) SetByCSPRNG() {
 	err := C.blsSecretKeySetByCSPRNG(&sec.v)
 	if err != 0 {
 		panic("err blsSecretKeySetByCSPRNG")
+	}
+	if sec.IsZero() {
+		panic("err blsSecretKeySetByCSPRNG zero")
 	}
 }
 
@@ -421,6 +429,11 @@ func (pub *PublicKey) IsEqual(rhs *PublicKey) bool {
 	return C.blsPublicKeyIsEqual(&pub.v, &rhs.v) == 1
 }
 
+// IsZero --
+func (pub *PublicKey) IsZero() bool {
+	return C.blsPublicKeyIsZero(&pub.v) == 1
+}
+
 // Add --
 func (pub *PublicKey) Add(rhs *PublicKey) {
 	C.blsPublicKeyAdd(&pub.v, &rhs.v)
@@ -517,6 +530,11 @@ func (sig *Sign) IsEqual(rhs *Sign) bool {
 		return false
 	}
 	return C.blsSignatureIsEqual(&sig.v, &rhs.v) == 1
+}
+
+// IsZero --
+func (sig *Sign) IsZero() bool {
+	return C.blsSignatureIsZero(&sig.v) == 1
 }
 
 // GetPublicKey --

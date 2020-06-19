@@ -546,6 +546,34 @@ func testCast(t *testing.T) {
 	}
 }
 
+func testZero(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	pub := sec.GetPublicKey()
+	sig := sec.Sign("abc")
+	if sec.IsZero() {
+		t.Fatal("sec is zero")
+	}
+	if pub.IsZero() {
+		t.Fatal("pub is zero")
+	}
+	if sig.IsZero() {
+		t.Fatal("sig is zero")
+	}
+	sec.SetDecString("0")
+	pub = sec.GetPublicKey()
+	sig = sec.Sign("abc")
+	if !sec.IsZero() {
+		t.Fatal("sec is not zero")
+	}
+	if !pub.IsZero() {
+		t.Fatal("pub is not zero")
+	}
+	if !sig.IsZero() {
+		t.Fatal("sig is not zero")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -570,6 +598,7 @@ func test(t *testing.T, c int) {
 	testAggregateHashes(t)
 	testJson(t)
 	testCast(t)
+	testZero(t)
 }
 
 func TestMain(t *testing.T) {
