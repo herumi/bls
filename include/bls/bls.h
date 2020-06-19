@@ -164,6 +164,12 @@ BLS_DLL_API int blsSecretKeyIsEqual(const blsSecretKey *lhs, const blsSecretKey 
 BLS_DLL_API int blsPublicKeyIsEqual(const blsPublicKey *lhs, const blsPublicKey *rhs);
 BLS_DLL_API int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs);
 
+// return 1 if zero else 0
+BLS_DLL_API int blsIdIsZero(const blsId *x);
+BLS_DLL_API int blsSecretKeyIsZero(const blsSecretKey *x);
+BLS_DLL_API int blsPublicKeyIsZero(const blsPublicKey *x);
+BLS_DLL_API int blsSignatureIsZero(const blsSignature *x);
+
 // return 0 if success
 // make sec corresponding to id from {msk[0], ..., msk[k-1]}
 BLS_DLL_API int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey *msk, mclSize k, const blsId *id);

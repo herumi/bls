@@ -451,6 +451,26 @@ int blsSignatureIsEqual(const blsSignature *lhs, const blsSignature *rhs)
 	return *cast(&lhs->v) == *cast(&rhs->v);
 }
 
+int blsIdIsZero(const blsId *x)
+{
+	return cast(&x->v)->isZero() ? 1 : 0;
+}
+
+int blsSecretKeyIsZero(const blsSecretKey *x)
+{
+	return cast(&x->v)->isZero() ? 1 : 0;
+}
+
+int blsPublicKeyIsZero(const blsPublicKey *x)
+{
+	return cast(&x->v)->isZero() ? 1 : 0;
+}
+
+int blsSignatureIsZero(const blsSignature *x)
+{
+	return cast(&x->v)->isZero() ? 1 : 0;
+}
+
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id)
 {
 	bool b;

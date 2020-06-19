@@ -37,6 +37,16 @@ void bls_use_stackTest()
 	blsSign(&sig, &sec, msg, msgSize);
 
 	CYBOZU_TEST_ASSERT(blsVerify(&sig, &pub, msg, msgSize));
+
+	CYBOZU_TEST_ASSERT(!blsSecretKeyIsZero(&sec));
+	CYBOZU_TEST_ASSERT(!blsPublicKeyIsZero(&pub));
+	CYBOZU_TEST_ASSERT(!blsSignatureIsZero(&sig));
+	memset(&sec, 0, sizeof(sec));
+	memset(&pub, 0, sizeof(pub));
+	memset(&sig, 0, sizeof(sig));
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsZero(&sec));
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsZero(&pub));
+	CYBOZU_TEST_ASSERT(blsSignatureIsZero(&sig));
 }
 
 void blsDataTest()
