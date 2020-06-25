@@ -820,6 +820,8 @@ void ethTest(int type)
 	blsAggregateVerifyNoCheckTest();
 	draft06Test();
 	draft07Test();
+	ethSignFileTest("draft07");
+	ethFastAggregateVerifyTest("draft07");
 }
 #endif
 
