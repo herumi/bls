@@ -11,6 +11,8 @@
 #include <sstream>
 
 typedef std::vector<uint8_t> Uint8Vec;
+typedef std::vector<std::string> StringVec;
+
 Uint8Vec fromHexStr(const std::string& s)
 {
 	Uint8Vec ret(s.size() / 2);
@@ -494,8 +496,8 @@ void testAggregatedHashes(size_t n)
 	const size_t sizeofHash = 32;
 #endif
 	struct Hash { char data[sizeofHash]; };
-	std::vector<bls::PublicKey> pubs(n);
-	std::vector<bls::Signature> sigs(n);
+	bls::PublicKeyVec pubs(n);
+	bls::SignatureVec sigs(n);
 	std::vector<Hash> h(n);
 	for (size_t i = 0; i < n; i++) {
 		bls::SecretKey sec;
@@ -579,6 +581,19 @@ void setRandFuncTest(int type)
 }
 
 #if BLS_ETH
+bls::Signature deserializeSignatureFromHexStr(const std::string& sigHex)
+{
+	bls::Signature sig;
+	try {
+		sig.deserializeHexStr(sigHex);
+		CYBOZU_TEST_EQUAL(blsSignatureIsValidOrder(sig.getPtr()), 1);
+	} catch (...) {
+		printf("bad signature %s\n", sigHex.c_str());
+		sig.clear();
+	}
+	return sig;
+}
+
 void ethAggregateVerifyNoCheckTest()
 {
 	puts("ethAggregateVerifyNoCheckTest");
@@ -673,15 +688,8 @@ void ethVerifyOneTest(const std::string& pubHex, const std::string& msgHex, cons
 	const Uint8Vec msg = fromHexStr(msgHex);
 	bls::PublicKey pub;
 	pub.deserializeHexStr(pubHex);
-	bls::Signature sig;
 	bool expect = outStr == "true";
-	try {
-		sig.deserializeHexStr(sigHex);
-		CYBOZU_TEST_EQUAL(blsSignatureIsValidOrder(sig.getPtr()), 1);
-	} catch (...) {
-		printf("bad signature %s\n", sigHex.c_str());
-		sig.clear();
-	}
+	bls::Signature sig = deserializeSignatureFromHexStr(sigHex);
 	bool b = sig.verify(pub, msg.data(), msg.size());
 	CYBOZU_TEST_EQUAL(b, expect);
 }
@@ -721,9 +729,8 @@ void ethFastAggregateVerifyTest(const std::string& dir)
 	CYBOZU_TEST_ASSERT(ifs);
 	int i = 0;
 	for (;;) {
-		std::vector<bls::PublicKey> pubVec;
+		bls::PublicKeyVec pubVec;
 		Uint8Vec msg;
-		bls::Signature sig;
 		int output;
 		std::string h;
 		std::string s;
@@ -743,13 +750,7 @@ void ethFastAggregateVerifyTest(const std::string& dir)
 		ifs >> h;
 		if (h != "sig") throw cybozu::Exception("bad sig") << h;
 		ifs >> s;
-		try {
-			sig.deserializeHexStr(s);
-			CYBOZU_TEST_EQUAL(blsSignatureIsValidOrder(sig.getPtr()), 1);
-		} catch (...) {
-			printf("bad signature %s\n", s.c_str());
-			sig.clear();
-		}
+		bls::Signature sig = deserializeSignatureFromHexStr(s);
 		ifs >> h;
 		if (h != "out") throw cybozu::Exception("bad out") << h;
 		ifs >> s;
@@ -768,8 +769,8 @@ void ethFastAggregateVerifyTest(const std::string& dir)
 void blsAggregateVerifyNoCheckTestOne(size_t n)
 {
 	const size_t msgSize = 32;
-	std::vector<bls::PublicKey> pubs(n);
-	std::vector<bls::Signature> sigs(n);
+	bls::PublicKeyVec pubs(n);
+	bls::SignatureVec sigs(n);
 	std::string msgs(msgSize * n, 0);
 	for (size_t i = 0; i < n; i++) {
 		bls::SecretKey sec;
@@ -844,10 +845,87 @@ void draft07Test()
 	}
 }
 
+#if 1
+void ethAggregateVerifyOneTest(const StringVec& pubHexVec, const StringVec& msgHexVec, const std::string& sigHex, bool out)
+{
+	const size_t n = pubHexVec.size();
+	if (n != msgHexVec.size()) {
+		throw cybozu::Exception("bad size");
+	}
+	bls::PublicKeyVec pubs;
+	Uint8Vec msgVec;
+
+	size_t msgSize = 0;
+	for (size_t i = 0; i < n; i++) {
+		bls::PublicKey pub;
+		pub.deserializeHexStr(pubHexVec[i]);
+		pubs.push_back(pub);
+		Uint8Vec t = fromHexStr(msgHexVec[i]);
+		if (i == 0) msgSize = t.size();
+		msgVec.insert(msgVec.end(), t.begin(), t.end());
+	}
+	bls::Signature sig = deserializeSignatureFromHexStr(sigHex);
+	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(sig.getPtr(), pubs[0].getPtr(), msgVec.data(), msgSize, n), out);
+}
+
+void ethAggregateVerifyTest(const std::string& dir)
+{
+	puts("ethAggregateVerifyTest");
+	// exceptional test
+	const char *sigTbl[] = {
+		"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+		"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+	};
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(sigTbl); i++) {
+		StringVec pubHexVec;
+		StringVec msgHexVec;
+		ethAggregateVerifyOneTest(pubHexVec, msgHexVec, sigTbl[i], false);
+	}
+	// tests from file
+	std::string fileName = cybozu::GetExePath() + "../test/eth/" + dir + "/aggregate_verify.txt";
+	std::ifstream ifs(fileName.c_str());
+	CYBOZU_TEST_ASSERT(ifs);
+	for (;;) {
+		StringVec pubHexVec;
+		StringVec msgHexVec;
+		std::string sigHex;
+		bool out;
+		std::string h;
+		std::string s;
+		for (;;) {
+			ifs >> h;
+			if (h.empty()) return;
+			if (h != "pub") break;
+			ifs >> s;
+			pubHexVec.push_back(s);
+		}
+		for (;;) {
+			if (h != "msg") break;
+			ifs >> s;
+			msgHexVec.push_back(s);
+			ifs >> h;
+		}
+		if (h != "sig") throw cybozu::Exception("bad sig") << h;
+		ifs >> sigHex;
+		ifs >> h;
+		if (h != "out") throw cybozu::Exception("bad out") << h;
+		ifs >> s;
+		if (s == "false") {
+			out = false;
+		} else if (s == "true") {
+			out = true;
+		} else {
+			throw cybozu::Exception("bad out") << s;
+		}
+		ethAggregateVerifyOneTest(pubHexVec, msgHexVec, sigHex, out);
+	}
+}
+#endif
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
-#if 0
+#if 1
 	blsSetETHmode(BLS_ETH_MODE_DRAFT_05);
 	ethAggregateTest();
 	ethSignTest();
@@ -860,6 +938,7 @@ void ethTest(int type)
 	ethSignFileTest("draft07");
 	ethFastAggregateVerifyTest("draft07");
 	ethVerifyFileTest("draft07");
+	ethAggregateVerifyTest("draft07");
 }
 #endif
 
