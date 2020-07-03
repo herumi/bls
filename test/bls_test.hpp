@@ -668,6 +668,41 @@ void ethSignFileTest(const std::string& dir)
 	}
 }
 
+void ethVerifyOneTest(const std::string& pubHex, const std::string& msgHex, const std::string& sigHex, const std::string& outStr)
+{
+	const Uint8Vec msg = fromHexStr(msgHex);
+	bls::PublicKey pub;
+	pub.deserializeHexStr(pubHex);
+	bls::Signature sig;
+	bool expect = outStr == "true";
+	try {
+		sig.deserializeHexStr(sigHex);
+		CYBOZU_TEST_EQUAL(blsSignatureIsValidOrder(sig.getPtr()), 1);
+	} catch (...) {
+		printf("bad signature %s\n", sigHex.c_str());
+		sig.clear();
+	}
+	bool b = sig.verify(pub, msg.data(), msg.size());
+	CYBOZU_TEST_EQUAL(b, expect);
+}
+
+void ethVerifyFileTest(const std::string& dir)
+{
+	std::string fileName = cybozu::GetExePath() + "../test/eth/" + dir + "/verify.txt";
+	std::ifstream ifs(fileName.c_str());
+	CYBOZU_TEST_ASSERT(ifs);
+	for (;;) {
+		std::string h1, h2, h3, h4, pub, msg, sig, out;
+		ifs >>  h1 >> pub >> h2 >> msg >> h3 >> sig >> h4 >> out;
+		if (h1.empty()) break;
+		if (h1 != "pub" || h2 != "msg" || h3 != "sig" || h4 != "out") {
+			throw cybozu::Exception("bad format") << fileName << h1 << h2 << h3 << h4;
+		}
+		ethVerifyOneTest(pub, msg, sig, out);
+	}
+}
+
+
 void ethSignTest()
 {
 	puts("ethSignTest");
@@ -812,6 +847,7 @@ void draft07Test()
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
+#if 0
 	blsSetETHmode(BLS_ETH_MODE_DRAFT_05);
 	ethAggregateTest();
 	ethSignTest();
@@ -819,9 +855,11 @@ void ethTest(int type)
 	ethFastAggregateVerifyTest("draft05");
 	blsAggregateVerifyNoCheckTest();
 	draft06Test();
+#endif
 	draft07Test();
 	ethSignFileTest("draft07");
 	ethFastAggregateVerifyTest("draft07");
+	ethVerifyFileTest("draft07");
 }
 #endif
 
