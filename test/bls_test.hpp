@@ -631,9 +631,9 @@ void ethAggregateVerifyNoCheckTest()
 	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(sig.getPtr(), pubVec[0].getPtr(), msgVec.data(), msgSize, n), 1);
 }
 
-void ethAggregateTest()
+void ethAggregateTestOld()
 {
-	puts("ethAggregateTest");
+	puts("ethAggregateTestOld");
 	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate/small/aggregate_0x0000000000000000000000000000000000000000000000000000000000000000/data.yaml
 	const struct {
 		const char *s;
@@ -845,7 +845,6 @@ void draft07Test()
 	}
 }
 
-#if 1
 void ethAggregateVerifyOneTest(const StringVec& pubHexVec, const StringVec& msgHexVec, const std::string& sigHex, bool out)
 {
 	const size_t n = pubHexVec.size();
@@ -920,14 +919,39 @@ void ethAggregateVerifyTest(const std::string& dir)
 		ethAggregateVerifyOneTest(pubHexVec, msgHexVec, sigHex, out);
 	}
 }
-#endif
+
+void ethAggregateTest(const std::string& dir)
+{
+	puts("ethAggregateTest");
+	std::string fileName = cybozu::GetExePath() + "../test/eth/" + dir + "/aggregate.txt";
+	std::ifstream ifs(fileName.c_str());
+	CYBOZU_TEST_ASSERT(ifs);
+	for (;;) {
+		bls::SignatureVec sigs;
+		std::string h;
+		std::string s;
+		for (;;) {
+			ifs >> h;
+			if (h.empty()) return;
+			if (h != "sig") break;
+			ifs >> s;
+			sigs.push_back(deserializeSignatureFromHexStr(s));
+		}
+		if (h != "out") throw cybozu::Exception("bad out") << h;
+		ifs >> s;
+		bls::Signature expect = deserializeSignatureFromHexStr(s);
+		blsSignature agg;
+		blsAggregateSignature(&agg, sigs[0].getPtr(), sigs.size());
+		CYBOZU_TEST_ASSERT(blsSignatureIsEqual(&agg, expect.getPtr()));
+	}
+}
 
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
 #if 1
 	blsSetETHmode(BLS_ETH_MODE_DRAFT_05);
-	ethAggregateTest();
+	ethAggregateTestOld();
 	ethSignTest();
 	ethAggregateVerifyNoCheckTest();
 	ethFastAggregateVerifyTest("draft05");
@@ -939,6 +963,7 @@ void ethTest(int type)
 	ethFastAggregateVerifyTest("draft07");
 	ethVerifyFileTest("draft07");
 	ethAggregateVerifyTest("draft07");
+	ethAggregateTest("draft07");
 }
 #endif
 
