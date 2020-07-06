@@ -594,66 +594,6 @@ bls::Signature deserializeSignatureFromHexStr(const std::string& sigHex)
 	return sig;
 }
 
-void ethAggregateVerifyNoCheckTest()
-{
-	puts("ethAggregateVerifyNoCheckTest");
-	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate_verify/small/fast_aggregate_verify_valid/data.yaml
-	const struct Tbl {
-		const char *pub;
-		const char *msg;
-	} tbl[] = {
-		{
-			"a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
-			"0000000000000000000000000000000000000000000000000000000000000000",
-		},
-		{
-			"b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
-			"5656565656565656565656565656565656565656565656565656565656565656",
-		},
-		{
-			"b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
-			"abababababababababababababababababababababababababababababababab",
-		}
-	};
-	const char *sigStr = "82f5bfe5550ce639985a46545e61d47c5dd1d5e015c1a82e20673698b8e02cde4f81d3d4801f5747ad8cfd7f96a8fe50171d84b5d1e2549851588a5971d52037218d4260b9e4428971a5c1969c65388873f1c49a4c4d513bdf2bc478048a18a8";
-	const size_t n = CYBOZU_NUM_OF_ARRAY(tbl);
-	bls::Signature sig;
-	bls::PublicKey pubVec[n];
-	Uint8Vec msgVec;
-	sig.deserializeHexStr(sigStr);
-	size_t msgSize = 0;
-	for (size_t i = 0; i < n; i++) {
-		pubVec[i].deserializeHexStr(tbl[i].pub);
-		const Uint8Vec t = fromHexStr(tbl[i].msg);
-		if (i == 0) msgSize = t.size();
-		msgVec.insert(msgVec.end(), t.begin(), t.end());
-	}
-	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(sig.getPtr(), pubVec[0].getPtr(), msgVec.data(), msgSize, n), 1);
-}
-
-void ethAggregateTestOld()
-{
-	puts("ethAggregateTestOld");
-	// https://media.githubusercontent.com/media/ethereum/eth2.0-spec-tests/v0.10.1/tests/general/phase0/bls/aggregate/small/aggregate_0x0000000000000000000000000000000000000000000000000000000000000000/data.yaml
-	const struct {
-		const char *s;
-	} tbl[] = {
-		{ "b2a0bd8e837fc2a1b28ee5bcf2cddea05f0f341b375e51de9d9ee6d977c2813a5c5583c19d4e7db8d245eebd4e502163076330c988c91493a61b97504d1af85fdc167277a1664d2a43af239f76f176b215e0ee81dc42f1c011dc02d8b0a31e32" },
-		{ "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441" },
-		{ "a1db7274d8981999fee975159998ad1cc6d92cd8f4b559a8d29190dad41dc6c7d17f3be2056046a8bcbf4ff6f66f2a360860fdfaefa91b8eca875d54aca2b74ed7148f9e89e2913210a0d4107f68dbc9e034acfc386039ff99524faf2782de0e" },
-	};
-	const char *expect = "973ab0d765b734b1cbb2557bcf52392c9c7be3cd21d5bd28572d99f618c65e921f0dd82560cc103feb9f000c23c00e660e1364ed094f137e1045e73116cd75903af446df3c357540a4970ec367a7f7fa7493a5db27ca322c48d57740908585e8";
-	const size_t n = CYBOZU_NUM_OF_ARRAY(tbl);
-	bls::Signature sig;
-	sig.clear();
-	for (size_t i = 0; i < n; i++) {
-		bls::Signature t;
-		t.deserializeHexStr(tbl[i].s);
-		sig.add(t);
-	}
-	CYBOZU_TEST_EQUAL(sig.serializeToHexStr(), expect);
-}
-
 void ethSignOneTest(const std::string& secHex, const std::string& msgHex, const std::string& sigHex)
 {
 	const Uint8Vec msg = fromHexStr(msgHex);
@@ -710,16 +650,6 @@ void ethVerifyFileTest(const std::string& dir)
 	}
 }
 
-
-void ethSignTest()
-{
-	puts("ethSignTest");
-	ethSignFileTest("draft05");
-	const char *secHex = "47b8192d77bf871b62e87859d653922725724a5c031afeabc60bcef5ff665138";
-	const char *msgHex = "0000000000000000000000000000000000000000000000000000000000000000";
-	const char *sigHex = "b2deb7c656c86cb18c43dae94b21b107595486438e0b906f3bdb29fa316d0fc3cab1fc04c6ec9879c773849f2564d39317bfa948b4a35fc8509beafd3a2575c25c077ba8bca4df06cb547fe7ca3b107d49794b7132ef3b5493a6ffb2aad2a441";
-	ethSignOneTest(secHex, msgHex, sigHex);
-}
 
 void ethFastAggregateVerifyTest(const std::string& dir)
 {
@@ -792,29 +722,6 @@ void blsAggregateVerifyNoCheckTest()
 	const size_t nTbl[] = { 1, 2, 15, 16, 17, 50 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		blsAggregateVerifyNoCheckTestOne(nTbl[i]);
-	}
-}
-
-void draft06Test()
-{
-	blsSetETHmode(BLS_ETH_MODE_DRAFT_06);
-	blsSecretKey sec;
-	blsSecretKeySetHexStr(&sec, "1", 1);
-	blsSignature sig;
-	const char *msg = "asdf";
-	const char *tbl[] = {
-		"991465766822328609851486184896183909315973720876657478886869638351620419080108037412710821468345199867495830514994",
-		"1927263325419177785864064254809595520594843896432194052293468762304708262511397472768048460101768845190689994385404",
-		"1809070181727662187520244137990122973104312257969329378620821268587650918986396248285565202085536393521872124028279",
-		"422840987629306440608451989474855096319159701852700504738670150565612981489044166427550429014138733315907834328002",
-	};
-	blsSign(&sig, &sec, msg, strlen(msg));
-	mclBnG2_normalize(&sig.v, &sig.v);
-	const mclBnFp *p = &sig.v.x.d[0];
-	for (int i = 0; i < 4; i++) {
-		char buf[128];
-		mclBnFp_getStr(buf, sizeof(buf), &p[i], 10);
-		CYBOZU_TEST_EQUAL(buf, tbl[i]);
 	}
 }
 
@@ -949,15 +856,7 @@ void ethAggregateTest(const std::string& dir)
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
-#if 1
-	blsSetETHmode(BLS_ETH_MODE_DRAFT_05);
-	ethAggregateTestOld();
-	ethSignTest();
-	ethAggregateVerifyNoCheckTest();
-	ethFastAggregateVerifyTest("draft05");
 	blsAggregateVerifyNoCheckTest();
-	draft06Test();
-#endif
 	draft07Test();
 	ethSignFileTest("draft07");
 	ethFastAggregateVerifyTest("draft07");

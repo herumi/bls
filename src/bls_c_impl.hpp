@@ -73,10 +73,7 @@ static bool g_irtfHashAndMap;
 typedef G2 G;
 typedef G1 Gother;
 static G1 g_P;
-static int g_adjInvIdx;
-static G1 g_PadjInv[2]; // 0:g_P, 1:g_P * adj
 inline const G1& getBasePoint() { return g_P; }
-inline const G1& getBasePointAdjInv() { return g_PadjInv[g_adjInvIdx]; } // for only BLS12-381
 #else
 typedef G1 G;
 typedef G2 Gother;
@@ -84,42 +81,20 @@ static G2 g_Q;
 const size_t maxQcoeffN = 128;
 static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
 inline const G2& getBasePoint() { return g_Q; }
-inline const G2& getBasePointAdjInv() { return getBasePoint(); } // same
 inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
 int blsSetETHmode(int mode)
 {
-#ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return -1;
 	switch (mode) {
-/*
-	case BLS_ETH_MODE_OLD:
-		g_adjInvIdx = 1;
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
-		break;
-*/
-	case BLS_ETH_MODE_DRAFT_05:
-		g_adjInvIdx = 0;
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_05);
-		break;
-	case BLS_ETH_MODE_DRAFT_06:
-		g_adjInvIdx = 0;
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_06);
-		break;
 	case BLS_ETH_MODE_DRAFT_07:
 		g_irtfHashAndMap = true;
-		g_adjInvIdx = 0;
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
 		break;
 	default:
 		return -1;
 	}
 	return 0;
-#else
-	(void)mode;
-	return -1;
-#endif
 }
 
 int blsInit(int curve, int compiledTimeVar)
@@ -140,15 +115,10 @@ int blsInit(int curve, int compiledTimeVar)
 	if (curve == MCL_BLS12_381) {
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
-		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
-		g_PadjInv[0] = g_P;
-		G1::mul(g_PadjInv[1], g_P, mcl::bn::getG2cofactorAdjInv());
-		g_adjInvIdx = 0;
+		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
 	} else
 	{
 		mapToG1(&b, g_P, 1);
-		g_PadjInv[0] = g_P;
-		g_adjInvIdx = 0;
 	}
 #else
 
@@ -251,7 +221,7 @@ bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 	GT e;
 	G1 v1[2];
 	G2 v2[2] = { sHm, Hm };
-	v1[0] = getBasePointAdjInv();
+	v1[0] = getBasePoint();
 	G1::neg(v1[1], sP);
 	millerLoopVec(e, v1, v2, 2);
 	finalExp(e, e);
@@ -567,7 +537,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 #ifdef BLS_ETH
 	size_t start = 1; // 1 if first else 0
 
-	g1Vec[0] = getBasePointAdjInv();
+	g1Vec[0] = getBasePoint();
 	G2::neg(g2Vec[0], *cast(&aggSig->v));
 	while (n > 0) {
 		size_t m = N - start;
