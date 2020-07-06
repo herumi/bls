@@ -52,7 +52,7 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 	s H(m) ; signature of m
 	verify ; e(sQ, H(m)) = e(Q, s H(m))
 
-	swap G1 and G2 if BLS_SWAP_G is defined
+	swap G1 and G2 if BLS_ETH is defined
 	@note the current implementation does not support precomputed miller loop
 */
 /*
@@ -68,15 +68,13 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 */
 
 static int g_curveType;
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 typedef G2 G;
 typedef G1 Gother;
 static G1 g_P;
 static int g_adjInvIdx;
 static G1 g_PadjInv[2]; // 0:g_P, 1:g_P * adj
-#ifdef BLS_ETH
 static bool g_newEth2;
-#endif
 inline const G1& getBasePoint() { return g_P; }
 inline const G1& getBasePointAdjInv() { return g_PadjInv[g_adjInvIdx]; } // for only BLS12-381
 #else
@@ -139,8 +137,7 @@ int blsInit(int curve, int compiledTimeVar)
 	if (!b) return -1;
 	g_curveType = curve;
 
-#ifdef BLS_SWAP_G
-	#ifdef BLS_ETH
+#ifdef BLS_ETH
 	g_newEth2 = false;
 	if (curve == MCL_BLS12_381) {
 		mclBn_setETHserialization(1);
@@ -150,7 +147,6 @@ int blsInit(int curve, int compiledTimeVar)
 		G1::mul(g_PadjInv[1], g_P, mcl::bn::getG2cofactorAdjInv());
 		g_adjInvIdx = 1;
 	} else
-	#endif
 	{
 		mapToG1(&b, g_P, 1);
 		g_PadjInv[0] = g_P;
@@ -252,7 +248,7 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 	GmulCT(*cast(&sig->v), *cast(&sig->v), s);
 }
 
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 /*
 	e(P, sHm) == e(sP, Hm)
 	<=> finalExp(ML(P, sHm) * e(-sP, Hm)) == 1
@@ -289,7 +285,7 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 {
 	G Hm;
 	hashAndMapToG(Hm, m, size);
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
 #else
 	/*
@@ -523,7 +519,7 @@ void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs)
 
 void blsSignatureVerifyOrder(int doVerify)
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	verifyOrderG2(doVerify != 0);
 #else
 	verifyOrderG1(doVerify != 0);
@@ -531,7 +527,7 @@ void blsSignatureVerifyOrder(int doVerify)
 }
 void blsPublicKeyVerifyOrder(int doVerify)
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	verifyOrderG1(doVerify != 0);
 #else
 	verifyOrderG2(doVerify != 0);
@@ -559,7 +555,7 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 	Fp2 t;
 	if (t.deserialize(h, size) == 0) return false;
 	BN::mapToG2(&b, Hm, t, true);
-#elif defined(BLS_SWAP_G)
+#elif defined(BLS_ETH)
 	Fp t;
 	t.setArrayMask((const char *)h, size);
 	BN::mapToG2(&b, Hm, Fp2(t, 0));
@@ -579,7 +575,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 	const size_t N = 16;
 	G1 g1Vec[N];
 	G2 g2Vec[N];
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	size_t start = 1; // 1 if first else 0
 
 	g1Vec[0] = getBasePointAdjInv();
@@ -758,7 +754,7 @@ mclSize blsSignatureDeserializeUncompressed(blsSignature *sig, const void *buf, 
 
 int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPublicKey *pub)
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return isEqualTwoPairings(*cast(&X->v), *cast(&pub->v), *cast(&Y->v));
 #else
 	return isEqualTwoPairings(*cast(&X->v), getQcoeff().data(), *cast(&Y->v), *cast(&pub->v));
@@ -809,7 +805,7 @@ int blsGetSerializedSecretKeyByteSize()
 
 int blsGetSerializedPublicKeyByteSize()
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return blsGetG1ByteSize();
 #else
 	return blsGetG1ByteSize() * 2;
@@ -818,7 +814,7 @@ int blsGetSerializedPublicKeyByteSize()
 
 int blsGetSerializedSignatureByteSize()
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return blsGetG1ByteSize() * 2;
 #else
 	return blsGetG1ByteSize();

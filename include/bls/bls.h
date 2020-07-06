@@ -10,17 +10,9 @@
 #include <mcl/bn.h>
 
 #ifdef BLS_ETH
-	#ifndef BLS_SWAP_G
-		#define BLS_SWAP_G
-	#endif
 	#define BLS_COMPILER_TIME_VAR_ADJ 200
-#endif
-#ifdef BLS_SWAP_G
-	#ifndef BLS_COMPILER_TIME_VAR_ADJ
-		#define BLS_COMPILER_TIME_VAR_ADJ 100
-	#endif
 	/*
-		error if BLS_SWAP_G is inconsistently used between library and exe
+		error if BLS_ETH is inconsistently defined between library and exe
 	*/
 	#undef MCLBN_COMPILED_TIME_VAR
 	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + BLS_COMPILER_TIME_VAR_ADJ)
@@ -66,7 +58,7 @@ typedef struct {
 } blsSecretKey;
 
 typedef struct {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	mclBnG1 v;
 #else
 	mclBnG2 v;
@@ -74,7 +66,7 @@ typedef struct {
 } blsPublicKey;
 
 typedef struct {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	mclBnG2 v;
 #else
 	mclBnG1 v;

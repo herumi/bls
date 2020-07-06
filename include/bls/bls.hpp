@@ -328,7 +328,7 @@ public:
 		if (str != "0") {
 			// 1 <x.a> <x.b> <y.a> <y.b>
 			std::string t;
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 			const int elemNum = 2;
 #else
 			const int elemNum = 4;
@@ -345,7 +345,7 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const
 	{
 		str.resize(1024);
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 		size_t n = mclBnG1_getStr(&str[0], str.size(), &self_.v, ioMode);
 #else
 		size_t n = mclBnG2_getStr(&str[0], str.size(), &self_.v, ioMode);
@@ -367,7 +367,7 @@ public:
 	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);
 #else
 		int ret = mclBnG2_setStr(&self_.v, str.c_str(), str.size(), ioMode);
@@ -436,7 +436,7 @@ public:
 		if (str != "0") {
 			// 1 <x> <y>
 			std::string t;
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 			const int elemNum = 4;
 #else
 			const int elemNum = 2;
@@ -453,7 +453,7 @@ public:
 	void getStr(std::string& str, int ioMode = 0) const
 	{
 		str.resize(1024);
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 		size_t n = mclBnG2_getStr(&str[0], str.size(), &self_.v, ioMode);
 #else
 		size_t n = mclBnG1_getStr(&str[0], str.size(), &self_.v, ioMode);
@@ -475,7 +475,7 @@ public:
 	void clear() { memset(&self_, 0, sizeof(self_)); }
 	void setStr(const std::string& str, int ioMode = 0)
 	{
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 		int ret = mclBnG2_setStr(&self_.v, str.c_str(), str.size(), ioMode);
 #else
 		int ret = mclBnG1_setStr(&self_.v, str.c_str(), str.size(), ioMode);

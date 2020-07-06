@@ -19,11 +19,8 @@ CFLAGS+=-I$(MCL_DIR)/include
 ifneq ($(MCL_MAX_BIT_SIZE),)
   CFLAGS+=-DMCL_MAX_BIT_SIZE=$(MCL_MAX_BIT_SIZE)
 endif
-ifeq ($(BLS_SWAP_G),1)
-  CFLAGS+=-DBLS_SWAP_G
-endif
 ifeq ($(BLS_ETH),1)
-  CFLAGS+=-DBLS_ETH -DBLS_SWAP_G
+  CFLAGS+=-DBLS_ETH
 endif
 
 BLS256_LIB=$(LIB_DIR)/libbls256.a
@@ -134,12 +131,6 @@ test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
 	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384 .
 test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
 	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384_256 .
-test_go256_swapg: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn256_swapg .
-test_go384_swapg: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384_swapg .
-test_go384_256_swapg: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384_256_swapg .
 
 test_eth: bin/bls_c384_256_test.exe
 	bin/bls_c384_256_test.exe
@@ -148,11 +139,6 @@ test_go:
 	$(MAKE) test_go256
 	$(MAKE) test_go384
 	$(MAKE) test_go384_256
-
-test_go_swapg:
-	$(MAKE) test_go256_swapg
-	$(MAKE) test_go384_swapg
-	$(MAKE) test_go384_256_swapg
 
 EMCC_OPT=-I./include -I./src -I../mcl/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
@@ -168,7 +154,7 @@ bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
 
 ../bls-eth-wasm/bls_c.js: src/bls_c384_256.cpp ../mcl/src/fp.cpp Makefile
-	emcc -o $@ src/bls_c384_256.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DBLS_ETH -DBLS_SWAP_G -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384_256.d
+	emcc -o $@ src/bls_c384_256.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DBLS_ETH -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384_256.d
 bls-eth-wasm:
 	$(MAKE) ../bls-eth-wasm/bls_c.js
 
@@ -204,7 +190,7 @@ ifneq ($(MIN_WITH_XBYAK),1)
   MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
 endif
 ifeq ($(BLS_ETH),1)
-  MIN_CFLAGS+=-DBLS_ETH -DBLS_SWAP_G
+  MIN_CFLAGS+=-DBLS_ETH
 endif
 minimized_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(MIN_CFLAGS)

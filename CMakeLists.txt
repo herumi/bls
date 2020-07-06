@@ -8,19 +8,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(LIBS mcl gmp)
 
 option(
-	BLS_SWAP_G
-	"swap G1 and G2"
-	"OFF"
-)
-option(
 	BLS_ETH
 	"Ethereum 2.0 spec"
 	"OFF"
 )
-
-if(BLS_SWAP_G)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBLS_SWAP_G")
-endif()
 
 if(BLS_ETH)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBLS_ETH")
