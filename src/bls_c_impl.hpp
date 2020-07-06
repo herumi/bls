@@ -68,13 +68,13 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 */
 
 static int g_curveType;
+static bool g_irtfHashAndMap;
 #ifdef BLS_ETH
 typedef G2 G;
 typedef G1 Gother;
 static G1 g_P;
 static int g_adjInvIdx;
 static G1 g_PadjInv[2]; // 0:g_P, 1:g_P * adj
-static bool g_newEth2;
 inline const G1& getBasePoint() { return g_P; }
 inline const G1& getBasePointAdjInv() { return g_PadjInv[g_adjInvIdx]; } // for only BLS12-381
 #else
@@ -93,23 +93,22 @@ int blsSetETHmode(int mode)
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return -1;
 	switch (mode) {
+/*
 	case BLS_ETH_MODE_OLD:
-		g_newEth2 = false;
 		g_adjInvIdx = 1;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 		break;
+*/
 	case BLS_ETH_MODE_DRAFT_05:
-		g_newEth2 = true;
 		g_adjInvIdx = 0;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_05);
 		break;
 	case BLS_ETH_MODE_DRAFT_06:
-		g_newEth2 = true;
 		g_adjInvIdx = 0;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_06);
 		break;
 	case BLS_ETH_MODE_DRAFT_07:
-		g_newEth2 = true;
+		g_irtfHashAndMap = true;
 		g_adjInvIdx = 0;
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
 		break;
@@ -138,14 +137,13 @@ int blsInit(int curve, int compiledTimeVar)
 	g_curveType = curve;
 
 #ifdef BLS_ETH
-	g_newEth2 = false;
 	if (curve == MCL_BLS12_381) {
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_ETH2);
 		g_PadjInv[0] = g_P;
 		G1::mul(g_PadjInv[1], g_P, mcl::bn::getG2cofactorAdjInv());
-		g_adjInvIdx = 1;
+		g_adjInvIdx = 0;
 	} else
 	{
 		mapToG1(&b, g_P, 1);
@@ -240,11 +238,6 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 {
 	blsHashToSignature(sig, m, size);
 	Fr s = *cast(&sec->v);
-#ifdef BLS_ETH
-	if (g_curveType == MCL_BLS12_381 && !g_newEth2) {
-		s *= mcl::bn::getG2cofactorAdj();
-	}
-#endif
 	GmulCT(*cast(&sig->v), *cast(&sig->v), s);
 }
 
@@ -548,18 +541,14 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 {
 	bool b;
 #ifdef BLS_ETH
-	if (g_newEth2) {
-		BN::hashAndMapToG2(Hm, h, size);
+	BN::hashAndMapToG2(Hm, h, size);
+	return true;
+#else
+	if (g_irtfHashAndMap) {
+		BN::hashAndMapToG1(Hm, h, size);
 		return true;
 	}
-	Fp2 t;
-	if (t.deserialize(h, size) == 0) return false;
-	BN::mapToG2(&b, Hm, t, true);
-#elif defined(BLS_ETH)
-	Fp t;
-	t.setArrayMask((const char *)h, size);
-	BN::mapToG2(&b, Hm, Fp2(t, 0));
-#else
+	// backward compatibility
 	Fp t;
 	t.setArrayMask((const char *)h, size);
 	BN::mapToG1(&b, Hm, t);
@@ -629,11 +618,6 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 	G Hm;
 	if (!toG(Hm, h, size)) return -1;
 	Fr s = *cast(&sec->v);
-#ifdef BLS_ETH
-	if (g_curveType == MCL_BLS12_381 && !g_newEth2) {
-		s *= mcl::bn::getG2cofactorAdj();
-	}
-#endif
 	GmulCT(*cast(&sig->v), Hm, s);
 	return 0;
 }
