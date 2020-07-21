@@ -102,9 +102,10 @@ int blsInit(int curve, int compiledTimeVar)
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
 		return -(compiledTimeVar + (MCLBN_COMPILED_TIME_VAR * 1000));
 	}
-	const mcl::CurveParam& cp = mcl::getCurveParam(curve);
+	const mcl::CurveParam* cp = mcl::getCurveParam(curve);
+	if (cp == 0) return -1;
 	bool b;
-	initPairing(&b, cp);
+	initPairing(&b, *cp);
 #ifdef __wasm__
 //	G2::setMulArrayGLV(0);
 #endif
