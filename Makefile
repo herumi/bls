@@ -168,13 +168,14 @@ ifeq ($(BLS_ETH),1)
   WASM_OUT_DIR=../bls-eth-wasm/
   WASM_SRC_BASENAME=bls_c384_256
 endif
-CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -DMCL_USE_LLVM=1 -DLLONG_MIN=-0x8000000000000000LL
+CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -DLLONG_MIN=-0x8000000000000000LL -I /usr/include -DMCL_USE_LLVM=1
+# apt install liblld-10-dev
 bls-wasm-by-clang: ../mcl/src/base64m.ll
 	$(CXX) -x c -c -o $(OBJ_DIR)/mylib.o src/mylib.c $(CLANG_WASM_OPT) -Wstrict-prototypes
 	$(CXX) -c -o $(OBJ_DIR)/base64m.o ../mcl/src/base64m.ll $(CLANG_WASM_OPT) -std=c++03
 	$(CXX) -c -o $(OBJ_DIR)/$(WASM_SRC_BASENAME).o src/$(WASM_SRC_BASENAME).cpp $(CLANG_WASM_OPT) -std=c++03
 	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(CLANG_WASM_OPT) -std=c++03
-	wasm-ld-8 --no-entry --export-dynamic -o $(WASM_OUT_DIR)/bls.wasm $(OBJ_DIR)/$(WASM_SRC_BASENAME).o $(OBJ_DIR)/fp.o $(OBJ_DIR)/mylib.o $(OBJ_DIR)/base64m.o #--stack-first
+	wasm-ld-10 --no-entry --export-dynamic -o $(WASM_OUT_DIR)/bls.wasm $(OBJ_DIR)/$(WASM_SRC_BASENAME).o $(OBJ_DIR)/fp.o $(OBJ_DIR)/mylib.o $(OBJ_DIR)/base64m.o #-z stack-size=524288
 
 bin/minsample: sample/minsample.c
 	$(CXX) -o bin/minsample sample/minsample.c src/mylib.c src/$(WASM_SRC_BASENAME).cpp ../mcl/src/fp.cpp $(BASE_CFLAGS) -std=c++03 -DMCL_DONT_USE_XBYAK -DMCL_USE_VINT -DMCL_VINT_FIXED_BUFFER -DMCL_DONT_USE_OPENSSL
