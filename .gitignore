@@ -6,3 +6,5 @@ lib/*.dylib
 obj/*.d
 obj/*.o
 sample/*.txt
+!sample/CMakeLists.txt
+build/
