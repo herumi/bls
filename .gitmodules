@@ -1,0 +1,3 @@
+[submodule "mcl"]
+	path = external/mcl
+	url = https://github.com/bitFlyer-Blockchain/mcl.git
