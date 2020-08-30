@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 3.8)
-project(bls CXX ASM C)
+
+project(bls
+  VERSION 1.10
+  LANGUAGES CXX ASM C)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -52,6 +55,10 @@ target_include_directories(bls256 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
 target_link_libraries(bls256 PUBLIC mcl::mclbn256)
+set_target_properties(bls256 PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  VERSION ${bls_VERSION}
+  SONAME ${bls_VERSION_MAJOR})
 
 add_library(bls384 SHARED src/bls_c384.cpp)
 add_library(bls::bls384 ALIAS bls384)
@@ -60,6 +67,10 @@ target_include_directories(bls384 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
 target_link_libraries(bls384 PUBLIC mcl::mclbn384)
+set_target_properties(bls384 PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  VERSION ${bls_VERSION}
+  SONAME ${bls_VERSION_MAJOR})
 
 add_library(bls384_256 SHARED src/bls_c384_256.cpp)
 add_library(bls::bls384_256 ALIAS bls384_256)
@@ -68,6 +79,10 @@ target_include_directories(bls384_256 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
 target_link_libraries(bls384_256 PUBLIC mcl::mclbn384_256)
+set_target_properties(bls384_256 PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  VERSION ${bls_VERSION}
+  SONAME ${bls_VERSION_MAJOR})
 
 
 install(TARGETS bls256 bls384 bls384_256
