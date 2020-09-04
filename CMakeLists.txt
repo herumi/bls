@@ -51,6 +51,7 @@ add_subdirectory(external/mcl)
 foreach(bit IN ITEMS 256 384 384_256)
 	add_library(bls${bit} SHARED src/bls_c${bit}.cpp)
 	add_library(bls::bls${bit} ALIAS bls${bit})
+	target_compile_definitions(bls${bit} PRIVATE BLS_NO_AUTOLINK)
 	target_include_directories(bls${bit} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
