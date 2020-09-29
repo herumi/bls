@@ -124,6 +124,15 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void 
 
 // return 1 if valid
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
+/*
+	return 1 if blsVerify(&sigVec[i], &pubVec[i], &msgVec[i * msgSize]) returns 1 for all i = 0, ..., n-1
+	@param randVec [in] randSize * n byte array
+	@note for only BLS_ETH
+	sig = sum_i sigVec[i] * randVec[i]
+	pubVec[i] *= randVec[i]
+	return blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n);
+*/
+BLS_DLL_API int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n);
 
 // aggSig = sum of sigVec[0..n]
 BLS_DLL_API void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);

@@ -260,6 +260,66 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
+/*
+	sig = sum_i sigVec[i] * randVec[i]
+	pubVec[i] *= randVec[i]
+	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
+*/
+int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n)
+{
+#ifdef BLS_ETH
+	if (n == 0) return 0;
+	GT e;
+	const char *msg = (const char*)msgVec;
+	const char *rp = (const char*)randVec;
+	const size_t N = 16;
+	Fr rand[N+1];
+	G1 g1Vec[N+1];
+	G2 g2Vec[N+1];
+	G2 aggSig;
+	bool initE = true;
+
+	while (n > 0) {
+		size_t m = mcl::fp::min_(n, N);
+		for (size_t i = 0; i < m; i++) {
+			bool b;
+			rand[i].setArray(&b, &rp[i * randSize], randSize);
+			(void)b;
+			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
+			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
+		}
+		if (initE) {
+			G2::mulVec(aggSig, cast(&sigVec->v), rand, m);
+		} else {
+			G2 t;
+			G2::mulVec(t, cast(&sigVec->v), rand, m);
+			aggSig += t;
+		}
+		sigVec += m;
+		pubVec += m;
+		msg += m * msgSize;
+		rp += m * randSize;
+		n -= m;
+		if (n == 0) {
+			g1Vec[m] = getBasePoint();
+			G2::neg(g2Vec[m], aggSig);
+			m++;
+		}
+		millerLoopVec(e, g1Vec, g2Vec, m, initE);
+		initE = false;
+	}
+	finalExp(e, e);
+	return e.isOne();
+#else
+	(void)sigVec;
+	(void)pubVec;
+	(void)msgVec;
+	(void)msgSize;
+	(void)n;
+	return 0;
+#endif
+}
+
 void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
 {
 	if (n == 0) {
