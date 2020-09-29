@@ -534,7 +534,7 @@ void verifyAggregateTest(int type)
 #ifdef BLS_ETH
 	if (type != MCL_BLS12_381) return;
 #endif
-	const size_t nTbl[] = { 1, 2, 15, 16, 17, 50 };
+	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		testAggregatedHashes(nTbl[i]);
 	}
@@ -719,7 +719,7 @@ void blsAggregateVerifyNoCheckTestOne(size_t n)
 
 void blsAggregateVerifyNoCheckTest()
 {
-	const size_t nTbl[] = { 1, 2, 15, 16, 17, 50 };
+	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		blsAggregateVerifyNoCheckTestOne(nTbl[i]);
 	}

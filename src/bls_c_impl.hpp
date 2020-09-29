@@ -297,36 +297,32 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 #ifdef BLS_ETH
 	if (n == 0) return 0;
 #if 1 // 1.1 times faster
-	GT e1;
+	GT e;
 	const char *msg = (const char*)msgVec;
 	const size_t N = 16;
-	G1 g1Vec[N];
-	G2 g2Vec[N];
-	size_t start = 1; // 1 if first else 0
+	G1 g1Vec[N+1];
+	G2 g2Vec[N+1];
+	bool initE = true;
 
-	g1Vec[0] = getBasePoint();
-	G2::neg(g2Vec[0], *cast(&sig->v));
 	while (n > 0) {
-		size_t m = N - start;
-		if (n < m) m = n;
+		size_t m = mcl::fp::min_(n, N);
 		for (size_t i = 0; i < m; i++) {
-			g1Vec[i + start] = *cast(&pubVec[i].v);
-			hashAndMapToG(g2Vec[i + start], &msg[i * msgSize], msgSize);
-		}
-		if (start) {
-			millerLoopVec(e1, g1Vec, g2Vec, m + start);
-			start = 0;
-		} else {
-			GT e2;
-			millerLoopVec(e2, g1Vec, g2Vec, m);
-			e1 *= e2;
+			g1Vec[i] = *cast(&pubVec[i].v);
+			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		pubVec += m;
 		msg += m * msgSize;
 		n -= m;
+		if (n == 0) {
+			g1Vec[m] = getBasePoint();
+			G2::neg(g2Vec[m], *cast(&sig->v));
+			m++;
+		}
+		millerLoopVec(e, g1Vec, g2Vec, m, initE);
+		initE = false;
 	}
-	BN::finalExp(e1, e1);
-	return e1.isOne();
+	BN::finalExp(e, e);
+	return e.isOne();
 #else
 	const char *p = (const char *)msgVec;
 	GT s(1), t;
@@ -530,41 +526,36 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
 {
 	if (n == 0) return 0;
-	GT e1;
+	GT e;
 	const char *ph = (const char*)hVec;
 	const size_t N = 16;
-	G1 g1Vec[N];
-	G2 g2Vec[N];
+	G1 g1Vec[N+1]; // +1 is for the last appending element
+	G2 g2Vec[N+1];
 #ifdef BLS_ETH
-	size_t start = 1; // 1 if first else 0
-
-	g1Vec[0] = getBasePoint();
-	G2::neg(g2Vec[0], *cast(&aggSig->v));
+	bool initE = true;
 	while (n > 0) {
-		size_t m = N - start;
-		if (n < m) m = n;
+		size_t m = mcl::fp::min_(n, N);
 		for (size_t i = 0; i < m; i++) {
-			g1Vec[i + start] = *cast(&pubVec[i].v);
-			if (!toG(g2Vec[i + start], &ph[i * sizeofHash], sizeofHash)) return 0;
-		}
-		if (start) {
-			millerLoopVec(e1, g1Vec, g2Vec, m + start);
-			start = 0;
-		} else {
-			GT e2;
-			millerLoopVec(e2, g1Vec, g2Vec, m);
-			e1 *= e2;
+			g1Vec[i] = *cast(&pubVec[i].v);
+			if (!toG(g2Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
 		}
 		pubVec += m;
 		ph += m * sizeofHash;
 		n -= m;
+		if (n == 0) {
+			g1Vec[m] = getBasePoint();
+			G2::neg(g2Vec[m], *cast(&aggSig->v));
+			m++;
+		}
+		millerLoopVec(e, g1Vec, g2Vec, m, initE);
+		initE = false;
 	}
 #else
 	/*
 		e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
 		<=> finalExp(ML(-aggSig, Q) * prod_i ML(hVec[i], pubVec[i])) == 1
 	*/
-	BN::precomputedMillerLoop(e1, -*cast(&aggSig->v), g_Qcoeff.data());
+	BN::precomputedMillerLoop(e, -*cast(&aggSig->v), g_Qcoeff.data());
 	while (n > 0) {
 		size_t m = N;
 		if (n < m) m = n;
@@ -572,16 +563,14 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 			if (!toG(g1Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
 			g2Vec[i] = *cast(&pubVec[i].v);
 		}
-		GT e2;
-		millerLoopVec(e2, g1Vec, g2Vec, m);
-		e1 *= e2;
+		millerLoopVec(e, g1Vec, g2Vec, m, false);
 		pubVec += m;
 		ph += m * sizeofHash;
 		n -= m;
 	}
 #endif
-	BN::finalExp(e1, e1);
-	return e1.isOne();
+	BN::finalExp(e, e);
+	return e.isOne();
 }
 
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
