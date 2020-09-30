@@ -126,7 +126,7 @@ BLS_DLL_API void blsSign(blsSignature *sig, const blsSecretKey *sec, const void 
 BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size);
 /*
 	return 1 if blsVerify(&sigVec[i], &pubVec[i], &msgVec[i * msgSize]) returns 1 for all i = 0, ..., n-1
-	@param randVec [in] randSize * n byte array
+	@param randVec [in] non-zero randSize * n byte array
 	@note for only BLS_ETH
 	sig = sum_i sigVec[i] * randVec[i]
 	pubVec[i] *= randVec[i]

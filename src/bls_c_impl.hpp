@@ -286,6 +286,7 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 			bool b;
 			rand[i].setArray(&b, &rp[i * randSize], randSize);
 			(void)b;
+            if (rand[i].isZero()) return 0;
 			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
