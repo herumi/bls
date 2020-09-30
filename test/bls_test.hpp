@@ -871,9 +871,9 @@ void ethMultiVerifyTestOne(size_t n)
 		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
-	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n), 1);
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 1);
 	msgs[msgs.size() - 1]--;
-	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n), 0);
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
 }
 
 void ethMultiVerifyTest()

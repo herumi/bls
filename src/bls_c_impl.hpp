@@ -265,8 +265,9 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 	pubVec[i] *= randVec[i]
 	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
 */
-int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n)
+int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadNum)
 {
+	(void)threadNum;
 #ifdef BLS_ETH
 	if (n == 0) return 0;
 	GT e;
