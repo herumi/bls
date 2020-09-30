@@ -281,7 +281,7 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 	bool initE = true;
 
 	while (n > 0) {
-		size_t m = mcl::fp::min_(n, N);
+		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			bool b;
 			rand[i].setArray(&b, &rp[i * randSize], randSize);
@@ -316,6 +316,8 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 	(void)pubVec;
 	(void)msgVec;
 	(void)msgSize;
+	(void)randVec;
+	(void)randSize;
 	(void)n;
 	return 0;
 #endif
@@ -366,7 +368,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 	bool initE = true;
 
 	while (n > 0) {
-		size_t m = mcl::fp::min_(n, N);
+		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
@@ -595,7 +597,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 #ifdef BLS_ETH
 	bool initE = true;
 	while (n > 0) {
-		size_t m = mcl::fp::min_(n, N);
+		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
 			if (!toG(g2Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
