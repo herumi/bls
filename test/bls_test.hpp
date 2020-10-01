@@ -856,6 +856,7 @@ void ethAggregateTest(const std::string& dir)
 
 void ethMultiVerifyTestOne(size_t n)
 {
+	printf("n=%zd\n", n);
 	const size_t msgSize = 32;
 	cybozu::XorShift rg;
 	bls::PublicKeyVec pubs(n);
@@ -872,6 +873,7 @@ void ethMultiVerifyTestOne(size_t n)
 		sec.getPublicKey(pubs[i]);
 	}
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 1);
+	CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0);
 	msgs[msgs.size() - 1]--;
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
 }
@@ -879,7 +881,7 @@ void ethMultiVerifyTestOne(size_t n)
 void ethMultiVerifyTest()
 {
 	puts("ethMultiVerifyTest");
-	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50 };
+	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50, 400 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		ethMultiVerifyTestOne(nTbl[i]);
 	}
