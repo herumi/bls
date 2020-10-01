@@ -931,8 +931,11 @@ CYBOZU_TEST_AUTO(all)
 #endif
 	};
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(tbl); i++) {
-		printf("curve=%s\n", tbl[i].name);
 		int type = tbl[i].type;
+#ifdef MCL_STATIC_CODE
+		if (type != MCL_BLS12_381) continue;
+#endif
+		printf("curve=%s\n", tbl[i].name);
 		bls::init(type);
 		if (type == MCL_BN254) {
 			testForBN254();
