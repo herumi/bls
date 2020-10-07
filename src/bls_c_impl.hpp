@@ -283,11 +283,12 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 	const char *rp = (const char*)randVec;
 	GT e;
 	G2 aggSig;
+	const int maxThreadNum = 32;
 	if (threadN < 1) threadN = 1;
+	if (threadN > maxThreadNum) threadN = maxThreadNum;
 #ifdef BLS_MULTI_VERIFY_THREAD
 	const size_t minN = 16;
 	if (threadN > 1 && n >= minN) {
-		const size_t maxThreadNum = 32;
 		GT et[maxThreadNum];
 		G2 aggSigt[maxThreadNum];
 		std::thread th[maxThreadNum];
