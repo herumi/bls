@@ -5,6 +5,9 @@
 This library is an implementation of BLS threshold signature,
 which supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures).
 
+## News
+- 2020/Oct/07 add `blsMultiVerify` to process many verification all togather with multi thread.
+
 ## Support architectures
 
 - Windows Visual Studio / MSYS2(MinGW-w64)
