@@ -132,7 +132,7 @@ BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, cons
 	pubVec[i] *= randVec[i]
 	return blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n);
 */
-BLS_DLL_API int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadNum);
+BLS_DLL_API int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN);
 
 // aggSig = sum of sigVec[0..n]
 BLS_DLL_API void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n);

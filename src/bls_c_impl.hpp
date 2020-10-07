@@ -3,37 +3,13 @@
 
 #include <bls/bls.h>
 
-#if 1
 #include "mcl/impl/bn_c_impl.hpp"
-#else
-#if MCLBN_FP_UNIT_SIZE == 4 && MCLBN_FR_UNIT_SIZE == 4
-#include <mcl/bn256.hpp>
-#elif MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 6
-#include <mcl/bn384.hpp>
-#elif MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 4
-#include <mcl/bls12_381.hpp>
-#elif MCLBN_FP_UNIT_SIZE == 8 && MCLBN_FR_UNIT_SIZE == 8
-#include <mcl/bn512.hpp>
-#else
-	#error "not supported size"
+
+#if (CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11) && !defined(__EMSCRIPTEN__) && !defined(__wasm__)
+#include <thread>
+#define BLS_MULTI_VERIFY_THREAD
 #endif
-#include <mcl/lagrange.hpp>
-using namespace mcl::bn;
-inline Fr *cast(mclBnFr *p) { return reinterpret_cast<Fr*>(p); }
-inline const Fr *cast(const mclBnFr *p) { return reinterpret_cast<const Fr*>(p); }
 
-inline G1 *cast(mclBnG1 *p) { return reinterpret_cast<G1*>(p); }
-inline const G1 *cast(const mclBnG1 *p) { return reinterpret_cast<const G1*>(p); }
-
-inline G2 *cast(mclBnG2 *p) { return reinterpret_cast<G2*>(p); }
-inline const G2 *cast(const mclBnG2 *p) { return reinterpret_cast<const G2*>(p); }
-
-inline Fp12 *cast(mclBnGT *p) { return reinterpret_cast<Fp12*>(p); }
-inline const Fp12 *cast(const mclBnGT *p) { return reinterpret_cast<const Fp12*>(p); }
-
-inline Fp6 *cast(uint64_t *p) { return reinterpret_cast<Fp6*>(p); }
-inline const Fp6 *cast(const uint64_t *p) { return reinterpret_cast<const Fp6*>(p); }
-#endif
 
 inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
 inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
@@ -260,41 +236,27 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
-/*
-	sig = sum_i sigVec[i] * randVec[i]
-	pubVec[i] *= randVec[i]
-	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
-*/
-int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadNum)
+static void multiVerifySub(GT& e, G2& aggSig, const G2 *sigVec, const G1 *pubVec, const char *msg, mclSize msgSize, const char *rp, mclSize randSize, mclSize n)
 {
-	(void)threadNum;
-#ifdef BLS_ETH
-	if (n == 0) return 0;
-	GT e;
-	const char *msg = (const char*)msgVec;
-	const char *rp = (const char*)randVec;
 	const size_t N = 16;
-	Fr rand[N+1];
-	G1 g1Vec[N+1];
-	G2 g2Vec[N+1];
-	G2 aggSig;
+	Fr rand[N];
+	G1 g1Vec[N];
+	G2 g2Vec[N];
 	bool initE = true;
-
 	while (n > 0) {
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			bool b;
 			rand[i].setArray(&b, &rp[i * randSize], randSize);
 			(void)b;
-            if (rand[i].isZero()) return 0;
-			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
+			G1::mul(g1Vec[i], pubVec[i], rand[i]);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		if (initE) {
-			G2::mulVec(aggSig, cast(&sigVec->v), rand, m);
+			G2::mulVec(aggSig, sigVec, rand, m);
 		} else {
 			G2 t;
-			G2::mulVec(t, cast(&sigVec->v), rand, m);
+			G2::mulVec(t, sigVec, rand, m);
 			aggSig += t;
 		}
 		sigVec += m;
@@ -302,14 +264,75 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 		msg += m * msgSize;
 		rp += m * randSize;
 		n -= m;
-		if (n == 0) {
-			g1Vec[m] = getBasePoint();
-			G2::neg(g2Vec[m], aggSig);
-			m++;
-		}
 		millerLoopVec(e, g1Vec, g2Vec, m, initE);
 		initE = false;
 	}
+}
+/*
+	sig = sum_i sigVec[i] * randVec[i]
+	pubVec[i] *= randVec[i]
+	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
+*/
+int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
+{
+#ifdef BLS_ETH
+	if (n == 0) return 0;
+	const char *msg = (const char*)msgVec;
+	const char *rp = (const char*)randVec;
+	GT e;
+	G2 aggSig;
+	if (threadN < 1) threadN = 1;
+#ifdef BLS_MULTI_VERIFY_THREAD
+	const size_t minN = 16;
+	if (threadN > 1 && n >= minN) {
+		const size_t maxThreadNum = 32;
+		GT et[maxThreadNum];
+		G2 aggSigt[maxThreadNum];
+		std::thread th[maxThreadNum];
+		size_t blockN = n / minN;
+		assert(blockN > 0);
+		size_t q = blockN / threadN;
+		size_t r = blockN % threadN;
+
+		for (int i = 0; i < threadN; i++) {
+			size_t m = q;
+			if (r > 0) {
+				m++;
+				r--;
+			}
+			if (m == 0) {
+				threadN = i; // n is too small for threadN
+				break;
+			}
+			m *= minN;
+			if (i == threadN - 1) {
+				m = n;
+			}
+			th[i] = std::thread(multiVerifySub, std::ref(et[i]), std::ref(aggSigt[i]), cast(&sigVec->v), cast(&pubVec->v), msg, msgSize, rp, randSize, m);
+			sigVec += m;
+			pubVec += m;
+			msg += msgSize * m;
+			rp += randSize * m;
+			n -= m;
+		}
+		for (int i = 0; i < threadN; i++) {
+			th[i].join();
+		}
+		e = et[0];
+		aggSig = aggSigt[0];
+		for (int i = 1; i < threadN; i++) {
+			e *= et[i];
+			aggSig += aggSigt[i];
+		}
+	} else
+#endif
+	{
+		multiVerifySub(e, aggSig, cast(&sigVec->v), cast(&pubVec->v), msg, msgSize, rp, randSize, n);
+	}
+	GT e2;
+	G2::neg(aggSig, aggSig);
+	millerLoop(e2, getBasePoint(), aggSig);
+	e *= e2;
 	finalExp(e, e);
 	return e.isOne();
 #else
