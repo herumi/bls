@@ -581,7 +581,7 @@ void setRandFuncTest(int type)
 	printf("\n");
 }
 
-#if BLS_ETH
+#ifdef BLS_ETH
 bls::Signature deserializeSignatureFromHexStr(const std::string& sigHex)
 {
 	bls::Signature sig;
@@ -872,7 +872,7 @@ void ethMultiVerifyTestOne(size_t n)
 		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
-	for (int threadN = 1; threadN < 8; threadN++) {
+	for (int threadN = 1; threadN < 32; threadN += 4) {
 		printf("threadN=%d\n", threadN);
 		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN), 1);
 		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN);

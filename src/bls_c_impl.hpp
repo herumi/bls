@@ -236,6 +236,7 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
+#ifdef BLS_ETH
 static void multiVerifySub(GT& e, G2& aggSig, const G2 *sigVec, const G1 *pubVec, const char *msg, mclSize msgSize, const char *rp, mclSize randSize, mclSize n)
 {
 	const size_t N = 16;
@@ -268,6 +269,7 @@ static void multiVerifySub(GT& e, G2& aggSig, const G2 *sigVec, const G1 *pubVec
 		initE = false;
 	}
 }
+#endif
 /*
 	sig = sum_i sigVec[i] * randVec[i]
 	pubVec[i] *= randVec[i]
@@ -343,6 +345,7 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 	(void)randVec;
 	(void)randSize;
 	(void)n;
+	(void)threadN;
 	return 0;
 #endif
 }
