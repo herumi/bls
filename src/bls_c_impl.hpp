@@ -236,9 +236,9 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
-#ifdef BLS_ETH
-static void multiVerifySub(GT& e, G2& aggSig, const G2 *sigVec, const G1 *pubVec, const char *msg, mclSize msgSize, const char *rp, mclSize randSize, mclSize n)
+void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n)
 {
+#ifdef BLS_ETH
 	const size_t N = 16;
 	Fr rand[N];
 	G1 g1Vec[N];
@@ -248,28 +248,47 @@ static void multiVerifySub(GT& e, G2& aggSig, const G2 *sigVec, const G1 *pubVec
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			bool b;
-			rand[i].setArray(&b, &rp[i * randSize], randSize);
+			rand[i].setArray(&b, &randVec[i * randSize], randSize);
 			(void)b;
-			G1::mul(g1Vec[i], pubVec[i], rand[i]);
+			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		if (initE) {
-			G2::mulVec(aggSig, sigVec, rand, m);
+			G2::mulVec(*cast(&aggSig->v), cast(&sigVec->v), rand, m);
 		} else {
 			G2 t;
-			G2::mulVec(t, sigVec, rand, m);
-			aggSig += t;
+			G2::mulVec(t, cast(&sigVec->v), rand, m);
+			*cast(&aggSig->v) += t;
 		}
 		sigVec += m;
 		pubVec += m;
 		msg += m * msgSize;
-		rp += m * randSize;
+		randVec += m * randSize;
 		n -= m;
-		millerLoopVec(e, g1Vec, g2Vec, m, initE);
+		millerLoopVec(*cast(e), g1Vec, g2Vec, m, initE);
 		initE = false;
 	}
-}
+#else
+	(void)e;
+	(void)aggSig;
+	(void)sigVec;
+	(void)pubVec;
+	(void)msg;
+	(void)msgSize;
+	(void)randVec;
+	(void)randSize;;
+	(void)n;
 #endif
+}
+
+int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
+{
+	GT e2;
+	millerLoop(e2, -getBasePoint(), *cast(&aggSig->v));
+	e2 *= *cast(e);
+	finalExp(e2, e2);
+	return e2.isOne();
+}
 /*
 	sig = sum_i sigVec[i] * randVec[i]
 	pubVec[i] *= randVec[i]
@@ -311,7 +330,7 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 			if (i == threadN - 1) {
 				m = n;
 			}
-			th[i] = std::thread(multiVerifySub, std::ref(et[i]), std::ref(aggSigt[i]), cast(&sigVec->v), cast(&pubVec->v), msg, msgSize, rp, randSize, m);
+			th[i] = std::thread(blsMultiVerifySub, (mclBnGT*)&et[i], (blsSignature*)&aggSigt[i], sigVec, pubVec, msg, msgSize, rp, randSize, m);
 			sigVec += m;
 			pubVec += m;
 			msg += msgSize * m;
@@ -330,14 +349,9 @@ int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const
 	} else
 #endif
 	{
-		multiVerifySub(e, aggSig, cast(&sigVec->v), cast(&pubVec->v), msg, msgSize, rp, randSize, n);
+		blsMultiVerifySub((mclBnGT*)&e, (blsSignature*)&aggSig, sigVec, pubVec, msg, msgSize, rp, randSize, n);
 	}
-	GT e2;
-	G2::neg(aggSig, aggSig);
-	millerLoop(e2, getBasePoint(), aggSig);
-	e *= e2;
-	finalExp(e, e);
-	return e.isOne();
+	return blsMultiVerifyFinal((const mclBnGT*)&e, (const blsSignature*)&aggSig);
 #else
 	(void)sigVec;
 	(void)pubVec;
