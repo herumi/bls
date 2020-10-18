@@ -283,11 +283,17 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sig
 
 int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 {
+#ifdef BLS_ETH
 	GT e2;
 	millerLoop(e2, -getBasePoint(), *cast(&aggSig->v));
 	e2 *= *cast(e);
 	finalExp(e2, e2);
 	return e2.isOne();
+#else
+	(void)e;
+	(void)aggSig;
+	return 0;
+#endif
 }
 /*
 	sig = sum_i sigVec[i] * randVec[i]
