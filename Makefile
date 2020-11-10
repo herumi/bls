@@ -175,7 +175,7 @@ ifeq ($(BLS_ETH),1)
   WASM_OUT_DIR=../bls-eth-wasm/
   WASM_SRC_BASENAME=bls_c384_256
 endif
-CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -DLLONG_MIN=-0x8000000000000000LL -I /usr/include -DMCL_USE_LLVM=1
+CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -I /usr/include -DMCL_USE_LLVM=1
 # apt install liblld-10-dev
 bls-wasm-by-clang: ../mcl/src/base64m.ll
 	$(CXX) -x c -c -o $(OBJ_DIR)/mylib.o src/mylib.c $(CLANG_WASM_OPT) -Wstrict-prototypes
