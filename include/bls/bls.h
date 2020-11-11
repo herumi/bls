@@ -245,6 +245,9 @@ BLS_DLL_API int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, 
 	@note do not check duplication of hVec
 */
 BLS_DLL_API int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n);
+BLS_DLL_API int pre_blsVerifyAggregatedHashes(void* e1, const blsSignature *aggSig);
+BLS_DLL_API int loop_blsVerifyAggregatedHashes(void* preE1 ,void* hashedM, const blsPublicKey *pubkey,size_t sizeofHash);
+BLS_DLL_API int final_blsVerifyAggregatedHashes(void* left, void* right);
 
 /*
 	Uncompressed version of Serialize/Deserialize

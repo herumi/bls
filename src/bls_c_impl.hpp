@@ -684,6 +684,60 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 	return e.isOne();
 }
 
+int pre_blsVerifyAggregatedHashes(void* e1, const blsSignature *aggSig){
+	#ifdef BLS_ETH
+
+	#else
+	GT res;
+	BN::precomputedMillerLoop(res, -*cast(&aggSig->v), g_Qcoeff.data());	//already inverted Fp12
+	res.serialize(e1,600);
+	#endif
+
+	return 0;
+}
+
+int loop_blsVerifyAggregatedHashes(void* preE1 ,void* hashedM, const blsPublicKey *pubkey,size_t sizeofHash){
+	
+	#ifdef BLS_ETH
+
+	#else
+
+	GT e1,e2;
+	char* firstb = (char *)preE1;
+	if(firstb[0] == '\n')e1 = 1; //initialize
+	else e1.deserialize((void*)preE1,600);
+
+	const char *ph = (const char*)hashedM;
+
+	G1 g1;
+	G2 g2;
+
+	if (!toG(g1, &ph[0], sizeofHash)) return 0;
+	g2 = *cast(&pubkey->v);
+
+	millerLoop(e2, g1, g2);//, m, false
+
+	e1 *= e2;
+
+	e1.serialize(preE1,600);
+	#endif
+
+	return 0;
+}
+
+int final_blsVerifyAggregatedHashes(void* left, void* right){
+	GT e1;
+	e1.deserialize(left,600);
+	GT e2;
+	e2.deserialize(right,600);
+
+	e1 *= e2;
+
+	BN::finalExp(e1, e1);
+	
+	return e1.isOne();
+}
+
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
 	G Hm;
