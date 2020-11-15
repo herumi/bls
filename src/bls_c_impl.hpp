@@ -2,7 +2,7 @@
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
-
+#include <iostream>
 #include "mcl/impl/bn_c_impl.hpp"
 
 #if (CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11) && !defined(__EMSCRIPTEN__) && !defined(__wasm__)
