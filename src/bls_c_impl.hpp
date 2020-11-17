@@ -1,4 +1,6 @@
-#define MCLBN_DONT_EXPORT
+#ifndef MCLBN_FORCE_EXPORT
+	#define MCLBN_DONT_EXPORT
+#endif
 #define BLS_DLL_EXPORT
 
 #include <bls/bls.h>
