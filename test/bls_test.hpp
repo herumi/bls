@@ -885,9 +885,36 @@ void ethMultiVerifyTestOne(size_t n)
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
 }
 
+void ethMultiVerifyZeroTest()
+{
+	const int n = 50;
+	const int zeroPos = 41;
+	const size_t msgSize = 32;
+	cybozu::XorShift rg;
+	bls::PublicKeyVec pubs(n);
+	bls::SignatureVec sigs(n);
+	std::string msgs(msgSize * n, 0);
+	std::vector<uint64_t> rands(n);
+
+	rg.read(&rands[0], rands.size());
+	rg.read(&msgs[0], msgs.size());
+	for (size_t i = 0; i < n; i++) {
+		bls::SecretKey sec;
+		if (i == zeroPos) {
+			sec.clear();
+		} else {
+			sec.init();
+		}
+		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
+		sec.getPublicKey(pubs[i]);
+	}
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 2), 0);
+}
+
 void ethMultiVerifyTest()
 {
 	puts("ethMultiVerifyTest");
+	ethMultiVerifyZeroTest();
 	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50, 400 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		ethMultiVerifyTestOne(nTbl[i]);

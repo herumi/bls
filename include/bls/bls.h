@@ -138,6 +138,7 @@ BLS_DLL_API int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *p
 	subroutine of blsMultiVerify
 	e = prod_i millerLoop(pubVec[i] * randVec[i], Hash(msgVec[i]))
 	aggSig = sum_i sigVec[i] * randVec[i]
+	@remark set *e = 0 if some pubVec[i] is zero
 */
 BLS_DLL_API void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n);
 

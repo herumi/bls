@@ -252,7 +252,12 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sig
 			bool b;
 			rand[i].setArray(&b, &randVec[i * randSize], randSize);
 			(void)b;
-			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
+			const G1& pub = *cast(&pubVec[i].v);
+			if (pub.isZero()) {
+				cast(e)->clear();
+				return;
+			}
+			G1::mul(g1Vec[i], pub, rand[i]);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		if (initE) {
