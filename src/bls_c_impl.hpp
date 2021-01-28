@@ -1030,12 +1030,12 @@ void hashPublicKey(cybozu::Sha256& h, const blsPublicKey *pubVec, mclSize n)
 	for (size_t i = 0; i < n; i++) {
 		const Gother& v = *cast(&pubVec[i].v);
 		char buf[sizeof(Gother) / 3];
-		size_t n = v.x.serialize(buf, sizeof(buf));
-		assert(n > 0);
-		h.update(buf, n);
-		n = v.y.serialize(buf, sizeof(buf));
-		assert(n > 0);
-		h.update(buf, n);
+		size_t m = v.x.serialize(buf, sizeof(buf));
+		assert(m > 0);
+		h.update(buf, m);
+		m = v.y.serialize(buf, sizeof(buf));
+		assert(m > 0);
+		h.update(buf, m);
 	}
 }
 
