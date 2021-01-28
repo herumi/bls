@@ -914,16 +914,75 @@ void ethMultiVerifyZeroTest()
 void ethMultiVerifyTest()
 {
 	puts("ethMultiVerifyTest");
-	ethMultiVerifyZeroTest();
 	const size_t nTbl[] = { 1, 2, 15, 16, 17, 30, 31, 32, 33, 50, 400 };
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		ethMultiVerifyTestOne(nTbl[i]);
 	}
 }
 
+void makePublicKeyVec(blsSignature *aggSig, blsPublicKey *pubVec, size_t n, int mode, const char *msg, size_t msgSize)
+{
+	blsPublicKey pub;
+	memset(&pub, 0, sizeof(pub));
+	memset(aggSig, 0, sizeof(blsSignature));
+	if (mode == 0) {
+		// n/2 is zero public key
+		for (size_t i = 0; i < n; i++) {
+			blsSecretKey sec;
+			if (i == n/2) {
+				memset(&sec, 0, sizeof(sec));
+			} else {
+				blsSecretKeySetByCSPRNG(&sec);
+			}
+			blsGetPublicKey(&pubVec[i], &sec);
+			blsSignature sig;
+			blsSign(&sig, &sec, msg, msgSize);
+			blsSignatureAdd(aggSig, &sig);
+		}
+	} else {
+		// sum of public key is zero
+		for (size_t i = 0; i < n - 1; i++) {
+			blsSecretKey sec;
+			blsSecretKeySetByCSPRNG(&sec);
+			blsGetPublicKey(&pubVec[i], &sec);
+			blsPublicKeyAdd(&pub, &pubVec[i]);
+		}
+		mclBnG1_neg(&pubVec[n-1].v, &pub.v);
+	}
+}
+
+void ethZeroTest()
+{
+	{
+		bls::SecretKey sec;
+		sec.clear();
+		bls::PublicKey pub;
+		sec.getPublicKey(pub);
+		std::string m = "abc";
+		bls::Signature sig;
+		sec.sign(sig, m);
+		CYBOZU_TEST_ASSERT(!sig.verify(pub, m));
+	}
+	{
+		const size_t n = 8;
+		const char *msg = "abc";
+		const size_t msgSize = strlen(msg);
+		blsPublicKey pubVec[n];
+		blsSignature aggSig;
+		// n/2 is zero public key
+		makePublicKeyVec(&aggSig, pubVec, n, 0, msg, msgSize);
+		CYBOZU_TEST_EQUAL(blsFastAggregateVerify(&aggSig, pubVec, n, msg, msgSize), 0);
+		// sum of public key is zero
+		makePublicKeyVec(&aggSig, pubVec, n, 1, msg, msgSize);
+		CYBOZU_TEST_EQUAL(blsFastAggregateVerify(&aggSig, pubVec, n, msg, msgSize), 0);
+	}
+	ethMultiVerifyZeroTest();
+}
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
+	ethZeroTest();
 	ethMultiVerifyTest();
 	blsAggregateVerifyNoCheckTest();
 	draft07Test();

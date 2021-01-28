@@ -228,6 +228,7 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 	G Hm;
 	hashAndMapToG(Hm, m, size);
 #ifdef BLS_ETH
+	if (cast(&pub->v)->isZero()) return 0;
 	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
 #else
 	/*
@@ -306,6 +307,7 @@ int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 	sig = sum_i sigVec[i] * randVec[i]
 	pubVec[i] *= randVec[i]
 	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
+	@remark return 0 if some pubVec[i] is zero
 */
 int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
 {
@@ -390,23 +392,29 @@ void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mcl
 	}
 }
 
-void blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
+// return -1 if some pubVec[i] is zero else 0
+int blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
 {
 	if (n == 0) {
 		memset(aggPub, 0, sizeof(*aggPub));
-		return;
+		return 0;
 	}
+	int ret = 0;
 	*aggPub = pubVec[0];
+	if (cast(&pubVec[0].v)->isZero()) ret = -1;
 	for (mclSize i = 1; i < n; i++) {
+		if (cast(&pubVec[i].v)->isZero()) ret = -1;
 		blsPublicKeyAdd(aggPub, &pubVec[i]);
 	}
+	return ret;
 }
 
 int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize)
 {
 	if (n == 0) return 0;
 	blsPublicKey aggPub;
-	blsAggregatePublicKey(&aggPub, pubVec, n);
+	int ret = blsAggregatePublicKey(&aggPub, pubVec, n);
+	if (ret < 0) return 0;
 	return blsVerify(sig, &aggPub, msg, msgSize);
 }
 
