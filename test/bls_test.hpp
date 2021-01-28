@@ -872,17 +872,15 @@ void ethMultiVerifyTestOne(size_t n)
 		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
-#ifdef DISABLE_THREAD_TEST
-	for (int threadN = 1; threadN < 2; threadN++) {
-#else
+#ifndef DISABLE_THREAD_TEST
 	for (int threadN = 1; threadN < 32; threadN += 4) {
-#endif
 		printf("threadN=%d\n", threadN);
 		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN), 1);
 		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN);
 	}
 	msgs[msgs.size() - 1]--;
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
+#endif
 }
 
 void ethMultiVerifyZeroTest()
