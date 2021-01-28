@@ -381,9 +381,17 @@ void blsMultiAggregateTest()
 		}
 		blsPublicKey aggPub;
 		blsSignature aggSig;
+		memset(&aggPub, -1, sizeof(aggPub));
+		memset(&aggSig, -1, sizeof(aggSig));
 		blsMultiAggregatePublicKey(&aggPub, pubVec, n);
 		blsMultiAggregateSignature(&aggSig, sigVec, pubVec, n);
-		CYBOZU_TEST_ASSERT(blsVerify(&aggSig, &aggPub, msg, msgSize));
+		if (n == 0) {
+			CYBOZU_TEST_ASSERT(blsPublicKeyIsZero(&aggPub));
+			CYBOZU_TEST_ASSERT(blsSignatureIsZero(&aggSig));
+			CYBOZU_TEST_ASSERT(!blsVerify(&aggSig, &aggPub, msg, msgSize));
+		} else {
+			CYBOZU_TEST_ASSERT(blsVerify(&aggSig, &aggPub, msg, msgSize));
+		}
 	}
 }
 
