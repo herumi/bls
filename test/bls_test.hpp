@@ -906,7 +906,9 @@ void ethMultiVerifyZeroTest()
 		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
+#ifndef DISABLE_THREAD_TEST
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 2), 0);
+#endif
 }
 
 void ethMultiVerifyTest()
