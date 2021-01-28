@@ -95,6 +95,8 @@ int blsInit(int curve, int compiledTimeVar)
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
+		verifyOrderG1(true);
+		verifyOrderG2(true);
 	} else
 	{
 		mapToG1(&b, g_P, 1);
@@ -225,6 +227,9 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
+#ifdef BLS_ETH
+	if (cast(&pub->v)->isZero()) return 0;
+#endif
 	G Hm;
 	hashAndMapToG(Hm, m, size);
 #ifdef BLS_ETH
@@ -252,7 +257,12 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sig
 			bool b;
 			rand[i].setArray(&b, &randVec[i * randSize], randSize);
 			(void)b;
-			G1::mul(g1Vec[i], *cast(&pubVec[i].v), rand[i]);
+			const G1& pub = *cast(&pubVec[i].v);
+			if (pub.isZero()) {
+				cast(e)->clear();
+				return;
+			}
+			G1::mul(g1Vec[i], pub, rand[i]);
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		if (initE) {
@@ -301,6 +311,7 @@ int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 	sig = sum_i sigVec[i] * randVec[i]
 	pubVec[i] *= randVec[i]
 	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
+	@remark return 0 if some pubVec[i] is zero
 */
 int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
 {
@@ -385,23 +396,29 @@ void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mcl
 	}
 }
 
-void blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
+// return -1 if some pubVec[i] is zero else 0
+int blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
 {
 	if (n == 0) {
 		memset(aggPub, 0, sizeof(*aggPub));
-		return;
+		return 0;
 	}
+	int ret = 0;
 	*aggPub = pubVec[0];
+	if (cast(&pubVec[0].v)->isZero()) ret = -1;
 	for (mclSize i = 1; i < n; i++) {
+		if (cast(&pubVec[i].v)->isZero()) ret = -1;
 		blsPublicKeyAdd(aggPub, &pubVec[i]);
 	}
+	return ret;
 }
 
 int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize)
 {
 	if (n == 0) return 0;
 	blsPublicKey aggPub;
-	blsAggregatePublicKey(&aggPub, pubVec, n);
+	int ret = blsAggregatePublicKey(&aggPub, pubVec, n);
+	if (ret < 0) return 0;
 	return blsVerify(sig, &aggPub, msg, msgSize);
 }
 
@@ -1015,12 +1032,12 @@ void hashPublicKey(cybozu::Sha256& h, const blsPublicKey *pubVec, mclSize n)
 	for (size_t i = 0; i < n; i++) {
 		const Gother& v = *cast(&pubVec[i].v);
 		char buf[sizeof(Gother) / 3];
-		size_t n = v.x.serialize(buf, sizeof(buf));
-		assert(n > 0);
-		h.update(buf, n);
-		n = v.y.serialize(buf, sizeof(buf));
-		assert(n > 0);
-		h.update(buf, n);
+		size_t m = v.x.serialize(buf, sizeof(buf));
+		assert(m > 0);
+		h.update(buf, m);
+		m = v.y.serialize(buf, sizeof(buf));
+		assert(m > 0);
+		h.update(buf, m);
 	}
 }
 

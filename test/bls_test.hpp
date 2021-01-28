@@ -872,17 +872,43 @@ void ethMultiVerifyTestOne(size_t n)
 		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
-#ifdef DISABLE_THREAD_TEST
-	for (int threadN = 1; threadN < 2; threadN++) {
-#else
+#ifndef DISABLE_THREAD_TEST
 	for (int threadN = 1; threadN < 32; threadN += 4) {
-#endif
 		printf("threadN=%d\n", threadN);
 		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN), 1);
 		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN);
 	}
 	msgs[msgs.size() - 1]--;
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
+#endif
+}
+
+void ethMultiVerifyZeroTest()
+{
+	const int n = 50;
+	const int zeroPos = 41;
+	const size_t msgSize = 32;
+	cybozu::XorShift rg;
+	bls::PublicKeyVec pubs(n);
+	bls::SignatureVec sigs(n);
+	std::string msgs(msgSize * n, 0);
+	std::vector<uint64_t> rands(n);
+
+	rg.read(&rands[0], rands.size());
+	rg.read(&msgs[0], msgs.size());
+	for (size_t i = 0; i < n; i++) {
+		bls::SecretKey sec;
+		if (i == zeroPos) {
+			sec.clear();
+		} else {
+			sec.init();
+		}
+		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
+		sec.getPublicKey(pubs[i]);
+	}
+#ifndef DISABLE_THREAD_TEST
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 2), 0);
+#endif
 }
 
 void ethMultiVerifyTest()
@@ -894,9 +920,69 @@ void ethMultiVerifyTest()
 	}
 }
 
+void makePublicKeyVec(blsSignature *aggSig, blsPublicKey *pubVec, size_t n, int mode, const char *msg, size_t msgSize)
+{
+	blsPublicKey pub;
+	memset(&pub, 0, sizeof(pub));
+	memset(aggSig, 0, sizeof(blsSignature));
+	if (mode == 0) {
+		// n/2 is zero public key
+		for (size_t i = 0; i < n; i++) {
+			blsSecretKey sec;
+			if (i == n/2) {
+				memset(&sec, 0, sizeof(sec));
+			} else {
+				blsSecretKeySetByCSPRNG(&sec);
+			}
+			blsGetPublicKey(&pubVec[i], &sec);
+			blsSignature sig;
+			blsSign(&sig, &sec, msg, msgSize);
+			blsSignatureAdd(aggSig, &sig);
+		}
+	} else {
+		// sum of public key is zero
+		for (size_t i = 0; i < n - 1; i++) {
+			blsSecretKey sec;
+			blsSecretKeySetByCSPRNG(&sec);
+			blsGetPublicKey(&pubVec[i], &sec);
+			blsPublicKeyAdd(&pub, &pubVec[i]);
+		}
+		mclBnG1_neg(&pubVec[n-1].v, &pub.v);
+	}
+}
+
+void ethZeroTest()
+{
+	{
+		bls::SecretKey sec;
+		sec.clear();
+		bls::PublicKey pub;
+		sec.getPublicKey(pub);
+		std::string m = "abc";
+		bls::Signature sig;
+		sec.sign(sig, m);
+		CYBOZU_TEST_ASSERT(!sig.verify(pub, m));
+	}
+	{
+		const size_t n = 8;
+		const char *msg = "abc";
+		const size_t msgSize = strlen(msg);
+		blsPublicKey pubVec[n];
+		blsSignature aggSig;
+		// n/2 is zero public key
+		makePublicKeyVec(&aggSig, pubVec, n, 0, msg, msgSize);
+		CYBOZU_TEST_EQUAL(blsFastAggregateVerify(&aggSig, pubVec, n, msg, msgSize), 0);
+		// sum of public key is zero
+		makePublicKeyVec(&aggSig, pubVec, n, 1, msg, msgSize);
+		CYBOZU_TEST_EQUAL(blsFastAggregateVerify(&aggSig, pubVec, n, msg, msgSize), 0);
+	}
+	ethMultiVerifyZeroTest();
+}
+
 void ethTest(int type)
 {
 	if (type != MCL_BLS12_381) return;
+	ethZeroTest();
 	ethMultiVerifyTest();
 	blsAggregateVerifyNoCheckTest();
 	draft07Test();
