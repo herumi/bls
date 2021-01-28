@@ -225,10 +225,12 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
+#ifdef BLS_ETH
+	if (cast(&pub->v)->isZero()) return 0;
+#endif
 	G Hm;
 	hashAndMapToG(Hm, m, size);
 #ifdef BLS_ETH
-	if (cast(&pub->v)->isZero()) return 0;
 	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
 #else
 	/*
