@@ -95,8 +95,6 @@ int blsInit(int curve, int compiledTimeVar)
 		mclBn_setETHserialization(1);
 		g_P.setStr(&b, "1 3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507 1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569", 10);
 		mclBn_setMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE_07);
-		verifyOrderG1(true);
-		verifyOrderG2(true);
 	} else
 	{
 		mapToG1(&b, g_P, 1);
@@ -135,6 +133,8 @@ int blsInit(int curve, int compiledTimeVar)
 	}
 #endif
 	if (!b) return -101;
+	verifyOrderG1(true);
+	verifyOrderG2(true);
 	return 0;
 }
 
@@ -227,9 +227,7 @@ bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
-#ifdef BLS_ETH
 	if (cast(&pub->v)->isZero()) return 0;
-#endif
 	G Hm;
 	hashAndMapToG(Hm, m, size);
 #ifdef BLS_ETH
@@ -438,6 +436,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
+			if (g1Vec[i].isZero()) return 0;
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		pubVec += m;
@@ -459,6 +458,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 	for (mclSize i = 0; i < n; i++) {
 		G2 Q;
 		hashAndMapToG(Q, &p[msgSize * i], msgSize);
+		if (cast(&pubVec[i].v)->isZero()) return 0;
 		millerLoop(t, *cast(&pubVec[i].v), Q);
 		s *= t;
 	}
@@ -667,6 +667,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
+			if (g1Vec[i].isZero()) return 0;
 			if (!toG(g2Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
 		}
 		pubVec += m;
@@ -692,6 +693,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		for (size_t i = 0; i < m; i++) {
 			if (!toG(g1Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
 			g2Vec[i] = *cast(&pubVec[i].v);
+			if (g2Vec[i].isZero()) return 0;
 		}
 		millerLoopVec(e, g1Vec, g2Vec, m, false);
 		pubVec += m;
@@ -839,6 +841,7 @@ int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *
 {
 	blsSignature Hm;
 	if (!toG(*cast(&Hm.v), h, size)) return 0;
+	if (cast(&pub->v)->isZero()) return 0;
 	return blsVerifyPairing(sig, &Hm, pub);
 }
 

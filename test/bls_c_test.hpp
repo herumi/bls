@@ -385,14 +385,11 @@ void blsMultiAggregateTest()
 		memset(&aggSig, -1, sizeof(aggSig));
 		blsMultiAggregatePublicKey(&aggPub, pubVec, n);
 		blsMultiAggregateSignature(&aggSig, sigVec, pubVec, n);
-#ifdef BLS_ETH
 		if (n == 0) {
 			CYBOZU_TEST_ASSERT(blsPublicKeyIsZero(&aggPub));
 			CYBOZU_TEST_ASSERT(blsSignatureIsZero(&aggSig));
 			CYBOZU_TEST_ASSERT(!blsVerify(&aggSig, &aggPub, msg, msgSize));
-		} else
-#endif
-		{
+		} else {
 			CYBOZU_TEST_ASSERT(blsVerify(&aggSig, &aggPub, msg, msgSize));
 		}
 	}

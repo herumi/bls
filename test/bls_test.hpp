@@ -124,6 +124,17 @@ void hashTest(int type)
 #endif
 	}
 #endif
+	{
+		bls::SecretKey sec;
+		sec.clear();
+		bls::PublicKey pub;
+		sec.getPublicKey(pub);
+		bls::Signature sig;
+		const char msg[] = "abc";
+		const size_t msgSize = strlen(msg);
+		sec.signHash(sig, msg, msgSize);
+		CYBOZU_TEST_ASSERT(!sig.verifyHash(pub, msg, msgSize));
+	}
 }
 
 void blsTest()
@@ -697,7 +708,7 @@ void ethFastAggregateVerifyTest(const std::string& dir)
 	}
 }
 
-void blsAggregateVerifyNoCheckTestOne(size_t n)
+void blsAggregateVerifyNoCheckTestOne(size_t n, bool hasZero = false)
 {
 	const size_t msgSize = 32;
 	bls::PublicKeyVec pubs(n);
@@ -706,12 +717,19 @@ void blsAggregateVerifyNoCheckTestOne(size_t n)
 	for (size_t i = 0; i < n; i++) {
 		bls::SecretKey sec;
 		sec.init();
+		if (hasZero && i == n/2) {
+			sec.clear();
+		}
 		sec.getPublicKey(pubs[i]);
 		msgs[msgSize * i] = i;
 		sec.sign(sigs[i], &msgs[msgSize * i], msgSize);
 	}
 	blsSignature aggSig;
 	blsAggregateSignature(&aggSig, sigs[0].getPtr(), n);
+	if (hasZero) {
+		CYBOZU_TEST_EQUAL(!blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 1);
+		return;
+	}
 	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 1);
 	CYBOZU_BENCH_C("blsAggregateVerifyNoCheck", 50, blsAggregateVerifyNoCheck, &aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n);
 	(*(char*)(&aggSig))++;
@@ -724,6 +742,7 @@ void blsAggregateVerifyNoCheckTest()
 	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
 		blsAggregateVerifyNoCheckTestOne(nTbl[i]);
 	}
+	blsAggregateVerifyNoCheckTestOne(10, true);
 }
 
 void draft07Test()
