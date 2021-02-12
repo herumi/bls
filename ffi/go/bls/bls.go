@@ -60,8 +60,8 @@ func (id *ID) Serialize() []byte {
 // Deserialize --
 func (id *ID) Deserialize(buf []byte) error {
 	// #nosec
-	err := C.blsIdDeserialize(&id.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
-	if err == 0 {
+	n := C.blsIdDeserialize(&id.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if n == 0 || int(n) != len(buf) {
 		return fmt.Errorf("err blsIdDeserialize %x", buf)
 	}
 	return nil
@@ -167,8 +167,8 @@ func (sec *SecretKey) Serialize() []byte {
 // Deserialize --
 func (sec *SecretKey) Deserialize(buf []byte) error {
 	// #nosec
-	err := C.blsSecretKeyDeserialize(&sec.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
-	if err == 0 {
+	n := C.blsSecretKeyDeserialize(&sec.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if n == 0 || int(n) != len(buf) {
 		return fmt.Errorf("err blsSecretKeyDeserialize %x", buf)
 	}
 	return nil
@@ -372,8 +372,8 @@ func (pub *PublicKey) Serialize() []byte {
 // Deserialize --
 func (pub *PublicKey) Deserialize(buf []byte) error {
 	// #nosec
-	err := C.blsPublicKeyDeserialize(&pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
-	if err == 0 {
+	n := C.blsPublicKeyDeserialize(&pub.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if n == 0 || int(n) != len(buf) {
 		return fmt.Errorf("err blsPublicKeyDeserialize %x", buf)
 	}
 	return nil
@@ -475,8 +475,8 @@ func (sig *Sign) Serialize() []byte {
 // Deserialize --
 func (sig *Sign) Deserialize(buf []byte) error {
 	// #nosec
-	err := C.blsSignatureDeserialize(&sig.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
-	if err == 0 {
+	n := C.blsSignatureDeserialize(&sig.v, unsafe.Pointer(&buf[0]), C.mclSize(len(buf)))
+	if n == 0 || int(n) != len(buf) {
 		return fmt.Errorf("err blsSignatureDeserialize %x", buf)
 	}
 	return nil
