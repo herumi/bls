@@ -31,6 +31,9 @@ const IO_EC_AFFINE = C.MCLBN_IO_EC_AFFINE
 // IO_EC_PROJ --
 const IO_EC_PROJ = C.MCLBN_IO_EC_PROJ
 
+// IRTF -- for SetMapToMode
+const IRTF = 5 /* MCL_MAP_TO_MODE_HASH_TO_CURVE_07 */
+
 // GetFrUnitSize --
 func GetFrUnitSize() int {
 	return int(C.MCLBN_FR_UNIT_SIZE)
@@ -193,6 +196,16 @@ func (x *Fr) SetLittleEndianMod(buf []byte) error {
 	err := C.mclBnFr_setLittleEndianMod(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err != 0 {
 		return fmt.Errorf("err mclBnFr_setLittleEndianMod %x", err)
+	}
+	return nil
+}
+
+// SetBigEndianMod --
+func (x *Fr) SetBigEndianMod(buf []byte) error {
+	// #nosec
+	err := C.mclBnFr_setBigEndianMod(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err mclBnFr_setBigEndianMod %x", err)
 	}
 	return nil
 }
@@ -363,6 +376,16 @@ func (x *Fp) SetLittleEndianMod(buf []byte) error {
 	err := C.mclBnFp_setLittleEndianMod(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 	if err != 0 {
 		return fmt.Errorf("err mclBnFp_setLittleEndianMod %x", err)
+	}
+	return nil
+}
+
+// SetBigEndianMod --
+func (x *Fp) SetBigEndianMod(buf []byte) error {
+	// #nosec
+	err := C.mclBnFp_setBigEndianMod(x.getPointer(), unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	if err != 0 {
+		return fmt.Errorf("err mclBnFp_setBigEndianMod %x", err)
 	}
 	return nil
 }
