@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/herumi/bls.png)](https://travis-ci.org/herumi/bls)
+[![Build Status](https://api.travis-ci.com/herumi/bls.svg?branch=master)](https://travis-ci.com/github/herumi/bls)
 
 # BLS threshold signature
 
