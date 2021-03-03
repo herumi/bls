@@ -9,9 +9,9 @@ jobs:
     - uses: actions/checkout@v2
     - run: git clone https://github.com/herumi/mcl 
     - run: make -C ./mcl lib/libmcl.a -j4
-    - run: make test_ci MCL_DIR=./mcl -j4
-    - run: make test_go MCL_DIR=./mcl -j4
-    - run: make clean MCL_DIR=./mcl
-    - run: make test_ci MCL_DIR=./mcl BLS_ETH=1 -j4
-    - run: make clean MCL_DIR=./mcl
-    - run: make test_ci MCL_DIR=./mcl BLS_ETH=1 CXX=clang++ -j4
+    - run: make test_ci MCL_DIR=$(pwd)/mcl -j4
+    - run: make test_go MCL_DIR=$(pwd)/mcl -j4
+    - run: make clean MCL_DIR=$(pwd)/mcl
+    - run: make test_ci MCL_DIR=$(pwd)/mcl BLS_ETH=1 -j4
+    - run: make clean MCL_DIR=$(pwd)/mcl
+    - run: make test_ci MCL_DIR=$(pwd)/mcl BLS_ETH=1 CXX=clang++ -j4
