@@ -1,0 +1,17 @@
+name: test
+on: [push]
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: git clone https://github.com/herumi/mcl 
+    - run: make test_ci DEBUG=1 MCL_DIR=./mcl -j4
+    - run: make clean MCL_DIR=./mcl && make -C ./mcl clean
+    - run: make test_go MCL_DIR=./mcl -j4
+    - run: make clean MCL_DIR=./mcl && make -C ./mcl clean
+    - run: make test_ci DEBUG=1 MCL_DIR=./mcl BLS_ETH=1 -j4
+    - run: make clean MCL_DIR=./mcl && make -C ./mcl clean
+    - run: make test_ci DEBUG=1 MCL_DIR=./mcl BLS_ETH=1 CXX=clang++ -j4
