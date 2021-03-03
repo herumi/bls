@@ -111,20 +111,20 @@ else
   LIBPATH_KEY=LD_LIBRARY_PATH
 endif
 test_ci: $(TEST_EXE)
-	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env PATH=$$PATH:../mcl/lib $(LIBPATH_KEY)=../mcl/lib LSAN_OPTIONS=verbosity=1 log_threads=1 $$i; done'
+	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib LSAN_OPTIONS=verbosity=1 log_threads=1 $$i; done'
 	$(MAKE) sample_test
 
 test: $(TEST_EXE)
 	@echo test $(TEST_EXE)
-	@sh -ec 'for i in $(TEST_EXE); do env PATH=$$PATH:../mcl/lib $(LIBPATH_KEY)=../mcl/lib $$i|grep "ctest:name"; done' > result.txt
+	@sh -ec 'for i in $(TEST_EXE); do env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib $$i|grep "ctest:name"; done' > result.txt
 	@grep -v "ng=0, exception=0" result.txt; if [ $$? -eq 1 ]; then echo "all unit tests succeed"; else exit 1; fi
 	$(MAKE) sample_test
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
-	env PATH=$$PATH:../mcl/lib $(LIBPATH_KEY)=../mcl/lib python bls_smpl.py
+	env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib python bls_smpl.py
 
 # PATH is for mingw, LD_LIBRARY_PATH is for linux, DYLD_LIBRARY_PATH is for mac
-COMMON_LIB_PATH="../../../lib:../../../../mcl/lib"
+COMMON_LIB_PATH="../../../lib:../../../$(MCL_DIR)/lib"
 PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) CGO_LDFLAGS="-L../../../lib -L$(OPENSSL_DIR)/lib" CGO_CFLAGS="-I$(PWD)/include -I$(MCL_DIR)/include"
 test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
 	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn256 .
@@ -141,7 +141,7 @@ test_go:
 	$(MAKE) test_go384
 	$(MAKE) test_go384_256
 
-EMCC_OPT=-I./include -I./src -I../mcl/include -I./ -Wall -Wextra
+EMCC_OPT=-I./include -I./src -I$(MCL_DIR)/include -I./ -Wall -Wextra
 EMCC_OPT+=-O3 -DNDEBUG
 EMCC_OPT+=-s WASM=1 -s NO_EXIT_RUNTIME=1 -s NODEJS_CATCH_EXIT=0 -s NODEJS_CATCH_REJECTION=0 #-s ASSERTIONS=1
 EMCC_OPT+=-s MODULARIZE=1
@@ -152,22 +152,22 @@ EMCC_OPT+=-s MINIFY_HTML=0
 EMCC_OPT+=--minify 0
 EMCC_OPT+=-DCYBOZU_MINIMUM_EXCEPTION
 EMCC_OPT+=-s ABORTING_MALLOC=0
-JS_DEP=src/bls_c384.cpp ../mcl/src/fp.cpp Makefile
+JS_DEP=src/bls_c384.cpp $(MCL_DIR)/src/fp.cpp Makefile
 
 ../bls-wasm/bls_c.js: $(JS_DEP)
-	emcc -o $@ src/bls_c384.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384.d
+	emcc -o $@ src/bls_c384.cpp $(MCL_DIR)/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384.d
 
 bls-wasm:
 	$(MAKE) ../bls-wasm/bls_c.js
 
-../bls-eth-wasm/bls_c.js: src/bls_c384_256.cpp ../mcl/src/fp.cpp Makefile
-	emcc -o $@ src/bls_c384_256.cpp ../mcl/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DBLS_ETH -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384_256.d
+../bls-eth-wasm/bls_c.js: src/bls_c384_256.cpp $(MCL_DIR)/src/fp.cpp Makefile
+	emcc -o $@ src/bls_c384_256.cpp $(MCL_DIR)/src/fp.cpp $(EMCC_OPT) -DMCL_MAX_BIT_SIZE=384 -DBLS_ETH -DMCL_USE_WEB_CRYPTO_API -s DISABLE_EXCEPTION_CATCHING=1 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -DMCL_DONT_USE_CSPRNG -fno-exceptions -MD -MP -MF obj/bls_c384_256.d
 bls-eth-wasm:
 	$(MAKE) ../bls-eth-wasm/bls_c.js
 
 #CLANG_WASM_OPT= -fno-builtin  --target=wasm32-unknown-unknown-wasm -Wno-unused-parameter -ffreestanding -fno-exceptions -fvisibility=hidden -Wall -Wextra -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -fno-rtti -nostdinc++ -DLLONG_MIN=-0x8000000000000000LL
 
-BASE_CFLAGS=-O3 -g -DNDEBUG -I ./include -I ../mcl/include -I ./src -fPIC -DMCL_MAX_BIT_SIZE=384 -DMCL_SIZEOF_UNIT=8 -DMCL_LLVM_BMI2=0 -DCYBOZU_DONT_USE_EXCEPTION -DMCL_DONT_USE_CSPRNG -DCYBOZU_DONT_USE_STRING -DCYBOZU_MINIMUM_EXCEPTION -Wno-unused-parameter -Wall -Wextra -fno-threadsafe-statics -fno-use-cxa-atexit -fno-unwind-tables -fno-builtin -fvisibility=hidden -fno-rtti -fno-stack-protector -fno-exceptions -nostdinc++
+BASE_CFLAGS=-O3 -g -DNDEBUG -I ./include -I $(MCL_DIR)/include -I ./src -fPIC -DMCL_MAX_BIT_SIZE=384 -DMCL_SIZEOF_UNIT=8 -DMCL_LLVM_BMI2=0 -DCYBOZU_DONT_USE_EXCEPTION -DMCL_DONT_USE_CSPRNG -DCYBOZU_DONT_USE_STRING -DCYBOZU_MINIMUM_EXCEPTION -Wno-unused-parameter -Wall -Wextra -fno-threadsafe-statics -fno-use-cxa-atexit -fno-unwind-tables -fno-builtin -fvisibility=hidden -fno-rtti -fno-stack-protector -fno-exceptions -nostdinc++
 WASM_OUT_DIR=../bls-wasm/
 WASM_SRC_BASENAME=bls_c384
 ifeq ($(BLS_ETH),1)
@@ -177,23 +177,23 @@ ifeq ($(BLS_ETH),1)
 endif
 CLANG_WASM_OPT=$(BASE_CFLAGS) --target=wasm32-unknown-unknown-wasm -ffreestanding -nostdlib -I /usr/include -DMCL_USE_LLVM=1
 # apt install liblld-10-dev
-bls-wasm-by-clang: ../mcl/src/base64m.ll
+bls-wasm-by-clang: $(MCL_DIR)/src/base64m.ll
 	$(CXX) -x c -c -o $(OBJ_DIR)/mylib.o src/mylib.c $(CLANG_WASM_OPT) -Wstrict-prototypes
-	$(CXX) -c -o $(OBJ_DIR)/base64m.o ../mcl/src/base64m.ll $(CLANG_WASM_OPT) -std=c++03
+	$(CXX) -c -o $(OBJ_DIR)/base64m.o $(MCL_DIR)/src/base64m.ll $(CLANG_WASM_OPT) -std=c++03
 	$(CXX) -c -o $(OBJ_DIR)/$(WASM_SRC_BASENAME).o src/$(WASM_SRC_BASENAME).cpp $(CLANG_WASM_OPT) -std=c++03
-	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(CLANG_WASM_OPT) -std=c++03
+	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(CLANG_WASM_OPT) -std=c++03
 	wasm-ld-10 --no-entry --export-dynamic -o $(WASM_OUT_DIR)/bls.wasm $(OBJ_DIR)/$(WASM_SRC_BASENAME).o $(OBJ_DIR)/fp.o $(OBJ_DIR)/mylib.o $(OBJ_DIR)/base64m.o #-z stack-size=524288
 
 bin/minsample: sample/minsample.c
-	$(CXX) -o bin/minsample sample/minsample.c src/mylib.c src/$(WASM_SRC_BASENAME).cpp ../mcl/src/fp.cpp $(BASE_CFLAGS) -std=c++03 -DMCL_DONT_USE_XBYAK -DMCL_USE_VINT -DMCL_VINT_FIXED_BUFFER -DMCL_DONT_USE_OPENSSL
+	$(CXX) -o bin/minsample sample/minsample.c src/mylib.c src/$(WASM_SRC_BASENAME).cpp $(MCL_DIR)/src/fp.cpp $(BASE_CFLAGS) -std=c++03 -DMCL_DONT_USE_XBYAK -DMCL_USE_VINT -DMCL_VINT_FIXED_BUFFER -DMCL_DONT_USE_OPENSSL
 
-../mcl/src/base64.ll:
-	$(MAKE) -C ../mcl src/base64.ll
+$(MCL_DIR)/src/base64.ll:
+	$(MAKE) -C $(MCL_DIR) src/base64.ll
 
-../mcl/src/base64m.ll:
-	$(MAKE) -C ../mcl src/base64m.ll
+$(MCL_DIR)/src/base64m.ll:
+	$(MAKE) -C $(MCL_DIR) src/base64m.ll
 
-MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I../mcl/include
+MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I $(MCL_DIR)/include
 ifneq ($(MIN_WITH_XBYAK),1)
   MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
 endif
@@ -201,7 +201,7 @@ ifeq ($(BLS_ETH),1)
   MIN_CFLAGS+=-DBLS_ETH
 endif
 minimized_static:
-	$(CXX) -c -o $(OBJ_DIR)/fp.o ../mcl/src/fp.cpp $(MIN_CFLAGS)
+	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
 	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(MIN_CFLAGS)
 	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
