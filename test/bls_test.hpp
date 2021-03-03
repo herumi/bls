@@ -283,8 +283,8 @@ void k_of_nTest()
 		sigVec[0] = allSigVec[1]; idVec[0] = allIdVec[1];
 		sigVec[1] = allSigVec[4]; idVec[1] = allIdVec[4];
 		sigVec[2] = allSigVec[3]; idVec[2] = allIdVec[3];
-		bls::Signature sig;
 #ifdef NDEBUG
+		bls::Signature sig;
 		CYBOZU_BENCH_C("sig.recover", 100, sig.recover, sigVec, idVec);
 #endif
 	}
