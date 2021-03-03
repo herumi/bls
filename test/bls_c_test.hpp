@@ -349,6 +349,10 @@ void modTest(const char *rStr)
 
 void blsBench()
 {
+#ifndef NDEBUG
+	puts("skip blsBench");
+	return;
+#endif
 	blsSecretKey sec;
 	blsPublicKey pub;
 	blsSignature sig;

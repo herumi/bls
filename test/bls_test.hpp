@@ -153,8 +153,10 @@ void blsTest()
 		CYBOZU_TEST_ASSERT(sig.verify(pub, m));
 		CYBOZU_TEST_ASSERT(!sig.verify(pub, m + "a"));
 		streamTest(sig);
+#ifdef NDEBUG
 		CYBOZU_BENCH_C("sign", 300, sec.sign, sig, m);
 		CYBOZU_BENCH_C("verify", 300, sig.verify, pub, m);
+#endif
 	}
 }
 
@@ -281,8 +283,10 @@ void k_of_nTest()
 		sigVec[0] = allSigVec[1]; idVec[0] = allIdVec[1];
 		sigVec[1] = allSigVec[4]; idVec[1] = allIdVec[4];
 		sigVec[2] = allSigVec[3]; idVec[2] = allIdVec[3];
+#ifdef NDEBUG
 		bls::Signature sig;
 		CYBOZU_BENCH_C("sig.recover", 100, sig.recover, sigVec, idVec);
+#endif
 	}
 	{
 		/*
@@ -537,7 +541,9 @@ void testAggregatedHashes(size_t n)
 	CYBOZU_TEST_ASSERT(!sig.verifyAggregatedHashes(pubs.data(), h.data(), sizeofHash, n));
 #endif
 	printf("n=%2d ", (int)n);
+#ifdef NDEBUG
 	CYBOZU_BENCH_C("aggregate", 50, sig.verifyAggregatedHashes, pubs.data(), h.data(), sizeofHash, n);
+#endif
 }
 
 void verifyAggregateTest(int type)
@@ -731,7 +737,9 @@ void blsAggregateVerifyNoCheckTestOne(size_t n, bool hasZero = false)
 		return;
 	}
 	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 1);
+#ifdef NDEBUG
 	CYBOZU_BENCH_C("blsAggregateVerifyNoCheck", 50, blsAggregateVerifyNoCheck, &aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n);
+#endif
 	(*(char*)(&aggSig))++;
 	CYBOZU_TEST_EQUAL(blsAggregateVerifyNoCheck(&aggSig, pubs[0].getPtr(), msgs.data(), msgSize, n), 0);
 }
@@ -895,7 +903,9 @@ void ethMultiVerifyTestOne(size_t n)
 	for (int threadN = 1; threadN < 32; threadN += 4) {
 		printf("threadN=%d\n", threadN);
 		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN), 1);
+#ifdef NDEBUG
 		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN);
+#endif
 	}
 	msgs[msgs.size() - 1]--;
 	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
