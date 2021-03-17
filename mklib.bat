@@ -28,7 +28,7 @@ if %MAKE_DLL%==1 (
   cl /c %BLS_CFLAGS% /Foobj/bls_c256.obj src/bls_c256.cpp
   cl /c %BLS_CFLAGS% /Foobj/bls_c384.obj src/bls_c384.cpp
   cl /c %BLS_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
-  cl /c %BLS_CFLAGS% /Foobj/fp.obj ../mcl/src/fp.cpp /DMCLBN_DONT_EXPORT
+  cl /c %BLS_CFLAGS% /Foobj/fp.obj ../mcl/src/fp.cpp /DMCLBN_DONT_EXPORT /DMCLBN_FORCE_EXPORT
   lib /OUT:lib/bls256.lib /nodefaultlib obj/bls_c256.obj obj/fp.obj %LDFLAGS%
   lib /OUT:lib/bls384.lib /nodefaultlib obj/bls_c384.obj obj/fp.obj %LDFLAGS%
   lib /OUT:lib/bls384_256.lib /nodefaultlib obj/bls_c384_256.obj obj/fp.obj %LDFLAGS%

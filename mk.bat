@@ -1,7 +1,7 @@
 @echo off
 if "%1"=="-s" (
   echo use static lib
-  set LOCAL_CFLAGS=%BLS_CFLAGS% /DBLS_DONT_EXPORT
+  set LOCAL_CFLAGS=%BLS_CFLAGS% /DBLS_DONT_EXPORT /DMCL_DONT_EXPORT
 ) else if "%1"=="-d" (
   echo use dynamic lib
 ) else (
