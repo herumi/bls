@@ -636,7 +636,6 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 template<class G>
 inline bool toG(G& Hm, const void *h, mclSize size)
 {
-	bool b;
 #ifdef BLS_ETH
 	BN::hashAndMapToG2(Hm, h, size);
 	return true;
@@ -648,9 +647,10 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 	// backward compatibility
 	Fp t;
 	t.setArrayMask((const char *)h, size);
+	bool b;
 	BN::mapToG1(&b, Hm, t);
-#endif
 	return b;
+#endif
 }
 
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
