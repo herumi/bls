@@ -8,6 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: lscpu
+    - run: git submodule update --init --recursive
     - run: make -C ./mcl lib/libmcl.a -j4
     - run: make test_ci -j4
     - run: make test_go -j4
