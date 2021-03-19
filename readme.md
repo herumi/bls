@@ -260,21 +260,14 @@ Remove it if you need PublicKey as G1.
 
 ### Preliminaries
 
-Create a working directory (e.g., work) and clone the following repositories.
 ```
-mkdir work
-cd work
-git clone git://github.com/herumi/mcl.git
-git clone git://github.com/herumi/bls.git
-git clone git://github.com/herumi/cybozulib_ext ; for only Windows
+git clone --recursive https://github.com/herumi/bls
 ```
 
 ### Build static library for Linux and macOS
 
 ```
-cd work/mcl
-make lib/libmcl.a
-cd ../bls
+make -C mcl lib/libmcl.a
 make BLS_ETH=1 lib/libbls384_256.a
 ```
 If the option `MCL_USE_GMP=0` (resp.`MCL_USE_OPENSSL=0`) is used then GMP (resp. OpenSSL) is not used.
@@ -282,7 +275,6 @@ If the option `MCL_USE_GMP=0` (resp.`MCL_USE_OPENSSL=0`) is used then GMP (resp.
 ### Build static library for Windows
 
 ```
-cd work/bls
 mklib eth
 ```
 
