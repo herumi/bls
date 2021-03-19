@@ -46,7 +46,7 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 endif()
 
-add_subdirectory(external/mcl)
+add_subdirectory(mcl)
 
 foreach(bit IN ITEMS 256 384 384_256)
 	add_library(bls${bit} SHARED src/bls_c${bit}.cpp)
