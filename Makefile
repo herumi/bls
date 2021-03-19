@@ -111,7 +111,8 @@ else
   LIBPATH_KEY=LD_LIBRARY_PATH
 endif
 test_ci: $(TEST_EXE)
-	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib LSAN_OPTIONS=verbosity=1 log_threads=1 $$i; done'
+#	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib LSAN_OPTIONS=verbosity=1 log_threads=1 $$i; done'
+	@sh -ec 'for i in $(TEST_EXE); do echo $$i; env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib $$i; done'
 	$(MAKE) sample_test
 
 test: $(TEST_EXE)
