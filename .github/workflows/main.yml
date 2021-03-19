@@ -11,7 +11,8 @@ jobs:
     - run: git clone --depth 1 https://github.com/herumi/mcl
     - run: make -C ./mcl lib/libmcl.a -j4
     - run: make test_ci MCL_DIR=$(pwd)/mcl -j4 || dmesg | tail
-#    - run: make test_go MCL_DIR=$(pwd)/mcl -j4
+    - run: make clean MCL_DIR=$(pwd)/mcl
+    - run: make test_go MCL_DIR=$(pwd)/mcl -j4
     - run: make clean MCL_DIR=$(pwd)/mcl
     - run: make test_ci MCL_DIR=$(pwd)/mcl BLS_ETH=1 -j4
     - run: make clean MCL_DIR=$(pwd)/mcl
