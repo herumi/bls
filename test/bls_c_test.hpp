@@ -7,7 +7,7 @@
 
 size_t pubSize(size_t FrSize)
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return FrSize;
 #else
 	return FrSize * 2;
@@ -15,7 +15,7 @@ size_t pubSize(size_t FrSize)
 }
 size_t sigSize(size_t FrSize)
 {
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	return FrSize * 2;
 #else
 	return FrSize;
@@ -37,6 +37,16 @@ void bls_use_stackTest()
 	blsSign(&sig, &sec, msg, msgSize);
 
 	CYBOZU_TEST_ASSERT(blsVerify(&sig, &pub, msg, msgSize));
+
+	CYBOZU_TEST_ASSERT(!blsSecretKeyIsZero(&sec));
+	CYBOZU_TEST_ASSERT(!blsPublicKeyIsZero(&pub));
+	CYBOZU_TEST_ASSERT(!blsSignatureIsZero(&sig));
+	memset(&sec, 0, sizeof(sec));
+	memset(&pub, 0, sizeof(pub));
+	memset(&sig, 0, sizeof(sig));
+	CYBOZU_TEST_ASSERT(blsSecretKeyIsZero(&sec));
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsZero(&pub));
+	CYBOZU_TEST_ASSERT(blsSignatureIsZero(&sig));
 }
 
 void blsDataTest()
@@ -177,7 +187,7 @@ void blsSerializeTest()
 	CYBOZU_TEST_EQUAL(n, expectSize);
 
 	// Signature
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	expectSize = FpSize * 2;
 #else
 	expectSize = FpSize;
@@ -207,7 +217,7 @@ void blsSerializeTest()
 void blsVerifyOrderTest()
 {
 	puts("blsVerifyOrderTest");
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	const uint8_t Qs[] =
 #else
 	const uint8_t Ps[] =
@@ -215,7 +225,7 @@ void blsVerifyOrderTest()
 	{
 0x7b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
 	};
-#ifdef BLS_SWAP_G
+#ifdef BLS_ETH
 	const uint8_t Ps[] =
 #else
 	const uint8_t Qs[] =
@@ -225,6 +235,7 @@ void blsVerifyOrderTest()
 	};
 	size_t n;
 	blsPublicKey pub;
+	blsPublicKeyVerifyOrder(1);
 	n = blsPublicKeyDeserialize(&pub, Ps, sizeof(Ps));
 	CYBOZU_TEST_EQUAL(n, 0);
 	blsPublicKeyVerifyOrder(0);
@@ -234,6 +245,7 @@ void blsVerifyOrderTest()
 	blsPublicKeyVerifyOrder(1);
 
 	blsSignature sig;
+	blsSignatureVerifyOrder(1);
 	n = blsSignatureDeserialize(&sig, Qs, sizeof(Qs));
 	CYBOZU_TEST_EQUAL(n, 0);
 	blsSignatureVerifyOrder(0);
@@ -324,6 +336,7 @@ void modTest(const char *rStr)
 	const mpz_class r(rStr);
 	size_t n = blsSecretKeySerialize(buf, sizeof(buf), &sec);
 	CYBOZU_TEST_ASSERT(n > 0);
+#ifndef BLS_ETH
 	// serialized data to mpz_class
 	mpz_class y = 0;
 	for (size_t i = 0; i < n; i++) {
@@ -331,10 +344,15 @@ void modTest(const char *rStr)
 		y += buf[n - 1 - i];
 	}
 	CYBOZU_TEST_EQUAL(y, x % r);
+#endif
 }
 
 void blsBench()
 {
+#ifndef NDEBUG
+	puts("skip blsBench");
+	return;
+#endif
 	blsSecretKey sec;
 	blsPublicKey pub;
 	blsSignature sig;
@@ -345,8 +363,40 @@ void blsBench()
 
 	blsGetPublicKey(&pub, &sec);
 
-	CYBOZU_BENCH_C("sign", 10000, blsSign, &sig, &sec, msg, msgSize);
-	CYBOZU_BENCH_C("verify", 1000, blsVerify, &sig, &pub, msg, msgSize);
+	CYBOZU_BENCH_C("sign", 300, blsSign, &sig, &sec, msg, msgSize);
+	CYBOZU_BENCH_C("verify", 300, blsVerify, &sig, &pub, msg, msgSize);
+}
+
+void blsMultiAggregateTest()
+{
+	const size_t N = 40;
+	const size_t nTbl[] = { 0, 1, 2, 16, 17, N };
+	blsPublicKey pubVec[N];
+	blsSignature sigVec[N];
+	const char *msg = "abcdefg";
+	const size_t msgSize = strlen(msg);
+	for (size_t i = 0; i < CYBOZU_NUM_OF_ARRAY(nTbl); i++) {
+		const size_t n = nTbl[i];
+		for (size_t j = 0; j < n; j++) {
+			blsSecretKey sec;
+			blsSecretKeySetByCSPRNG(&sec);
+			blsGetPublicKey(&pubVec[j], &sec);
+			blsSign(&sigVec[j], &sec, msg, msgSize);
+		}
+		blsPublicKey aggPub;
+		blsSignature aggSig;
+		memset(&aggPub, -1, sizeof(aggPub));
+		memset(&aggSig, -1, sizeof(aggSig));
+		blsMultiAggregatePublicKey(&aggPub, pubVec, n);
+		blsMultiAggregateSignature(&aggSig, sigVec, pubVec, n);
+		if (n == 0) {
+			CYBOZU_TEST_ASSERT(blsPublicKeyIsZero(&aggPub));
+			CYBOZU_TEST_ASSERT(blsSignatureIsZero(&aggSig));
+			CYBOZU_TEST_ASSERT(!blsVerify(&aggSig, &aggPub, msg, msgSize));
+		} else {
+			CYBOZU_TEST_ASSERT(blsVerify(&aggSig, &aggPub, msg, msgSize));
+		}
+	}
 }
 
 CYBOZU_TEST_AUTO(all)
@@ -391,11 +441,14 @@ CYBOZU_TEST_AUTO(all)
 			printf("ERR %d\n", ret);
 			exit(1);
 		}
+		blsMultiAggregateTest();
 		bls_use_stackTest();
 		blsDataTest();
 		blsOrderTest(tbl[i].r, tbl[i].p);
 		blsSerializeTest();
+#ifndef BLS_ETH
 		if (tbl[i].curveType == MCL_BLS12_381) blsVerifyOrderTest();
+#endif
 		blsAddSubTest();
 		blsTrivialShareTest();
 		modTest(tbl[i].r);

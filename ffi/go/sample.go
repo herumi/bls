@@ -3,10 +3,12 @@
 	make minimised_static
 */
 package main
+
 import (
-	"fmt"
-	"github.com/harmony-one/bls/ffi/go/bls"
 	"crypto/rand"
+	"fmt"
+
+	"github.com/harmony-one/bls/ffi/go/bls"
 )
 
 type SeqRead struct {
@@ -41,7 +43,6 @@ func testReadRand() {
 	buf = sec.GetLittleEndian()
 	fmt.Printf("3. (cr.Read) buf=%x\n", buf)
 }
-
 
 func main() {
 	bls.Init(bls.BLS12_381)

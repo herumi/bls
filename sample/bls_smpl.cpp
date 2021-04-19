@@ -1,4 +1,4 @@
-#define MCLBN_FP_UNIT_SIZE 4
+#include <bls/bls384_256.h>
 #include <bls/bls.hpp>
 #include <cybozu/option.hpp>
 #include <cybozu/itoa.hpp>

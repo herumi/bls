@@ -1,6 +1,6 @@
 @echo off
-call ..\mcl\setvar.bat
-set CFLAGS=%CFLAGS% /I ..\mcl\include /I ./
-set LDFLAGS=%LDFLAGS% /LIBPATH:..\mcl\lib
-echo CFLAGS=%CFLAGS%
-echo LDFLAGS=%LDFLAGS%
+call %MCL_DIR%\setvar.bat
+set BLS_CFLAGS=%CFLAGS% /I %MCL_DIR%\include /I ./
+set BLS_LDFLAGS=%LDFLAGS%
+echo BLS_CFLAGS=%BLS_CFLAGS%
+echo BLS_LDFLAGS=%BLS_LDFLAGS%

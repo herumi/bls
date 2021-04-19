@@ -1,11 +1,15 @@
 package bls
 
-import "testing"
-import "strconv"
-import "crypto/sha256"
-import "crypto/sha512"
-import "fmt"
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"testing"
+	"unsafe"
+)
 
 var unitN = 0
 
@@ -463,6 +467,94 @@ func testReadRand(t *testing.T) {
 	fmt.Printf("(default) buf=%x\n", buf)
 }
 
+func testJson(t *testing.T) {
+	n := 3
+	var pubs PublicKeys
+	pubs = make([]PublicKey, n)
+	var sec SecretKey
+	for i := 0; i < n; i++ {
+		sec.SetByCSPRNG()
+		pubs[i] = *sec.GetPublicKey()
+	}
+	s := pubs.JSON()
+	fmt.Printf("s=%s\n", s)
+	type T struct {
+		Count      int      `json:"count"`
+		PublicKeys []string `json:"public-keys"`
+	}
+	var dec T
+	if err := json.Unmarshal([]byte(s), &dec); err != nil {
+		t.Fatal(err)
+	}
+	if dec.Count != n {
+		t.Fatalf("Count=%d\n", dec.Count)
+	}
+	for i := 0; i < n; i++ {
+		if pubs[i].SerializeToHexStr() != dec.PublicKeys[i] {
+			t.Fatalf("IsEqual %d\n", i)
+		}
+	}
+}
+
+func testCast(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	{
+		x := *CastFromSecretKey(&sec)
+		sec2 := *CastToSecretKey(&x)
+		if !sec.IsEqual(&sec2) {
+			t.Error("sec is not equal")
+		}
+	}
+	var pub PublicKey
+	var g2 G2
+	if unsafe.Sizeof(pub) != unsafe.Sizeof(g2) {
+		return
+	}
+	pub = *sec.GetPublicKey()
+	g2 = *CastFromPublicKey(&pub)
+	G2Add(&g2, &g2, &g2)
+	pub.Add(&pub)
+	if !pub.IsEqual(CastToPublicKey(&g2)) {
+		t.Error("pub not equal")
+	}
+	sig := sec.Sign("abc")
+	g1 := *CastFromSign(sig)
+	G1Add(&g1, &g1, &g1)
+	sig.Add(sig)
+	if !sig.IsEqual(CastToSign(&g1)) {
+		t.Error("sig not equal")
+	}
+}
+
+func testZero(t *testing.T) {
+	var sec SecretKey
+	sec.SetByCSPRNG()
+	pub := sec.GetPublicKey()
+	sig := sec.Sign("abc")
+	if sec.IsZero() {
+		t.Fatal("sec is zero")
+	}
+	if pub.IsZero() {
+		t.Fatal("pub is zero")
+	}
+	if sig.IsZero() {
+		t.Fatal("sig is zero")
+	}
+	sec.SetDecString("0")
+	pub = sec.GetPublicKey()
+	sig = sec.Sign("abc")
+	if !sec.IsZero() {
+		t.Fatal("sec is not zero")
+	}
+	if !pub.IsZero() {
+		t.Fatal("pub is not zero")
+	}
+	if !sig.IsZero() {
+		t.Fatal("sig is not zero")
+	}
+}
+
 func test(t *testing.T, c int) {
 	err := Init(c)
 	if err != nil {
@@ -485,6 +577,9 @@ func test(t *testing.T, c int) {
 	testAggregate(t)
 	testHash(t)
 	testAggregateHashes(t)
+	testJson(t)
+	testCast(t)
+	testZero(t)
 }
 
 func TestMain(t *testing.T) {
