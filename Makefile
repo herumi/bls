@@ -4,7 +4,7 @@ ifeq ($(findstring MINGW64,$(shell uname -s)),MINGW64)
 else
   PWD=$(shell pwd)
 endif
-MCL_DIR?=$(PWD)/mcl
+MCL_DIR?=$(PWD)/../mcl
 include $(MCL_DIR)/common.mk
 LIB_DIR=lib
 OBJ_DIR=obj
