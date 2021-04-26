@@ -1022,6 +1022,25 @@ void ethTest(int type)
 	ethAggregateTest("draft07");
 }
 #endif
+void generatorTest()
+{
+	puts("generatorTest");
+	blsPublicKey gen, save;
+#ifdef BLS_ETH
+	mclBnG1_hashAndMapTo(&gen.v, "abc", 3);
+#else
+	mclBnG2_hashAndMapTo(&gen.v, "abc", 3);
+#endif
+	blsGetGeneratorOfPublicKey(&save);
+	blsSetGeneratorOfPublicKey(&gen);
+	blsSecretKey sec;
+	mclBnFr_setInt32(&sec.v, 1);
+	blsPublicKey pub;
+	blsGetPublicKey(&pub, &sec);
+	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub, &gen));
+	blsTest();
+	blsSetGeneratorOfPublicKey(&save);
+}
 
 void testAll(int type)
 {
@@ -1039,6 +1058,7 @@ void testAll(int type)
 #ifdef BLS_ETH
 	ethTest(type);
 #endif
+	generatorTest();
 }
 CYBOZU_TEST_AUTO(all)
 {

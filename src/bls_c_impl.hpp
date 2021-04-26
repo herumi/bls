@@ -913,6 +913,19 @@ void blsGetGeneratorOfPublicKey(blsPublicKey *pub)
 	*cast(&pub->v) = getBasePoint();
 }
 
+int blsSetGeneratorOfPublicKey(const blsPublicKey *pub)
+{
+#ifdef BLS_ETH
+	g_P = *cast(&pub->v);
+	return 0;
+#else
+	g_Q = *cast(&pub->v);
+	bool b;
+	precomputeG2(&b, g_Qcoeff, getBasePoint());
+	if (!b) return -1;
+#endif
+}
+
 int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize)
 {
 	return cast(&id->v)->deserialize(buf, bufSize, 10) > 0 ? 0 : -1;

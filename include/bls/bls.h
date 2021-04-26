@@ -288,6 +288,8 @@ BLS_DLL_API int blsGetFrByteSize(void);
 
 // get a generator of PublicKey
 BLS_DLL_API void blsGetGeneratorOfPublicKey(blsPublicKey *pub);
+// set a generator of PublicKey
+BLS_DLL_API int blsSetGeneratorOfPublicKey(const blsPublicKey *pub);
 
 // return 0 if success
 BLS_DLL_API int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize);
