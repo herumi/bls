@@ -922,7 +922,7 @@ int blsSetGeneratorOfPublicKey(const blsPublicKey *pub)
 	g_Q = *cast(&pub->v);
 	bool b;
 	precomputeG2(&b, g_Qcoeff, getBasePoint());
-	if (!b) return -1;
+	return b ? 0 : -1;
 #endif
 }
 
