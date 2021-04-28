@@ -776,7 +776,15 @@ func SetRandFunc(randReader io.Reader) {
 	}
 }
 
-// BlsGetGeneratorOfPublicKey -
-func BlsGetGeneratorOfPublicKey(pub *PublicKey) {
+// GetGeneratorOfPublicKey -
+func GetGeneratorOfPublicKey(pub *PublicKey) {
 	C.blsGetGeneratorOfPublicKey(&pub.v)
+}
+
+// SetGeneratorOfPublicKey -
+func SetGeneratorOfPublicKey(pub *PublicKey) error {
+	if C.blsSetGeneratorOfPublicKey(&pub.v) != 0 {
+		return fmt.Errorf("bad public key")
+	}
+	return nil
 }
