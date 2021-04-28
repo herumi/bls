@@ -806,3 +806,8 @@ func SetGeneratorOfPublicKey(pub *PublicKey) error {
 	}
 	return nil
 }
+
+// keep for backward compatibility
+func BlsGetGeneratorOfPublicKey(pub *PublicKey) {
+	GetGeneratorOfPublicKey(pub)
+}
