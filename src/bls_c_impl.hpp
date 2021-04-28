@@ -294,6 +294,7 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sig
 int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 {
 #ifdef BLS_ETH
+	if (cast(e)->isZero()) return false;
 	GT e2;
 	millerLoop(e2, -getBasePoint(), *cast(&aggSig->v));
 	e2 *= *cast(e);
