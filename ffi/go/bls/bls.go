@@ -36,14 +36,6 @@ func hex2byte(s string) ([]byte, error) {
 	return hex.DecodeString(s)
 }
 
-// allow zero length byte
-func getPointer(msg []byte) unsafe.Pointer {
-	if len(msg) == 0 {
-		return nil
-	}
-	return unsafe.Pointer(&msg[0])
-}
-
 // Init --
 // call this function before calling all the other operations
 // this function is not thread safe
