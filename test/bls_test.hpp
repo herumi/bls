@@ -1054,11 +1054,11 @@ void testAll(int type)
 	verifyAggregateTest(type);
 	setRandFuncTest(type);
 	hashTest(type);
+	generatorTest();
 #endif
 #ifdef BLS_ETH
 	ethTest(type);
 #endif
-	generatorTest();
 }
 CYBOZU_TEST_AUTO(all)
 {
