@@ -170,7 +170,7 @@ int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufS
 int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
 	bool b;
-	cast(&sec->v)->setArray(&b, (const char *)buf, bufSize, mcl::fp::Mod);
+	cast(&sec->v)->setArrayMod(&b, (const char *)buf, bufSize);
 	return b ? 0 : -1;
 }
 
