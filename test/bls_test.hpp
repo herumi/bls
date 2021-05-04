@@ -119,8 +119,11 @@ void hashTest(int type)
 #ifndef BLS_ETH
 		const uint64_t c1[] = { 0x0c00000000000004ull, 0xcf0f000000000006ull, 0x26cd890000000003ull, 0x2523648240000001ull };
 		const uint64_t mc1[] = { 0x9b0000000000000full, 0x921200000000000dull, 0x9366c48000000004ull };
-		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, c1, 32), std::exception);
-		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, mc1, 24), std::exception);
+		uint8_t buf[64];
+		bls::local::convertArray(buf, c1, 4);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, buf, 32), std::exception);
+		bls::local::convertArray(buf, mc1, 3);
+		CYBOZU_TEST_EXCEPTION(sec.signHash(sig, buf, 24), std::exception);
 #endif
 	}
 #endif

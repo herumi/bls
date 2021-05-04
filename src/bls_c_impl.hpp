@@ -164,13 +164,13 @@ void blsIdSetInt(blsId *id, int x)
 
 int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
-	cast(&sec->v)->setArrayMask((const char *)buf, bufSize);
+	cast(&sec->v)->setArrayMask((const uint8_t *)buf, bufSize);
 	return 0;
 }
 int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
 	bool b;
-	cast(&sec->v)->setArray(&b, (const char *)buf, bufSize, mcl::fp::Mod);
+	cast(&sec->v)->setArrayMod(&b, (const uint8_t *)buf, bufSize);
 	return b ? 0 : -1;
 }
 
@@ -647,7 +647,7 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 	}
 	// backward compatibility
 	Fp t;
-	t.setArrayMask((const char *)h, size);
+	t.setArrayMask((const uint8_t *)h, size);
 	bool b;
 	BN::mapToG1(&b, Hm, t);
 	return b;
@@ -938,7 +938,7 @@ int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize)
 
 int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize)
 {
-	cast(&id->v)->setArrayMask((const char *)buf, bufSize);
+	cast(&id->v)->setArrayMask((const uint8_t *)buf, bufSize);
 	return 0;
 }
 
@@ -1062,7 +1062,7 @@ void hashToFr(Fr *out, const cybozu::Sha256& h0, mclSize begin, mclSize n)
 {
 	for (size_t i = 0; i < n; i++) {
 		cybozu::Sha256 h = h0;
-		char md[32];
+		uint8_t md[32];
 		char buf[4];
 		cybozu::Set32bitAsLE(buf, uint32_t(begin + i));
 		h.digest(md, sizeof(md), buf, sizeof(buf));

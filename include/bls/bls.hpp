@@ -73,7 +73,19 @@ namespace local {
 	r = 0x2523648240000001ba344d8000000007ff9f800000000010a10000000000000d
 	sizeof(uint64_t) * keySize byte
 */
-const size_t keySize = MCLBN_FP_UNIT_SIZE;
+const size_t keySize = MCLBN_FR_UNIT_SIZE;
+
+inline void convertArray(uint8_t *dst, const uint64_t *src, size_t n)
+{
+	for (size_t i = 0; i < n; i++) {
+		uint64_t x = src[i];
+		for (size_t j = 0; j < 8; j++) {
+			*dst++ = uint8_t(x);
+			x >>= 8;
+		}
+	}
+}
+
 }
 
 class SecretKey;
@@ -149,10 +161,13 @@ public:
 	*/
 	void set(const uint64_t *p)
 	{
-		setLittleEndian(p, local::keySize * sizeof(uint64_t));
+		const size_t n = blsGetFrByteSize() / sizeof(uint64_t);
+		uint8_t x[sizeof(*this)];
+		local::convertArray(x, p, n);
+		setLittleEndian(x, n * sizeof(uint64_t));
 	}
 	// bufSize is truncted/zero extended to keySize
-	void setLittleEndian(const void *buf, size_t bufSize)
+	void setLittleEndian(const uint8_t *buf, size_t bufSize)
 	{
 		mclBnFr_setLittleEndian(&self_.v, buf, bufSize);
 	}
@@ -221,10 +236,13 @@ public:
 	*/
 	void set(const uint64_t *p)
 	{
-		setLittleEndian(p, local::keySize * sizeof(uint64_t));
+		const size_t n = blsGetFrByteSize() / sizeof(uint64_t);
+		uint8_t x[sizeof(*this)];
+		local::convertArray(x, p, n);
+		setLittleEndian(x, n * sizeof(uint64_t));
 	}
 	// bufSize is truncted/zero extended to keySize
-	void setLittleEndian(const void *buf, size_t bufSize)
+	void setLittleEndian(const uint8_t *buf, size_t bufSize)
 	{
 		mclBnFr_setLittleEndian(&self_.v, buf, bufSize);
 	}
