@@ -253,7 +253,7 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sig
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			bool b;
-			rand[i].setArray(&b, &randVec[i * randSize], randSize);
+			rand[i].setArray(&b, (const uint8_t*)&randVec[i * randSize], randSize);
 			(void)b;
 			const G1& pub = *cast(&pubVec[i].v);
 			if (pub.isZero()) {
