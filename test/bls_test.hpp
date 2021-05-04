@@ -892,7 +892,8 @@ void ethMultiVerifyTestOne(size_t n)
 	bls::PublicKeyVec pubs(n);
 	bls::SignatureVec sigs(n);
 	std::string msgs(msgSize * n, 0);
-	std::vector<uint64_t> rands(n);
+	const size_t randSize = 8;
+	std::vector<uint8_t> rands(randSize * n);
 
 	rg.read(&rands[0], rands.size());
 	rg.read(&msgs[0], msgs.size());
@@ -905,13 +906,13 @@ void ethMultiVerifyTestOne(size_t n)
 #ifndef DISABLE_THREAD_TEST
 	for (int threadN = 1; threadN < 32; threadN += 4) {
 		printf("threadN=%d\n", threadN);
-		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN), 1);
+		CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), randSize, n, threadN), 1);
 #ifdef NDEBUG
-		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, threadN);
+		CYBOZU_BENCH_C("multiVerify", 10, blsMultiVerify, sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), randSize, n, threadN);
 #endif
 	}
 	msgs[msgs.size() - 1]--;
-	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 0), 0);
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), randSize, n, 0), 0);
 #endif
 }
 
@@ -924,7 +925,8 @@ void ethMultiVerifyZeroTest()
 	bls::PublicKeyVec pubs(n);
 	bls::SignatureVec sigs(n);
 	std::string msgs(msgSize * n, 0);
-	std::vector<uint64_t> rands(n);
+	const size_t randSize = 8;
+	std::vector<uint8_t> rands(randSize * n);
 
 	rg.read(&rands[0], rands.size());
 	rg.read(&msgs[0], msgs.size());
@@ -939,7 +941,7 @@ void ethMultiVerifyZeroTest()
 		sec.getPublicKey(pubs[i]);
 	}
 #ifndef DISABLE_THREAD_TEST
-	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), sizeof(uint64_t), n, 2), 0);
+	CYBOZU_TEST_EQUAL(blsMultiVerify(sigs[0].getPtr(), pubs[0].getPtr(), msgs.data(), msgSize, rands.data(), randSize, n, 2), 0);
 #endif
 }
 
