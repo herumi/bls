@@ -32,6 +32,8 @@ namespace mcl
                 sec2.SetHexStr("4000");
                 sec.Add(sec2);
                 assert("sec.Add", sec.GetHexStr() == "4321");
+                sec.Sub(sec2);
+                assert("sec.Sub", sec.GetHexStr() == "321");
                 sec.SetByCSPRNG();
                 Console.WriteLine("sec.Init={0}", sec.GetHexStr());
             }
@@ -149,6 +151,19 @@ namespace mcl
             }
             assert("aggregate sec", secAgg.Sign(m).IsEqual(sigAgg));
             assert("aggregate", pubAgg.Verify(sigAgg, m));
+            // sub
+            secAgg = secVec[0];
+            secAgg.Add(secVec[1]);
+            secAgg.Sub(secVec[1]);
+            assert("SecretKey.Sub", secAgg.IsEqual(secVec[0]));
+            pubAgg = pubVec[0];
+            pubAgg.Add(pubVec[1]);
+            pubAgg.Sub(pubVec[1]);
+            assert("PubretKey.Sub", pubAgg.IsEqual(pubVec[0]));
+            sigAgg = sigVec[0];
+            sigAgg.Add(sigVec[1]);
+            sigAgg.Sub(sigVec[1]);
+            assert("Signature.Sub", sigAgg.IsEqual(sigVec[0]));
         }
         static void Main(string[] args) {
             try {

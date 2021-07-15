@@ -51,6 +51,10 @@ namespace mcl
         [DllImport(dllName)] public static extern void blsSecretKeyAdd(ref SecretKey sec, in SecretKey rhs);
         [DllImport(dllName)] public static extern void blsPublicKeyAdd(ref PublicKey pub, in PublicKey rhs);
         [DllImport(dllName)] public static extern void blsSignatureAdd(ref Signature sig, in Signature rhs);
+        // sub
+        [DllImport(dllName)] public static extern void blsSecretKeySub(ref SecretKey sec, in SecretKey rhs);
+        [DllImport(dllName)] public static extern void blsPublicKeySub(ref PublicKey pub, in PublicKey rhs);
+        [DllImport(dllName)] public static extern void blsSignatureSub(ref Signature sig, in Signature rhs);
         //	hash buf and set
         [DllImport(dllName)] public static extern int blsHashToSecretKey(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
         /*
@@ -204,6 +208,10 @@ namespace mcl
             public void Add(in SecretKey rhs) {
                 blsSecretKeyAdd(ref this, rhs);
             }
+            public void Sub(in SecretKey rhs)
+            {
+                blsSecretKeySub(ref this, rhs);
+            }
             public void SetByCSPRNG() {
                 blsSecretKeySetByCSPRNG(ref this);
             }
@@ -280,6 +288,10 @@ namespace mcl
             public void Add(in PublicKey rhs) {
                 blsPublicKeyAdd(ref this, rhs);
             }
+            public void Sub(in PublicKey rhs)
+            {
+                blsPublicKeySub(ref this, rhs);
+            }
             public bool Verify(in Signature sig, string m) {
                 return blsVerify(sig, this, m, (ulong)m.Length) == 1;
             }
@@ -338,6 +350,10 @@ namespace mcl
             }
             public void Add(in Signature rhs) {
                 blsSignatureAdd(ref this, rhs);
+            }
+            public void Sub(in Signature rhs)
+            {
+                blsSignatureSub(ref this, rhs);
             }
         }
         public static Signature RecoverSign(in Signature[] sigVec, in Id[] idVec) {
