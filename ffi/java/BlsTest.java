@@ -61,11 +61,29 @@ public class BlsTest {
 		x.mul(y);
 		assertEquals("x.mul", x.toString(), "63");
 	}
+	public static void testPublicKey() {
+		PublicKey x = new PublicKey();
+		PublicKey y = new PublicKey();
+	}
+	public static void testSign() {
+		SecretKey sec = new SecretKey();
+		sec.setByCSPRNG();
+		PublicKey pub = new PublicKey();
+		sec.getPublicKey(pub);
+		byte[] m = new byte[]{1, 2, 3, 4, 5};
+		byte[] m2 = new byte[]{1, 2, 3, 4, 5, 6};
+		Signature sig = new Signature();
+		sec.sign(sig, m);
+		assertBool("verify", sig.verify(pub, m));
+		assertBool("!verify", !sig.verify(pub, m2));
+	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
 			Bls.init(curveType);
 			testSecretKey();
+			testPublicKey();
+			testSign();
 			if (errN == 0) {
 				System.out.println("all test passed");
 			} else {

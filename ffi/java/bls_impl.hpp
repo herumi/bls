@@ -21,6 +21,8 @@ class Signature;
 
 class SecretKey {
 	blsSecretKey self_;
+	friend class PublicKey;
+	friend class Signature;
 public:
 	SecretKey() {}
 	SecretKey(const SecretKey& rhs) : self_(rhs.self_) {}
@@ -86,6 +88,20 @@ public:
         }
         out.resize(n);
 	}
+	void setLittleEndian(const char *cbuf, size_t bufSize) throw(std::exception)
+	{
+		int r = blsSecretKeySetLittleEndian(&self_, cbuf, bufSize);
+		if (r != 0) {
+			throw std::runtime_error("blsSecretKeySetLittleEndian");
+		}
+	}
+	void setLittleEndianMod(const char *cbuf, size_t bufSize) throw(std::exception)
+	{
+		int r = blsSecretKeySetLittleEndianMod(&self_, cbuf, bufSize);
+		if (r != 0) {
+			throw std::runtime_error("blsSecretKeySetLittleEndianMod");
+		}
+	}
 	void add(const SecretKey& rhs)
 	{
 		blsSecretKeyAdd(&self_, &rhs.self_);
@@ -102,7 +118,149 @@ public:
 	{
 		blsSecretKeyNeg(&self_);
 	}
+	void getPublicKey(PublicKey& pub) const;
+	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
 };
+
+class PublicKey {
+	blsPublicKey self_;
+	friend class SecretKey;
+	friend class Signature;
+public:
+	PublicKey() {}
+	PublicKey(const PublicKey& rhs) : self_(rhs.self_) {}
+	bool equals(const PublicKey& rhs) const
+	{
+		return blsPublicKeyIsEqual(&self_, &rhs.self_) != 0;
+	}
+	bool isZero() const { return blsPublicKeyIsZero(&self_) != 0; }
+	void setStr(const std::string& str) throw(std::exception)
+	{
+		const size_t len = str.size();
+		size_t n = blsPublicKeySetHexStr(&self_, str.c_str(), len);
+		if (n == 0 || n != len) throw std::runtime_error("bad str");
+	}
+	void clear()
+	{
+        memset(&self_, 0, sizeof(self_));
+	}
+	std::string toString() const throw(std::exception)
+	{
+		char buf[256];
+		size_t n = blsPublicKeyGetHexStr(buf, sizeof(buf), &self_);
+		if (n == 0) throw std::runtime_error("err toString");
+		return std::string(buf, n);
+	}
+	void deserialize(const char *cbuf, size_t bufSize) throw(std::exception)
+	{
+        int n = blsPublicKeyDeserialize(&self_, cbuf, bufSize);
+        if (n == 0) {
+            throw std::runtime_error("blsPublicKeyDeserialize");
+        }
+	}
+	void serialize(std::string& out) const throw(std::exception)
+	{
+        out.resize(128);
+        size_t n = blsPublicKeySerialize(&out[0], out.size(), &self_);
+        if (n == 0) {
+            throw std::runtime_error("blsPublicKeySerialize");
+        }
+        out.resize(n);
+	}
+	void add(const PublicKey& rhs)
+	{
+		blsPublicKeyAdd(&self_, &rhs.self_);
+	}
+	void sub(const PublicKey& rhs)
+	{
+		blsPublicKeySub(&self_, &rhs.self_);
+	}
+	void mul(const SecretKey& rhs)
+	{
+		blsPublicKeyMul(&self_, &rhs.self_);
+	}
+	void neg()
+	{
+		blsPublicKeyNeg(&self_);
+	}
+};
+
+class Signature {
+	blsSignature self_;
+	friend class SecretKey;
+	friend class PublicKey;
+public:
+	Signature() {}
+	Signature(const Signature& rhs) : self_(rhs.self_) {}
+	bool equals(const Signature& rhs) const
+	{
+		return blsSignatureIsEqual(&self_, &rhs.self_) != 0;
+	}
+	bool isZero() const { return blsSignatureIsZero(&self_) != 0; }
+	void setStr(const std::string& str) throw(std::exception)
+	{
+		const size_t len = str.size();
+		size_t n = blsSignatureSetHexStr(&self_, str.c_str(), len);
+		if (n == 0 || n != len) throw std::runtime_error("bad str");
+	}
+	void clear()
+	{
+        memset(&self_, 0, sizeof(self_));
+	}
+	std::string toString() const throw(std::exception)
+	{
+		char buf[256];
+		size_t n = blsSignatureGetHexStr(buf, sizeof(buf), &self_);
+		if (n == 0) throw std::runtime_error("err toString");
+		return std::string(buf, n);
+	}
+	void deserialize(const char *cbuf, size_t bufSize) throw(std::exception)
+	{
+        int n = blsSignatureDeserialize(&self_, cbuf, bufSize);
+        if (n == 0) {
+            throw std::runtime_error("blsSignatureDeserialize");
+        }
+	}
+	void serialize(std::string& out) const throw(std::exception)
+	{
+        out.resize(128);
+        size_t n = blsSignatureSerialize(&out[0], out.size(), &self_);
+        if (n == 0) {
+            throw std::runtime_error("blsSignatureSerialize");
+        }
+        out.resize(n);
+	}
+	void add(const Signature& rhs)
+	{
+		blsSignatureAdd(&self_, &rhs.self_);
+	}
+	void sub(const Signature& rhs)
+	{
+		blsSignatureSub(&self_, &rhs.self_);
+	}
+	void mul(const SecretKey& rhs)
+	{
+		blsSignatureMul(&self_, &rhs.self_);
+	}
+	void neg()
+	{
+		blsSignatureNeg(&self_);
+	}
+	bool verify(const PublicKey& pub, const char *cbuf, size_t bufSize) const
+	{
+		return blsVerify(&self_, &pub.self_, cbuf, bufSize) == 1;
+	}
+};
+
+void SecretKey::getPublicKey(PublicKey& pub) const
+{
+	blsGetPublicKey(&pub.self_, &self_);
+}
+
+void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
+{
+	blsSign(&sig.self_, &self_, cbuf, bufSize);
+}
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
 #pragma GCC diagnostic pop
