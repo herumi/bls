@@ -61,6 +61,10 @@ namespace mcl
         [DllImport(dllName)] public static extern void blsPublicKeyNeg(ref PublicKey x);
         [DllImport(dllName)] public static extern void blsSignatureNeg(ref Signature x);
 
+        // zero
+        [DllImport(dllName)] public static extern int blsSecretKeyIsZero(in SecretKey x);
+        [DllImport(dllName)] public static extern int blsPublicKeyIsZero(in PublicKey x);
+        [DllImport(dllName)] public static extern int blsSignatureIsZero(in Signature x);
         //	hash buf and set
         [DllImport(dllName)] public static extern int blsHashToSecretKey(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
         /*
@@ -198,6 +202,10 @@ namespace mcl
             public bool IsEqual(in SecretKey rhs) {
                 return blsSecretKeyIsEqual(this, rhs) != 0;
             }
+            public bool IsZero()
+            {
+                return blsSecretKeyIsZero(this) != 0;
+            }
             public void SetHexStr(string s) {
                 if (blsSecretKeySetHexStr(ref this, s, (ulong)s.Length) != 0) {
                     throw new ArgumentException("blsSecretKeySetHexStr:" + s);
@@ -282,6 +290,10 @@ namespace mcl
             public bool IsEqual(in PublicKey rhs) {
                 return blsPublicKeyIsEqual(this, rhs) != 0;
             }
+            public bool IsZero()
+            {
+                return blsPublicKeyIsZero(this) != 0;
+            }
             public void SetStr(string s) {
                 if (blsPublicKeySetHexStr(ref this, s, (ulong)s.Length) != 0) {
                     throw new ArgumentException("blsPublicKeySetStr:" + s);
@@ -348,6 +360,10 @@ namespace mcl
             }
             public bool IsEqual(in Signature rhs) {
                 return blsSignatureIsEqual(this, rhs) != 0;
+            }
+            public bool IsZero()
+            {
+                return blsSignatureIsZero(this) != 0;
             }
             public void SetStr(string s) {
                 if (blsSignatureSetHexStr(ref this, s, (ulong)s.Length) != 0) {
