@@ -55,6 +55,12 @@ namespace mcl
         [DllImport(dllName)] public static extern void blsSecretKeySub(ref SecretKey sec, in SecretKey rhs);
         [DllImport(dllName)] public static extern void blsPublicKeySub(ref PublicKey pub, in PublicKey rhs);
         [DllImport(dllName)] public static extern void blsSignatureSub(ref Signature sig, in Signature rhs);
+
+        // neg
+        [DllImport(dllName)] public static extern void blsSecretKeyNeg(ref SecretKey x);
+        [DllImport(dllName)] public static extern void blsPublicKeyNeg(ref PublicKey x);
+        [DllImport(dllName)] public static extern void blsSignatureNeg(ref Signature x);
+
         //	hash buf and set
         [DllImport(dllName)] public static extern int blsHashToSecretKey(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
         /*
@@ -212,6 +218,10 @@ namespace mcl
             {
                 blsSecretKeySub(ref this, rhs);
             }
+            public void Neg()
+            {
+                blsSecretKeyNeg(ref this);
+            }
             public void SetByCSPRNG() {
                 blsSecretKeySetByCSPRNG(ref this);
             }
@@ -292,6 +302,10 @@ namespace mcl
             {
                 blsPublicKeySub(ref this, rhs);
             }
+            public void Neg()
+            {
+                blsPublicKeyNeg(ref this);
+            }
             public bool Verify(in Signature sig, string m) {
                 return blsVerify(sig, this, m, (ulong)m.Length) == 1;
             }
@@ -354,6 +368,10 @@ namespace mcl
             public void Sub(in Signature rhs)
             {
                 blsSignatureSub(ref this, rhs);
+            }
+            public void Neg()
+            {
+                blsSignatureNeg(ref this);
             }
         }
         public static Signature RecoverSign(in Signature[] sigVec, in Id[] idVec) {
