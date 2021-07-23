@@ -32,7 +32,7 @@ $(MCL_LIB):
 obj/bls_c384_256.o:
 	make -C $(MCL_DIR) obj/bls_c384_256.o
 
-$(BLSJAVA_LIB): bls_wrap.cxx $(MCL_LIB) ../../obj/bls_c384_256.o
+$(BLSJAVA_LIB): bls_wrap.cxx ../../obj/bls_c384_256.o #$(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(CFLAGS) $(LDFLAGS) -shared ../../obj/bls_c384_256.o $(MCL_DIR)/lib/libmcl.a
 
 %.class: %.java

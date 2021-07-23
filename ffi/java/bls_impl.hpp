@@ -86,6 +86,22 @@ public:
         }
         out.resize(n);
 	}
+	void add(const SecretKey& rhs)
+	{
+		blsSecretKeyAdd(&self_, &rhs.self_);
+	}
+	void sub(const SecretKey& rhs)
+	{
+		blsSecretKeySub(&self_, &rhs.self_);
+	}
+	void mul(const SecretKey& rhs)
+	{
+		blsSecretKeyMul(&self_, &rhs.self_);
+	}
+	void neg()
+	{
+		blsSecretKeyNeg(&self_);
+	}
 };
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)

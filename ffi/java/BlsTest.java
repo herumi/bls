@@ -29,15 +29,37 @@ public class BlsTest {
 		}
 	}
 	public static void testSecretKey() {
-		SecretKey sec = new SecretKey(255);
-		assertEquals("sec.dec", sec.toString(), "255");
-		assertEquals("sec.hex", sec.toString(16), "ff");
-		byte[] b = sec.serialize();
+		SecretKey x = new SecretKey(255);
+		SecretKey y = new SecretKey();
+		assertEquals("x.dec", x.toString(), "255");
+		assertEquals("x.hex", x.toString(16), "ff");
+		assertBool("x.!isZero", !x.isZero());
+		x.clear();
+		assertBool("x.isZero", x.isZero());
+		x.setByCSPRNG();
+		System.out.println("x.setByCSPRNG()=" + x.toString(16));
+		byte[] b = x.serialize();
 		{
-			SecretKey sec2 = new SecretKey();
-			sec2.deserialize(b);
-			assertBool("sec.serialize", sec.equals(sec2));
+			y.deserialize(b);
+			assertBool("x.serialize", x.equals(y));
 		}
+		x.setInt(5);
+		y.setInt(10);
+		x.add(y);
+		assertEquals("x.add", x.toString(), "15");
+		x.setInt(13);
+		y.setInt(7);
+		x.sub(y);
+		assertEquals("x.sub", x.toString(), "6");
+		x.setInt(-9);
+		x.neg();
+		y.setInt(7);
+		x.add(y);
+		assertEquals("x.neg", x.toString(), "16");
+		x.setInt(9);
+		y.setInt(7);
+		x.mul(y);
+		assertEquals("x.mul", x.toString(), "63");
 	}
 	public static void testCurve(int curveType, String name) {
 		try {
