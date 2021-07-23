@@ -17,6 +17,8 @@ inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
 inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
 inline void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
 inline void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
+inline void Gneg(G1& y, const G1& x) { G1::neg(y, x); }
+inline void Gneg(G2& y, const G2& x) { G2::neg(y, x); }
 inline void hashAndMapToG(G1& z, const void *m, mclSize size) { hashAndMapToG1(z, m, size); }
 inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z, m, size); }
 
@@ -859,6 +861,21 @@ void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs)
 void blsSignatureSub(blsSignature *sig, const blsSignature *rhs)
 {
 	*cast(&sig->v) -= *cast(&rhs->v);
+}
+
+void blsSecretKeyNeg(blsSecretKey *x)
+{
+	Fr::neg(*cast(&x->v), *cast(&x->v));
+}
+
+void blsPublicKeyNeg(blsPublicKey *x)
+{
+	Gneg(*cast(&x->v), *cast(&x->v));
+}
+
+void blsSignatureNeg(blsSignature *x)
+{
+	Gneg(*cast(&x->v), *cast(&x->v));
 }
 
 mclSize blsGetOpUnitSize() // FpUint64Size

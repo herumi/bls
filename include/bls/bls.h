@@ -265,6 +265,11 @@ BLS_DLL_API void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs);
 BLS_DLL_API void blsPublicKeySub(blsPublicKey *pub, const blsPublicKey *rhs);
 BLS_DLL_API void blsSignatureSub(blsSignature *sig, const blsSignature *rhs);
 
+// neg
+BLS_DLL_API void blsSecretKeyNeg(blsSecretKey *x);
+BLS_DLL_API void blsPublicKeyNeg(blsPublicKey *x);
+BLS_DLL_API void blsSignatureNeg(blsSignature *x);
+
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int compiledTimeVar);
 
