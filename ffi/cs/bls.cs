@@ -201,7 +201,7 @@ namespace mcl
                 StringBuilder sb = new StringBuilder(1024);
                 ulong size = blsSecretKeyGetHexStr(sb, (ulong)sb.Capacity, this);
                 if (size == 0) {
-                    throw new ArgumentException("mclBnFr_getStr");
+                    throw new ArgumentException("blsSecretKeyGetHexStr");
                 }
                 return sb.ToString(0, (int)size);
             }
