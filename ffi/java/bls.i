@@ -2,6 +2,7 @@
 
 %include "std_string.i"
 %include "std_except.i"
+%include "std_vector.i"
 
 %apply(char *STRING, size_t LENGTH) { (const char *cbuf, size_t bufSize) };
 %{
@@ -26,4 +27,8 @@
 %javaconst(1);
 #define BN254 0
 #define BLS12_381 5
+
+%template(SecretKeyVec) std::vector<SecretKey>;
+%template(PublicKeyVec) std::vector<PublicKey>;
+%template(SignatureVec) std::vector<Signature>;
 

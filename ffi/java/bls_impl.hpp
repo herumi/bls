@@ -1,6 +1,7 @@
 #include <bls/bls384_256.h>
 #include <stdint.h>
 #include <sstream>
+#include <vector>
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -18,6 +19,10 @@ void init(int curveType) throw(std::exception)
 class SecretKey;
 class PublicKey;
 class Signature;
+
+typedef std::vector<SecretKey> SecretKeyVec;
+typedef std::vector<PublicKey> PublicKeyVec;
+typedef std::vector<Signature> SignatureVec;
 
 class SecretKey {
 	blsSecretKey self_;
@@ -120,6 +125,8 @@ public:
 	}
 	void getPublicKey(PublicKey& pub) const;
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
+	void share(const SecretKeyVec& secVec, const SecretKey& id);
+	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
 };
 
 class PublicKey {
@@ -183,6 +190,8 @@ public:
 	{
 		blsPublicKeyNeg(&self_);
 	}
+	void share(const PublicKeyVec& secVec, const SecretKey& id);
+	void recover(const PublicKeyVec& secVec, const SecretKeyVec& idVec);
 };
 
 class Signature {
@@ -250,6 +259,7 @@ public:
 	{
 		return blsVerify(&self_, &pub.self_, cbuf, bufSize) == 1;
 	}
+	void recover(const SignatureVec& secVec, const SecretKeyVec& idVec);
 };
 
 void SecretKey::getPublicKey(PublicKey& pub) const
@@ -260,6 +270,58 @@ void SecretKey::getPublicKey(PublicKey& pub) const
 void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
 {
 	blsSign(&sig.self_, &self_, cbuf, bufSize);
+}
+
+void SecretKey::share(const SecretKeyVec& secVec, const SecretKey& id)
+{
+	int r = blsSecretKeyShare(&self_, &secVec[0].self_, secVec.size(), (const blsId*)&id.self_);
+	if (r != 0) {
+		throw std::runtime_error("blsSecretKeyShare");
+	}
+}
+
+void PublicKey::share(const PublicKeyVec& pubVec, const SecretKey& id)
+{
+	int r = blsPublicKeyShare(&self_, &pubVec[0].self_, pubVec.size(), (const blsId*)&id.self_);
+	if (r != 0) {
+		throw std::runtime_error("blsPublicKeyShare");
+	}
+}
+
+void SecretKey::recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
+{
+	size_t n = secVec.size();
+	if (n == 0 || n != idVec.size()) {
+		throw std::runtime_error("bad length");
+	}
+	int r = blsSecretKeyRecover(&self_, &secVec[0].self_, (const blsId*)&idVec[0].self_, n);
+	if (r != 0) {
+		throw std::runtime_error("blsSecretKeyShare");
+	}
+}
+
+void PublicKey::recover(const PublicKeyVec& pubVec, const SecretKeyVec& idVec)
+{
+	size_t n = pubVec.size();
+	if (n == 0 || n != idVec.size()) {
+		throw std::runtime_error("bad length");
+	}
+	int r = blsPublicKeyRecover(&self_, &pubVec[0].self_, (const blsId*)&idVec[0].self_, n);
+	if (r != 0) {
+		throw std::runtime_error("blsPublicKeyShare");
+	}
+}
+
+void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
+{
+	size_t n = sigVec.size();
+	if (n == 0 || n != idVec.size()) {
+		throw std::runtime_error("bad length");
+	}
+	int r = blsSignatureRecover(&self_, &sigVec[0].self_, (const blsId*)&idVec[0].self_, n);
+	if (r != 0) {
+		throw std::runtime_error("blsSignatureShare");
+	}
 }
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
