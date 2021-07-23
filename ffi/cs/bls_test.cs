@@ -35,7 +35,13 @@ namespace mcl
                 sec.Sub(sec2);
                 assert("sec.Sub", sec.GetHexStr() == "321");
                 sec.SetByCSPRNG();
-                Console.WriteLine("sec.Init={0}", sec.GetHexStr());
+                Console.WriteLine("sec.SetByCSPRNG={0}", sec.GetHexStr());
+                sec2 = sec;
+                sec.Neg();
+                Console.WriteLine("sec.Neg={0}", sec.GetHexStr());
+                sec.Add(sec2);
+                assert("sec.Add2", sec.GetHexStr() == "0");
+                assert("sec.zero", sec.IsZero());
             }
             {
                 SecretKey sec2;
@@ -62,6 +68,12 @@ namespace mcl
                 pub2.Deserialize(buf);
                 assert("serialize", pub2.IsEqual(pub));
             }
+            {
+                PublicKey pub2 = pub;
+                pub.Neg();
+                pub.Add(pub2);
+                assert("pub is zero", pub.IsZero());
+            }
         }
         static void TestSign() {
             Console.WriteLine("TestSign");
@@ -78,6 +90,12 @@ namespace mcl
                 byte[] buf = sig.Serialize();
                 sig2.Deserialize(buf);
                 assert("serialize", sig2.IsEqual(sig));
+            }
+            {
+                Signature sig2 = sig;
+                sig.Neg();
+                sig.Add(sig2);
+                assert("sig is zero", sig.IsZero());
             }
         }
         static void TestSharing() {
