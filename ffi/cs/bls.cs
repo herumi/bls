@@ -65,6 +65,9 @@ namespace mcl
         [DllImport(dllName)] public static extern void blsPublicKeyMul(ref PublicKey pub, in SecretKey rhs);
         [DllImport(dllName)] public static extern void blsSignatureMul(ref Signature sig, in SecretKey rhs);
 
+        // mulVec
+        [DllImport(dllName)] public static extern int blsPublicKeyMulVec(ref PublicKey pub, in PublicKey pubVec, in SecretKey idVec, ulong n);
+        [DllImport(dllName)] public static extern int blsSignatureMulVec(ref Signature sig, in Signature sigVec, in SecretKey idVec, ulong n);
         // zero
         [DllImport(dllName)] public static extern int blsSecretKeyIsZero(in SecretKey x);
         [DllImport(dllName)] public static extern int blsPublicKeyIsZero(in PublicKey x);
@@ -411,6 +414,24 @@ namespace mcl
             if (blsSignatureRecover(ref sig, sigVec[0], idVec[0], (ulong)sigVec.Length) != 0) {
                 throw new ArgumentException("Recover");
             }
+            return sig;
+        }
+        public static PublicKey MulVec(in PublicKey[] pubVec, in SecretKey[] secVec)
+        {
+            if (pubVec.Length != secVec.Length) {
+                throw new ArithmeticException("PublicKey.MulVec");
+            }
+            PublicKey pub;
+            blsPublicKeyMulVec(ref pub, pubVec[0], secVec[0], (ulong)pubVec.Length);
+            return pub;
+        }
+        public static Signature MulVec(in Signature[] sigVec, in SecretKey[] secVec)
+        {
+            if (sigVec.Length != secVec.Length) {
+                throw new ArithmeticException("Signature.MulVec");
+            }
+            Signature sig;
+            blsSignatureMulVec(ref sig, sigVec[0], secVec[0], (ulong)sigVec.Length);
             return sig;
         }
     }
