@@ -878,6 +878,21 @@ void blsSignatureNeg(blsSignature *x)
 	Gneg(*cast(&x->v), *cast(&x->v));
 }
 
+void blsSecretKeyMul(blsSecretKey *y, const blsSecretKey *x)
+{
+	*cast(&y->v) *= *cast(&x->v);
+}
+
+void blsPublicKeyMul(blsPublicKey *y, const blsSecretKey *x)
+{
+	*cast(&y->v) *= *cast(&x->v);
+}
+
+void blsSignatureMul(blsSignature *y, const blsSecretKey *x)
+{
+	*cast(&y->v) *= *cast(&x->v);
+}
+
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
 	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
