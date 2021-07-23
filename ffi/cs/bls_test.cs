@@ -212,6 +212,26 @@ namespace mcl
             sigAgg.Sub(sigVec[1]);
             assert("Signature.Sub", sigAgg.IsEqual(sigVec[0]));
         }
+        static void TestMulVec()
+        {
+            Console.WriteLine("TestMulVec");
+            int n = 10;
+            const string m = "abc";
+            SecretKey[] secVec = new SecretKey[n];
+            PublicKey[] pubVec = new PublicKey[n];
+            Signature[] sigVec = new Signature[n];
+            SecretKey[] frVec = new SecretKey[n];
+
+            for (int i = 0; i < n; i++) {
+                secVec[i].SetByCSPRNG();
+                pubVec[i] = secVec[i].GetPublicKey();
+                sigVec[i] = secVec[i].Sign(m);
+                frVec[i].SetByCSPRNG();
+            }
+            PublicKey aggPub = MulVec(pubVec, frVec);
+            Signature aggSig = MulVec(sigVec, frVec);
+            assert("mulVec", aggPub.Verify(aggSig, m));
+        }
         static void Main(string[] args) {
             try {
                 int[] curveTypeTbl = { BN254, BLS12_381 };
@@ -224,6 +244,7 @@ namespace mcl
                     TestSign();
                     TestSharing();
                     TestAggregate();
+                    TestMulVec();
                     if (err == 0) {
                         Console.WriteLine("all tests succeed");
                     } else {
