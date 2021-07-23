@@ -60,6 +60,10 @@ namespace mcl
         [DllImport(dllName)] public static extern void blsSecretKeyNeg(ref SecretKey x);
         [DllImport(dllName)] public static extern void blsPublicKeyNeg(ref PublicKey x);
         [DllImport(dllName)] public static extern void blsSignatureNeg(ref Signature x);
+        // mul Fr
+        [DllImport(dllName)] public static extern void blsSecretKeyMul(ref SecretKey sec, in SecretKey rhs);
+        [DllImport(dllName)] public static extern void blsPublicKeyMul(ref PublicKey pub, in SecretKey rhs);
+        [DllImport(dllName)] public static extern void blsSignatureMul(ref Signature sig, in SecretKey rhs);
 
         // zero
         [DllImport(dllName)] public static extern int blsSecretKeyIsZero(in SecretKey x);
@@ -230,6 +234,10 @@ namespace mcl
             {
                 blsSecretKeyNeg(ref this);
             }
+            public void Mul(in SecretKey rhs)
+            {
+                blsSecretKeyMul(ref this, rhs);
+            }
             public void SetByCSPRNG() {
                 blsSecretKeySetByCSPRNG(ref this);
             }
@@ -318,6 +326,10 @@ namespace mcl
             {
                 blsPublicKeyNeg(ref this);
             }
+            public void Mul(in SecretKey rhs)
+            {
+                blsPublicKeyMul(ref this, rhs);
+            }
             public bool Verify(in Signature sig, string m) {
                 return blsVerify(sig, this, m, (ulong)m.Length) == 1;
             }
@@ -388,6 +400,10 @@ namespace mcl
             public void Neg()
             {
                 blsSignatureNeg(ref this);
+            }
+            public void Mul(in SecretKey rhs)
+            {
+                blsSignatureMul(ref this, rhs);
             }
         }
         public static Signature RecoverSign(in Signature[] sigVec, in Id[] idVec) {

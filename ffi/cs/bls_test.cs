@@ -49,6 +49,13 @@ namespace mcl
                 sec2.Deserialize(buf);
                 assert("serialize", sec2.IsEqual(sec));
             }
+            {
+                SecretKey sec2;
+                sec.SetHexStr("0x11");
+                sec2.SetHexStr("0x23");
+                sec.Mul(sec2);
+                assert("mul", sec.GetHexStr() == "253");
+            }
         }
         static void TestPublicKey() {
             Console.WriteLine("TestPublicKey");
@@ -74,6 +81,17 @@ namespace mcl
                 pub.Add(pub2);
                 assert("pub is zero", pub.IsZero());
             }
+            {
+                PublicKey pub2 = pub;
+                for (int i = 0; i < 5; i++) {
+                    pub2.Add(pub);
+                }
+                PublicKey pub3 = pub;
+                SecretKey t;
+                t.SetHexStr("5");
+                pub3.Mul(t);
+                assert("pub mul", pub2.IsEqual(pub3));
+            }
         }
         static void TestSign() {
             Console.WriteLine("TestSign");
@@ -96,6 +114,17 @@ namespace mcl
                 sig.Neg();
                 sig.Add(sig2);
                 assert("sig is zero", sig.IsZero());
+            }
+            {
+                Signature sig2 = sig;
+                for (int i = 0; i < 5; i++) {
+                    sig2.Add(sig);
+                }
+                Signature sig3 = sig;
+                SecretKey t;
+                t.SetHexStr("5");
+                sig3.Mul(t);
+                assert("sig mul", sig2.IsEqual(sig3));
             }
         }
         static void TestSharing() {
