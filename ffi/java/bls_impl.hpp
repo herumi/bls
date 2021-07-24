@@ -259,20 +259,26 @@ public:
 	{
 		return blsVerify(&self_, &pub.self_, cbuf, bufSize) == 1;
 	}
-	void recover(const SignatureVec& secVec, const SecretKeyVec& idVec);
+	void recover(const SignatureVec& sigVec, const SecretKeyVec& idVec);
+	void aggregate(const SignatureVec& sigVec) throw(std::exception)
+	{
+		const size_t n = sigVec.size();
+		if (n == 0) throw std::runtime_error("aggregate zero");
+		blsAggregateSignature(&self_, &sigVec[0].self_, n);
+	}
 };
 
-void SecretKey::getPublicKey(PublicKey& pub) const
+inline void SecretKey::getPublicKey(PublicKey& pub) const
 {
 	blsGetPublicKey(&pub.self_, &self_);
 }
 
-void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
+inline void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
 {
 	blsSign(&sig.self_, &self_, cbuf, bufSize);
 }
 
-void SecretKey::share(const SecretKeyVec& secVec, const SecretKey& id)
+inline void SecretKey::share(const SecretKeyVec& secVec, const SecretKey& id)
 {
 	int r = blsSecretKeyShare(&self_, &secVec[0].self_, secVec.size(), (const blsId*)&id.self_);
 	if (r != 0) {
@@ -280,7 +286,7 @@ void SecretKey::share(const SecretKeyVec& secVec, const SecretKey& id)
 	}
 }
 
-void PublicKey::share(const PublicKeyVec& pubVec, const SecretKey& id)
+inline void PublicKey::share(const PublicKeyVec& pubVec, const SecretKey& id)
 {
 	int r = blsPublicKeyShare(&self_, &pubVec[0].self_, pubVec.size(), (const blsId*)&id.self_);
 	if (r != 0) {
@@ -288,7 +294,7 @@ void PublicKey::share(const PublicKeyVec& pubVec, const SecretKey& id)
 	}
 }
 
-void SecretKey::recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
+inline void SecretKey::recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
 {
 	size_t n = secVec.size();
 	if (n == 0 || n != idVec.size()) {
@@ -300,7 +306,7 @@ void SecretKey::recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
 	}
 }
 
-void PublicKey::recover(const PublicKeyVec& pubVec, const SecretKeyVec& idVec)
+inline void PublicKey::recover(const PublicKeyVec& pubVec, const SecretKeyVec& idVec)
 {
 	size_t n = pubVec.size();
 	if (n == 0 || n != idVec.size()) {
@@ -312,7 +318,7 @@ void PublicKey::recover(const PublicKeyVec& pubVec, const SecretKeyVec& idVec)
 	}
 }
 
-void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
+inline void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
 {
 	size_t n = sigVec.size();
 	if (n == 0 || n != idVec.size()) {

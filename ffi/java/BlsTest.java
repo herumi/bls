@@ -28,6 +28,13 @@ public class BlsTest {
 			errN++;
 		}
 	}
+	public static void printHex(String msg, byte[] buf) {
+		System.out.print(msg + " ");
+		for (byte b : buf) {
+			System.out.print(String.format("%02x", b));
+		}
+		System.out.println("");
+	}
 	public static void testSecretKey() {
 		SecretKey x = new SecretKey(255);
 		SecretKey y = new SecretKey();
@@ -74,6 +81,9 @@ public class BlsTest {
 		byte[] m2 = new byte[]{1, 2, 3, 4, 5, 6};
 		Signature sig = new Signature();
 		sec.sign(sig, m);
+		printHex("sec", sec.serialize());
+		printHex("pub", pub.serialize());
+		printHex("sig", sig.serialize());
 		assertBool("verify", sig.verify(pub, m));
 		assertBool("!verify", !sig.verify(pub, m2));
 	}
@@ -142,6 +152,26 @@ public class BlsTest {
 			}
 		}
 	}
+	public static void testAggregateSignature() {
+		int n = 10;
+		PublicKey aggPub = new PublicKey();
+		SignatureVec sigVec = new SignatureVec();
+		byte[] msg = new byte[]{1, 2, 3, 5, 9};
+		aggPub.clear();
+		for (int i = 0; i < n; i++) {
+			SecretKey sec = new SecretKey();
+			sec.setByCSPRNG();
+			PublicKey pub = new PublicKey();
+			sec.getPublicKey(pub);
+			Signature sig = new Signature();
+			sec.sign(sig, msg);
+			aggPub.add(pub);
+			sigVec.add(sig);
+		}
+		Signature aggSig = new Signature();
+		aggSig.aggregate(sigVec);
+		assertBool("aggSig.verify", aggSig.verify(aggPub, msg));
+	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
@@ -150,6 +180,7 @@ public class BlsTest {
 			testPublicKey();
 			testSign();
 			testShare();
+			testAggregateSignature();
 			if (errN == 0) {
 				System.out.println("all test passed");
 			} else {

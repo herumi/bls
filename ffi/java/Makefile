@@ -13,6 +13,9 @@ else
   LDFLAGS+=-lrt
 endif
 CFLAGS+=$(JAVA_INC) -I $(TOP_DIR)/include -I $(MCL_DIR)/include -Wno-strict-aliasing -Wno-deprecated-copy -Wno-cast-qual
+ifeq ($(BLS_ETH),1)
+  CFLAGS+=-DBLS_ETH
+endif
 MCL_LIB=$(TOP_DIR)/lib/libmcl.a
 
 PACKAGE_NAME=com.herumi.bls
@@ -29,10 +32,10 @@ bls_wrap.cxx: bls.i bls_impl.hpp
 $(MCL_LIB):
 	make -C $(MCL_DIR) lib/libmcl.a
 
-obj/bls_c384_256.o:
-	make -C $(MCL_DIR) obj/bls_c384_256.o
+../../obj/bls_c384_256.o:
+	make -C $(TOP_DIR) obj/bls_c384_256.o
 
-$(BLSJAVA_LIB): bls_wrap.cxx ../../obj/bls_c384_256.o #$(MCL_LIB)
+$(BLSJAVA_LIB): bls_wrap.cxx ../../obj/bls_c384_256.o $(MCL_LIB)
 	$(PRE)$(CXX) $< -o $@ $(CFLAGS) $(LDFLAGS) -shared ../../obj/bls_c384_256.o $(MCL_DIR)/lib/libmcl.a
 
 %.class: %.java
@@ -47,5 +50,5 @@ test: BlsTest.class $(BLSJAVA_LIB)
 	$(JAVA_EXE) BlsTest
 
 clean:
-	rm -rf *.class $(BLSJAVA_LIB) $(PACKAGE_DIR)/*.class *_wrap.cxx
+	rm -rf *.class $(BLSJAVA_LIB) $(PACKAGE_DIR)/*.class *_wrap.cxx $(TOP_DIR)/obj/*.o
 
