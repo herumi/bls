@@ -77,6 +77,71 @@ public class BlsTest {
 		assertBool("verify", sig.verify(pub, m));
 		assertBool("!verify", !sig.verify(pub, m2));
 	}
+	public static void testShare() {
+		int k = 3; // fix
+		int n = 5;
+		byte[] msg = new byte[]{3, 2, 4, 2, 5, 3, 4};
+		SecretKeyVec msk = new SecretKeyVec();
+		PublicKeyVec mpk = new PublicKeyVec();
+
+		// setup msk (master secret key) and mpk (master public key)
+		for (int i = 0; i < k; i++) {
+			SecretKey sec = new SecretKey();
+			sec.setByCSPRNG();
+			msk.add(sec);
+			PublicKey pub = new PublicKey();
+			sec.getPublicKey(pub);
+			mpk.add(pub);
+		}
+		// orgSig is signed by secret key
+		Signature orgSig = new Signature();
+		msk.get(0).sign(orgSig, msg);
+		assertBool("verify", orgSig.verify(mpk.get(0), msg));
+		// share
+		SecretKeyVec ids = new SecretKeyVec();
+		SecretKeyVec secVec = new SecretKeyVec();
+		PublicKeyVec pubVec = new PublicKeyVec();
+		SignatureVec sigVec = new SignatureVec();
+		for (int i = 0; i < n; i++) {
+			SecretKey id = new SecretKey();
+			id.setByCSPRNG();
+			ids.add(id);
+			SecretKey sec = new SecretKey();
+			sec.share(msk, ids.get(i));
+			secVec.add(sec);
+			PublicKey pub = new PublicKey();
+			pub.share(mpk, ids.get(i));
+			pubVec.add(pub);
+			Signature sig = new Signature();
+			sec.sign(sig, msg);
+			sigVec.add(sig);
+		}
+		// recover
+		for (int i0 = 0; i0 < n; i0++) {
+			for (int i1 = i0 + 1; i1 < n; i1++) {
+				for (int i2 = i1 + 1; i2 < n; i2++) {
+					SecretKeyVec idVec2 = new SecretKeyVec();
+					PublicKeyVec pubVec2 = new PublicKeyVec();
+					SignatureVec sigVec2 = new SignatureVec();
+					idVec2.add(ids.get(i0));
+					pubVec2.add(pubVec.get(i0));
+					sigVec2.add(sigVec.get(i0));
+					idVec2.add(ids.get(i1));
+					pubVec2.add(pubVec.get(i1));
+					sigVec2.add(sigVec.get(i1));
+					idVec2.add(ids.get(i2));
+					pubVec2.add(pubVec.get(i2));
+					sigVec2.add(sigVec.get(i2));
+					PublicKey pub = new PublicKey();
+					Signature sig = new Signature();
+					pub.recover(pubVec2, idVec2);
+					sig.recover(sigVec2, idVec2);
+					assertBool("recover pub", pub.equals(mpk.get(0)));
+					assertBool("recover sig", sig.equals(orgSig));
+				}
+			}
+		}
+	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
@@ -84,6 +149,7 @@ public class BlsTest {
 			testSecretKey();
 			testPublicKey();
 			testSign();
+			testShare();
 			if (errN == 0) {
 				System.out.println("all test passed");
 			} else {

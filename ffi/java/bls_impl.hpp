@@ -153,7 +153,7 @@ public:
 	}
 	std::string toString() const throw(std::exception)
 	{
-		char buf[256];
+		char buf[512];
 		size_t n = blsPublicKeyGetHexStr(buf, sizeof(buf), &self_);
 		if (n == 0) throw std::runtime_error("err toString");
 		return std::string(buf, n);
@@ -296,7 +296,7 @@ void SecretKey::recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
 	}
 	int r = blsSecretKeyRecover(&self_, &secVec[0].self_, (const blsId*)&idVec[0].self_, n);
 	if (r != 0) {
-		throw std::runtime_error("blsSecretKeyShare");
+		throw std::runtime_error("blsSecretKeyRecover");
 	}
 }
 
@@ -308,7 +308,7 @@ void PublicKey::recover(const PublicKeyVec& pubVec, const SecretKeyVec& idVec)
 	}
 	int r = blsPublicKeyRecover(&self_, &pubVec[0].self_, (const blsId*)&idVec[0].self_, n);
 	if (r != 0) {
-		throw std::runtime_error("blsPublicKeyShare");
+		throw std::runtime_error("blsPublicKeyRecover");
 	}
 }
 
@@ -320,7 +320,7 @@ void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
 	}
 	int r = blsSignatureRecover(&self_, &sigVec[0].self_, (const blsId*)&idVec[0].self_, n);
 	if (r != 0) {
-		throw std::runtime_error("blsSignatureShare");
+		throw std::runtime_error("blsSignatureRecover");
 	}
 }
 
