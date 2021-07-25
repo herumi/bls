@@ -123,6 +123,7 @@ public:
 	{
 		blsSecretKeyNeg(&self_);
 	}
+	void getPublicKey(PublicKey& pub) const;
 	PublicKey getPublicKey() const;
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
@@ -268,10 +269,15 @@ public:
 	}
 };
 
+inline void SecretKey::getPublicKey(PublicKey& pub) const
+{
+	blsGetPublicKey(&pub.self_, &self_);
+}
+
 inline PublicKey SecretKey::getPublicKey() const
 {
 	PublicKey pub;
-	blsGetPublicKey(&pub.self_, &self_);
+	getPublicKey(pub);
 	return pub;
 }
 
@@ -330,6 +336,41 @@ inline void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& i
 	if (r != 0) {
 		throw std::runtime_error("blsSignatureRecover");
 	}
+}
+
+SecretKey share(const SecretKeyVec& secVec, const SecretKey& id)
+{
+	SecretKey sec;
+	sec.share(secVec, id);
+	return sec;
+}
+
+PublicKey share(const PublicKeyVec& pubVec, const SecretKey& id)
+{
+	PublicKey pub;
+	pub.share(pubVec, id);
+	return pub;
+}
+
+SecretKey recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec)
+{
+	SecretKey sec;
+	sec.recover(secVec, idVec);
+	return sec;
+}
+
+PublicKey recover(const PublicKeyVec& secVec, const SecretKeyVec& idVec)
+{
+	PublicKey sec;
+	sec.recover(secVec, idVec);
+	return sec;
+}
+
+Signature recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
+{
+	Signature sig;
+	sig.recover(sigVec, idVec);
+	return sig;
 }
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)

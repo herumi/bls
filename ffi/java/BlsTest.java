@@ -114,11 +114,9 @@ public class BlsTest {
 			SecretKey id = new SecretKey();
 			id.setByCSPRNG();
 			ids.add(id);
-			SecretKey sec = new SecretKey();
-			sec.share(msk, ids.get(i));
+			SecretKey sec = Bls.share(msk, ids.get(i));
 			secVec.add(sec);
-			PublicKey pub = new PublicKey();
-			pub.share(mpk, ids.get(i));
+			PublicKey pub = Bls.share(mpk, ids.get(i));
 			pubVec.add(pub);
 			Signature sig = new Signature();
 			sec.sign(sig, msg);
@@ -140,10 +138,8 @@ public class BlsTest {
 					idVec2.add(ids.get(i2));
 					pubVec2.add(pubVec.get(i2));
 					sigVec2.add(sigVec.get(i2));
-					PublicKey pub = new PublicKey();
-					Signature sig = new Signature();
-					pub.recover(pubVec2, idVec2);
-					sig.recover(sigVec2, idVec2);
+					PublicKey pub = Bls.recover(pubVec2, idVec2);
+					Signature sig = Bls.recover(sigVec2, idVec2);
 					assertBool("recover pub", pub.equals(mpk.get(0)));
 					assertBool("recover sig", sig.equals(orgSig));
 				}
