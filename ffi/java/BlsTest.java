@@ -110,6 +110,9 @@ public class BlsTest {
 		SecretKeyVec secVec = new SecretKeyVec();
 		PublicKeyVec pubVec = new PublicKeyVec();
 		SignatureVec sigVec = new SignatureVec();
+		secVec.reserve(n);
+		pubVec.reserve(n);
+		sigVec.reserve(n);
 		for (int i = 0; i < n; i++) {
 			SecretKey id = new SecretKey();
 			id.setByCSPRNG();
@@ -123,21 +126,21 @@ public class BlsTest {
 			sigVec.add(sig);
 		}
 		// recover
+		SecretKeyVec idVec2 = new SecretKeyVec(k, new SecretKey());
+		PublicKeyVec pubVec2 = new PublicKeyVec(k, new PublicKey());
+		SignatureVec sigVec2 = new SignatureVec(k, new Signature());
 		for (int i0 = 0; i0 < n; i0++) {
 			for (int i1 = i0 + 1; i1 < n; i1++) {
 				for (int i2 = i1 + 1; i2 < n; i2++) {
-					SecretKeyVec idVec2 = new SecretKeyVec();
-					PublicKeyVec pubVec2 = new PublicKeyVec();
-					SignatureVec sigVec2 = new SignatureVec();
-					idVec2.add(ids.get(i0));
-					pubVec2.add(pubVec.get(i0));
-					sigVec2.add(sigVec.get(i0));
-					idVec2.add(ids.get(i1));
-					pubVec2.add(pubVec.get(i1));
-					sigVec2.add(sigVec.get(i1));
-					idVec2.add(ids.get(i2));
-					pubVec2.add(pubVec.get(i2));
-					sigVec2.add(sigVec.get(i2));
+					idVec2.set(0, ids.get(i0));
+					idVec2.set(1, ids.get(i1));
+					idVec2.set(2, ids.get(i2));
+					pubVec2.set(0, pubVec.get(i0));
+					pubVec2.set(1, pubVec.get(i1));
+					pubVec2.set(2, pubVec.get(i2));
+					sigVec2.set(0, sigVec.get(i0));
+					sigVec2.set(1, sigVec.get(i1));
+					sigVec2.set(2, sigVec.get(i2));
 					PublicKey pub = Bls.recover(pubVec2, idVec2);
 					Signature sig = Bls.recover(sigVec2, idVec2);
 					assertBool("recover pub", pub.equals(mpk.get(0)));
@@ -161,8 +164,7 @@ public class BlsTest {
 			aggPub.add(pub);
 			sigVec.add(sig);
 		}
-		Signature aggSig = new Signature();
-		aggSig.aggregate(sigVec);
+		Signature aggSig = Bls.aggregate(sigVec);
 		assertBool("aggSig.verify", aggSig.verify(aggPub, msg));
 	}
 	public static void testCurve(int curveType, String name) {

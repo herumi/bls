@@ -373,6 +373,13 @@ Signature recover(const SignatureVec& sigVec, const SecretKeyVec& idVec)
 	return sig;
 }
 
+Signature aggregate(const SignatureVec& sigVec)
+{
+	Signature sig;
+	sig.aggregate(sigVec);
+	return sig;
+}
+
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
