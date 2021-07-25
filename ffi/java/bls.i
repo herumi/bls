@@ -28,6 +28,9 @@
 #define BN254 0
 #define BLS12_381 5
 
+#define ETH_MODE_OLD 0
+#define ETH_MODE_LATEST 3
+
 %template(SecretKeyVec) std::vector<SecretKey>;
 %template(PublicKeyVec) std::vector<PublicKey>;
 %template(SignatureVec) std::vector<Signature>;

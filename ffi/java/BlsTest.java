@@ -154,6 +154,7 @@ public class BlsTest {
 	public static void testAggregateSignature() {
 		int n = 10;
 		PublicKey aggPub = new PublicKey();
+		PublicKeyVec pubVec = new PublicKeyVec();
 		SignatureVec sigVec = new SignatureVec();
 		byte[] msg = new byte[]{1, 2, 3, 5, 9};
 		aggPub.clear();
@@ -164,15 +165,20 @@ public class BlsTest {
 			Signature sig = new Signature();
 			sec.sign(sig, msg);
 			aggPub.add(pub);
+			pubVec.add(pub);
 			sigVec.add(sig);
 		}
 		Signature aggSig = Bls.aggregate(sigVec);
 		assertBool("aggSig.verify", aggSig.verify(aggPub, msg));
+		assertBool("fastAggregateVerify", aggSig.fastAggregateVerify(pubVec, msg));
 	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
 			Bls.init(curveType);
+			if (Bls.isDefinedBLS_ETH() && curveType == Bls.BLS12_381) {
+				System.out.println("BLS ETH mode");
+			}
 			testSecretKey();
 			testPublicKey();
 			testSign();

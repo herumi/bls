@@ -16,6 +16,16 @@ void init(int curveType) throw(std::exception)
 	}
 }
 
+bool isDefinedBLS_ETH()
+{
+#ifdef BLS_ETH
+	return true;
+#else
+	return false;
+#endif
+}
+
+
 class SecretKey;
 class PublicKey;
 class Signature;
@@ -135,6 +145,7 @@ class PublicKey {
 	blsPublicKey self_;
 	friend class SecretKey;
 	friend class Signature;
+	friend void setGeneratorOfPublicKey(const PublicKey& pub) throw(std::exception);
 public:
 	PublicKey() {}
 	PublicKey(const PublicKey& rhs) : self_(rhs.self_) {}
@@ -269,6 +280,12 @@ public:
 		if (n == 0) throw std::runtime_error("aggregate zero");
 		blsAggregateSignature(&self_, &sigVec[0].self_, n);
 	}
+	bool fastAggregateVerify(const PublicKeyVec& pubVec, const char *cbuf, size_t bufSize) const
+	{
+		const size_t n = pubVec.size();
+		if (n == 0) return false;
+		return blsFastAggregateVerify(&self_, &pubVec[0].self_, n, cbuf, bufSize) == 1;
+	}
 };
 
 inline void SecretKey::getPublicKey(PublicKey& pub) const
@@ -396,6 +413,27 @@ Signature aggregate(const SignatureVec& sigVec)
 	Signature sig;
 	sig.aggregate(sigVec);
 	return sig;
+}
+
+void setETHmode(int mode) throw(std::exception)
+{
+	int r = blsSetETHmode(mode);
+	if (r != 0) {
+		throw std::runtime_error("blsSetETHmode");
+	}
+}
+
+void setETHserialization(bool ETH)
+{
+	blsSetETHserialization(ETH);
+}
+
+void setGeneratorOfPublicKey(const PublicKey& pub) throw(std::exception)
+{
+	int r = blsSetGeneratorOfPublicKey(&pub.self_);
+	if (r != 0) {
+		throw std::runtime_error("blsSetGeneratorOfPublicKey");
+	}
 }
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
