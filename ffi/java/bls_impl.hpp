@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <sstream>
 #include <vector>
+#include <set>
+#include <bls/msg.hpp>
 
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -24,7 +26,6 @@ bool isDefinedBLS_ETH()
 	return false;
 #endif
 }
-
 
 class SecretKey;
 class PublicKey;
@@ -287,13 +288,17 @@ public:
 		if (n == 0) return false;
 		return blsFastAggregateVerify(&self_, &pubVec[0].self_, n, cbuf, bufSize) == 1;
 	}
-	bool aggregateVerifyNoCheck(const PublicKeyVec& pubVec, const char *cbuf, size_t bufSize)
+	bool aggregateVerifyNoCheck(const PublicKeyVec& pubVec, const char *cbuf, size_t bufSize) const
 	{
 		const size_t n = pubVec.size();
 		if (n == 0) return false;
-		const size_t MSG_SIZE = 32;
-		if (bufSize != MSG_SIZE * n) return false;
-		return blsAggregateVerifyNoCheck(&self_, &pubVec[0].self_, cbuf, MSG_SIZE, n) == 1;
+		if (bufSize != bls_util::MSG_SIZE * n) return false;
+		return blsAggregateVerifyNoCheck(&self_, &pubVec[0].self_, cbuf, bls_util::MSG_SIZE, n) == 1;
+	}
+	bool aggregateVerify(const PublicKeyVec& pubVec, const char *cbuf, size_t bufSize) const
+	{
+		if (!bls_util::areAllMsgDifferent(cbuf, bufSize)) return false;
+		return aggregateVerifyNoCheck(pubVec, cbuf, bufSize);
 	}
 };
 

@@ -168,16 +168,15 @@ public class BlsTest {
 		assertBool("aggSig.verify", aggSig.verify(aggPub, msg));
 		assertBool("fastAggregateVerify", aggSig.fastAggregateVerify(pubVec, msg));
 	}
-	public static void testAggregateVerify() {
-		System.out.println("testAggregateVerify");
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		final int n = 10;
-		PublicKeyVec pubVec = new PublicKeyVec();
-		SignatureVec sigVec = new SignatureVec();
+	public static void addVec(ByteArrayOutputStream os, PublicKeyVec pubVec, SignatureVec sigVec, int n, boolean isDiff) {
 		for (int i = 0; i < n; i++) {
 			byte[] msg = new byte[Bls.MSG_SIZE];
-			msg[0] = (byte)i;
-			msg[1] = (byte)(i + 2);
+			if (isDiff) {
+				msg[0] = (byte)i;
+				msg[1] = (byte)(i + 2);
+			} else {
+				msg[0] = (byte)(i % 4);
+			}
 			try {
 				os.write(msg);
 			} catch (IOException e) {
@@ -189,9 +188,25 @@ public class BlsTest {
 			pubVec.add(sec.getPublicKey());
 			sigVec.add(sec.sign(msg));
 		}
-		byte[] msgVec = os.toByteArray();
-		Signature aggSig = Bls.aggregate(sigVec);
-		assertBool("aggregateVerify", aggSig.aggregateVerifyNoCheck(pubVec, msgVec));
+	}
+	public static void testAggregateVerify() {
+		System.out.println("testAggregateVerify");
+		final int n = 10;
+		for (int i = 0; i < 2; i++) {
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			boolean isDiff = i == 0;
+			PublicKeyVec pubVec = new PublicKeyVec();
+			SignatureVec sigVec = new SignatureVec();
+			addVec(os, pubVec, sigVec, n, isDiff);
+			byte[] msgVec = os.toByteArray();
+			Signature aggSig = Bls.aggregate(sigVec);
+			assertBool("aggregateVerifyNoCheck", aggSig.aggregateVerifyNoCheck(pubVec, msgVec));
+			if (isDiff) {
+				assertBool("aggregateVerify", aggSig.aggregateVerify(pubVec, msgVec));
+			} else {
+				assertBool("!aggregateVerify", !aggSig.aggregateVerify(pubVec, msgVec));
+			}
+		}
 	}
 	public static void testCurve(int curveType, String name) {
 		try {
