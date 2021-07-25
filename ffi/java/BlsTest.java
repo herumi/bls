@@ -75,8 +75,7 @@ public class BlsTest {
 	public static void testSign() {
 		SecretKey sec = new SecretKey();
 		sec.setByCSPRNG();
-		PublicKey pub = new PublicKey();
-		sec.getPublicKey(pub);
+		PublicKey pub = sec.getPublicKey();
 		byte[] m = new byte[]{1, 2, 3, 4, 5};
 		byte[] m2 = new byte[]{1, 2, 3, 4, 5, 6};
 		Signature sig = new Signature();
@@ -99,8 +98,7 @@ public class BlsTest {
 			SecretKey sec = new SecretKey();
 			sec.setByCSPRNG();
 			msk.add(sec);
-			PublicKey pub = new PublicKey();
-			sec.getPublicKey(pub);
+			PublicKey pub = sec.getPublicKey();
 			mpk.add(pub);
 		}
 		// orgSig is signed by secret key
@@ -161,8 +159,7 @@ public class BlsTest {
 		for (int i = 0; i < n; i++) {
 			SecretKey sec = new SecretKey();
 			sec.setByCSPRNG();
-			PublicKey pub = new PublicKey();
-			sec.getPublicKey(pub);
+			PublicKey pub = sec.getPublicKey();
 			Signature sig = new Signature();
 			sec.sign(sig, msg);
 			aggPub.add(pub);

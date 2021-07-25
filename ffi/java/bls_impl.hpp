@@ -123,7 +123,7 @@ public:
 	{
 		blsSecretKeyNeg(&self_);
 	}
-	void getPublicKey(PublicKey& pub) const;
+	PublicKey getPublicKey() const;
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
 	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
@@ -268,9 +268,11 @@ public:
 	}
 };
 
-inline void SecretKey::getPublicKey(PublicKey& pub) const
+inline PublicKey SecretKey::getPublicKey() const
 {
+	PublicKey pub;
 	blsGetPublicKey(&pub.self_, &self_);
+	return pub;
 }
 
 inline void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
