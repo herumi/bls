@@ -80,8 +80,7 @@ public class BlsTest {
 		PublicKey pub = sec.getPublicKey();
 		byte[] m = new byte[]{1, 2, 3, 4, 5};
 		byte[] m2 = new byte[]{1, 2, 3, 4, 5, 6};
-		Signature sig = new Signature();
-		sec.sign(sig, m);
+		Signature sig = sec.sign(m);
 		printHex("sec", sec.serialize());
 		printHex("pub", pub.serialize());
 		printHex("sig", sig.serialize());
@@ -104,8 +103,7 @@ public class BlsTest {
 			mpk.add(pub);
 		}
 		// orgSig is signed by secret key
-		Signature orgSig = new Signature();
-		msk.get(0).sign(orgSig, msg);
+		Signature orgSig = msk.get(0).sign(msg);
 		assertBool("verify", orgSig.verify(mpk.get(0), msg));
 		// share
 		SecretKeyVec ids = new SecretKeyVec();
@@ -123,8 +121,7 @@ public class BlsTest {
 			secVec.add(sec);
 			PublicKey pub = Bls.share(mpk, ids.get(i));
 			pubVec.add(pub);
-			Signature sig = new Signature();
-			sec.sign(sig, msg);
+			Signature sig = sec.sign(msg);
 			sigVec.add(sig);
 		}
 		// recover
@@ -162,8 +159,7 @@ public class BlsTest {
 			SecretKey sec = new SecretKey();
 			sec.setByCSPRNG();
 			PublicKey pub = sec.getPublicKey();
-			Signature sig = new Signature();
-			sec.sign(sig, msg);
+			Signature sig = sec.sign(msg);
 			aggPub.add(pub);
 			pubVec.add(pub);
 			sigVec.add(sig);

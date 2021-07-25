@@ -136,6 +136,7 @@ public:
 	void getPublicKey(PublicKey& pub) const;
 	PublicKey getPublicKey() const;
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
+	Signature sign(const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
 	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
 	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
@@ -303,6 +304,13 @@ inline PublicKey SecretKey::getPublicKey() const
 inline void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) const
 {
 	blsSign(&sig.self_, &self_, cbuf, bufSize);
+}
+
+inline Signature SecretKey::sign(const char *cbuf, size_t bufSize) const
+{
+	Signature sig;
+	sign(sig, cbuf, bufSize);
+	return sig;
 }
 
 inline void SecretKey::share(const SecretKeyVec& secVec, const SecretKey& id)
