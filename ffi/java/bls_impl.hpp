@@ -287,6 +287,14 @@ public:
 		if (n == 0) return false;
 		return blsFastAggregateVerify(&self_, &pubVec[0].self_, n, cbuf, bufSize) == 1;
 	}
+	bool aggregateVerifyNoCheck(const PublicKeyVec& pubVec, const char *cbuf, size_t bufSize)
+	{
+		const size_t n = pubVec.size();
+		if (n == 0) return false;
+		const size_t MSG_SIZE = 32;
+		if (bufSize != MSG_SIZE * n) return false;
+		return blsAggregateVerifyNoCheck(&self_, &pubVec[0].self_, cbuf, MSG_SIZE, n) == 1;
+	}
 };
 
 inline void SecretKey::getPublicKey(PublicKey& pub) const

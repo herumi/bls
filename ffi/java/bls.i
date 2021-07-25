@@ -31,6 +31,8 @@
 #define ETH_MODE_OLD 0
 #define ETH_MODE_LATEST 3
 
+#define MSG_SIZE 32
+
 %template(SecretKeyVec) std::vector<SecretKey>;
 %template(PublicKeyVec) std::vector<PublicKey>;
 %template(SignatureVec) std::vector<Signature>;

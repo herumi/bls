@@ -168,18 +168,44 @@ public class BlsTest {
 		assertBool("aggSig.verify", aggSig.verify(aggPub, msg));
 		assertBool("fastAggregateVerify", aggSig.fastAggregateVerify(pubVec, msg));
 	}
+	public static void testAggregateVerify() {
+		System.out.println("testAggregateVerify");
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		final int n = 10;
+		PublicKeyVec pubVec = new PublicKeyVec();
+		SignatureVec sigVec = new SignatureVec();
+		for (int i = 0; i < n; i++) {
+			byte[] msg = new byte[Bls.MSG_SIZE];
+			msg[0] = (byte)i;
+			msg[1] = (byte)(i + 2);
+			try {
+				os.write(msg);
+			} catch (IOException e) {
+				assertBool("os.write", false);
+				return;
+			}
+			SecretKey sec = new SecretKey();
+			sec.setByCSPRNG();
+			pubVec.add(sec.getPublicKey());
+			sigVec.add(sec.sign(msg));
+		}
+		byte[] msgVec = os.toByteArray();
+		Signature aggSig = Bls.aggregate(sigVec);
+		assertBool("aggregateVerify", aggSig.aggregateVerifyNoCheck(pubVec, msgVec));
+	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
 			Bls.init(curveType);
-			if (Bls.isDefinedBLS_ETH() && curveType == Bls.BLS12_381) {
-				System.out.println("BLS ETH mode");
-			}
 			testSecretKey();
 			testPublicKey();
 			testSign();
 			testShare();
 			testAggregateSignature();
+			if (Bls.isDefinedBLS_ETH() && curveType == Bls.BLS12_381) {
+				System.out.println("BLS ETH mode");
+				testAggregateVerify();
+			}
 			if (errN == 0) {
 				System.out.println("all test passed");
 			} else {
