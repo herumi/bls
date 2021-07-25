@@ -67,6 +67,8 @@ public class BlsTest {
 		y.setInt(7);
 		x.mul(y);
 		assertEquals("x.mul", x.toString(), "63");
+		x.setHashOf(new byte[]{1, 2, 3});
+		System.out.println("hashOf=" + x.toString(16));
 	}
 	public static void testPublicKey() {
 		PublicKey x = new PublicKey();

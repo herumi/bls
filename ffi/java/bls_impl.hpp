@@ -128,6 +128,7 @@ public:
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
 	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
+	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
 };
 
 class PublicKey {
@@ -261,6 +262,7 @@ public:
 		return blsVerify(&self_, &pub.self_, cbuf, bufSize) == 1;
 	}
 	void recover(const SignatureVec& sigVec, const SecretKeyVec& idVec);
+	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
 	void aggregate(const SignatureVec& sigVec) throw(std::exception)
 	{
 		const size_t n = sigVec.size();
@@ -335,6 +337,22 @@ inline void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& i
 	int r = blsSignatureRecover(&self_, &sigVec[0].self_, (const blsId*)&idVec[0].self_, n);
 	if (r != 0) {
 		throw std::runtime_error("blsSignatureRecover");
+	}
+}
+
+inline void SecretKey::setHashOf(const char *cbuf, size_t bufSize) throw(std::exception)
+{
+	int r = blsHashToSecretKey(&self_, cbuf, bufSize);
+	if (r != 0) {
+		throw std::runtime_error("blsHashToSecretKey");
+	}
+}
+
+inline void Signature::setHashOf(const char *cbuf, size_t bufSize) throw(std::exception)
+{
+	int r = blsHashToSignature(&self_, cbuf, bufSize);
+	if (r != 0) {
+		throw std::runtime_error("blsHashToSignature");
 	}
 }
 
