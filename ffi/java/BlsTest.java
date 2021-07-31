@@ -28,12 +28,27 @@ public class BlsTest {
 			errN++;
 		}
 	}
-	public static void printHex(String msg, byte[] buf) {
-		System.out.print(msg + " ");
+	public static String byteToHexStr(byte[] buf) {
+		StringBuilder sb = new StringBuilder();
 		for (byte b : buf) {
-			System.out.print(String.format("%02x", b));
+			sb.append(String.format("%02x", b));
 		}
-		System.out.println("");
+		return sb.toString();
+	}
+	public static byte[] hexStrToByte(String hex) {
+		int n = hex.length();
+		if ((n % 2) != 0) throw new IllegalArgumentException("hexStrToByte odd length");
+		n /= 2;
+		byte[] buf = new byte[n];
+		for (int i = 0; i < n; i++) {
+			int H = Character.digit(hex.charAt(i * 2 + 0), 16);
+			int L = Character.digit(hex.charAt(i * 2 + 1), 16);
+			buf[i] = (byte)(H * 16 + L);
+		}
+		return buf;
+	}
+	public static void printHex(String msg, byte[] buf) {
+		System.out.print(msg + " " + byteToHexStr(buf));
 	}
 	public static void testSecretKey() {
 		SecretKey x = new SecretKey(255);
@@ -189,6 +204,14 @@ public class BlsTest {
 			sigVec.add(sec.sign(msg));
 		}
 	}
+	public static void testHex() {
+		System.out.println("testHex");
+		byte[] b = new byte[]{1, 2, 3, 4, 0x12, (byte)0xff };
+		String s = byteToHexStr(b);
+		assertEquals("byteToHexStr", s, "0102030412ff");
+		byte[] b2 = hexStrToByte(s);
+		assertBool("hexStrToByte", java.util.Arrays.equals(b2, b));
+	}
 	public static void testAggregateVerify() {
 		System.out.println("testAggregateVerify");
 		final int n = 10;
@@ -212,6 +235,7 @@ public class BlsTest {
 		try {
 			System.out.println("curve=" + name);
 			Bls.init(curveType);
+			testHex();
 			testSecretKey();
 			testPublicKey();
 			testSign();
