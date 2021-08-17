@@ -70,6 +70,9 @@ int blsSetETHmode(int mode)
 {
 	if (g_curveType != MCL_BLS12_381) return -1;
 	switch (mode) {
+    case BLS_ETH_MODE_OLD:
+        g_irtfHashAndMap = false;
+        break;
 	case BLS_ETH_MODE_DRAFT_07:
 		g_irtfHashAndMap = true;
 		break;
