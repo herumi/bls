@@ -60,7 +60,7 @@ public:
 		} else if (base == 16) {
 			n = blsSecretKeySetHexStr(&self_, str.c_str(), len);
 		}
-		if (n == 0 || n != len) throw std::runtime_error("bad str");
+		if (n != 0) throw std::runtime_error("bad str");
 	}
 	void setInt(int x)
 	{
@@ -160,7 +160,7 @@ public:
 	{
 		const size_t len = str.size();
 		size_t n = blsPublicKeySetHexStr(&self_, str.c_str(), len);
-		if (n == 0 || n != len) throw std::runtime_error("bad str");
+		if (n != 0) throw std::runtime_error("bad str");
 	}
 	void clear()
 	{
@@ -225,7 +225,7 @@ public:
 	{
 		const size_t len = str.size();
 		size_t n = blsSignatureSetHexStr(&self_, str.c_str(), len);
-		if (n == 0 || n != len) throw std::runtime_error("bad str");
+		if (n != 0) throw std::runtime_error("bad str");
 	}
 	void clear()
 	{
