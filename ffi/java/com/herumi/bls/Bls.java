@@ -45,12 +45,12 @@ public class Bls implements BlsConstants {
     return new Signature(BlsJNI.aggregate(SignatureVec.getCPtr(sigVec), sigVec), true);
   }
 
-  public static void setETHmode(int mode) {
-    BlsJNI.setETHmode(mode);
-  }
-
   public static void setETHserialization(boolean ETH) {
     BlsJNI.setETHserialization(ETH);
+  }
+
+  public static void setMapToMode(int mode) {
+    BlsJNI.setMapToMode(mode);
   }
 
 }

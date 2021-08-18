@@ -28,8 +28,8 @@
 #define BN254 0
 #define BLS12_381 5
 
-#define ETH_MODE_OLD 0
-#define ETH_MODE_LATEST 3
+#define MAP_TO_MODE_ORIGINAL 0
+#define MAP_TO_MODE_HASH_TO_CURVE 5
 
 #define MSG_SIZE 32
 

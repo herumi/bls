@@ -11,7 +11,7 @@ package com.herumi.bls;
 public interface BlsConstants {
   public final static int BN254 = 0;
   public final static int BLS12_381 = 5;
-  public final static int ETH_MODE_OLD = 0;
-  public final static int ETH_MODE_LATEST = 3;
+  public final static int MAP_TO_MODE_ORIGINAL = 0;
+  public final static int MAP_TO_MODE_HASH_TO_CURVE = 5;
   public final static int MSG_SIZE = 32;
 }

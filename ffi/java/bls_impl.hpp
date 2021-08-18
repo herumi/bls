@@ -436,14 +436,6 @@ Signature aggregate(const SignatureVec& sigVec)
 	return sig;
 }
 
-void setETHmode(int mode) throw(std::exception)
-{
-	int r = blsSetETHmode(mode);
-	if (r != 0) {
-		throw std::runtime_error("blsSetETHmode");
-	}
-}
-
 void setETHserialization(bool ETH)
 {
 	blsSetETHserialization(ETH);
@@ -454,6 +446,19 @@ void setGeneratorOfPublicKey(const PublicKey& pub) throw(std::exception)
 	int r = blsSetGeneratorOfPublicKey(&pub.self_);
 	if (r != 0) {
 		throw std::runtime_error("blsSetGeneratorOfPublicKey");
+	}
+}
+
+/*
+    change map-to-function
+    MAP_TO_MODE_ORIGINAL ; default if BLS_ETH is not defined (for backward compatibility)
+    MAP_TO_MODE_HASH_TO_CURVE ; default if BLS_ETH=1 (defined in irtf)
+*/
+void setMapToMode(int mode)
+{
+	int r = blsSetMapToMode(mode);
+	if (r != 0) {
+		throw std::runtime_error("blsSetMapToMode");
 	}
 }
 

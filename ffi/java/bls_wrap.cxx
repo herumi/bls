@@ -1998,21 +1998,6 @@ SWIGEXPORT jlong JNICALL Java_com_herumi_bls_BlsJNI_aggregate(JNIEnv *jenv, jcla
 }
 
 
-SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_setETHmode(JNIEnv *jenv, jclass jcls, jint jarg1) {
-  int arg1 ;
-  
-  (void)jenv;
-  (void)jcls;
-  arg1 = (int)jarg1; 
-  try {
-    setETHmode(arg1);
-  } catch(std::exception &_e) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, (&_e)->what());
-    return ;
-  }
-}
-
-
 SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_setETHserialization(JNIEnv *jenv, jclass jcls, jboolean jarg1) {
   bool arg1 ;
   
@@ -2020,6 +2005,16 @@ SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_setETHserialization(JNIEnv *j
   (void)jcls;
   arg1 = jarg1 ? true : false; 
   setETHserialization(arg1);
+}
+
+
+SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_setMapToMode(JNIEnv *jenv, jclass jcls, jint jarg1) {
+  int arg1 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = (int)jarg1; 
+  setMapToMode(arg1);
 }
 
 
