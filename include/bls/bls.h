@@ -107,6 +107,14 @@ BLS_DLL_API int blsSetETHmode(int mode);
 */
 BLS_DLL_API void blsSetETHserialization(int ETHserialization);
 
+/*
+	set map-to-function to mode
+	MCL_MAP_TO_MODE_ORIGINAL ; for backward compatibility
+	MCL_MAP_TO_MODE_HASH_TO_CURVE ; irtf-cfrg-hash-to-curve
+	return 0 if success else -1
+*/
+BLS_DLL_API int blsSetMapToMode(int mode);
+
 BLS_DLL_API void blsIdSetInt(blsId *id, int x);
 
 // sec = buf & (1 << bitLen(r)) - 1

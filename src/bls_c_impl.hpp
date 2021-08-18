@@ -82,6 +82,11 @@ int blsSetETHmode(int mode)
 	return 0;
 }
 
+int blsSetMapToMode(int mode)
+{
+	return mclBn_setMapToMode(mode);
+}
+
 int blsInit(int curve, int compiledTimeVar)
 {
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
