@@ -85,6 +85,8 @@ public class BlsJNI {
   public final static native long aggregate(long jarg1, SignatureVec jarg1_);
   public final static native void setETHserialization(boolean jarg1);
   public final static native void setMapToMode(int jarg1);
+  public final static native void verifySignatureOrder(boolean jarg1);
+  public final static native void verifyPublicKeyOrder(boolean jarg1);
   public final static native long new_SecretKeyVec__SWIG_0();
   public final static native long new_SecretKeyVec__SWIG_1(long jarg1, SecretKeyVec jarg1_);
   public final static native long SecretKeyVec_capacity(long jarg1, SecretKeyVec jarg1_);

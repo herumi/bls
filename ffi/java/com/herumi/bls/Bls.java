@@ -53,4 +53,12 @@ public class Bls implements BlsConstants {
     BlsJNI.setMapToMode(mode);
   }
 
+  public static void verifySignatureOrder(boolean doVerify) {
+    BlsJNI.verifySignatureOrder(doVerify);
+  }
+
+  public static void verifyPublicKeyOrder(boolean doVerify) {
+    BlsJNI.verifyPublicKeyOrder(doVerify);
+  }
+
 }

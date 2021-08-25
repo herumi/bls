@@ -2018,6 +2018,26 @@ SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_setMapToMode(JNIEnv *jenv, jc
 }
 
 
+SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_verifySignatureOrder(JNIEnv *jenv, jclass jcls, jboolean jarg1) {
+  bool arg1 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = jarg1 ? true : false; 
+  verifySignatureOrder(arg1);
+}
+
+
+SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_verifyPublicKeyOrder(JNIEnv *jenv, jclass jcls, jboolean jarg1) {
+  bool arg1 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = jarg1 ? true : false; 
+  verifyPublicKeyOrder(arg1);
+}
+
+
 SWIGEXPORT jlong JNICALL Java_com_herumi_bls_BlsJNI_new_1SecretKeyVec_1_1SWIG_10(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   std::vector< SecretKey > *result = 0 ;

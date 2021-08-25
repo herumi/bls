@@ -462,6 +462,16 @@ void setMapToMode(int mode)
 	}
 }
 
+void verifySignatureOrder(bool doVerify)
+{
+	blsSignatureVerifyOrder(doVerify);
+}
+
+void verifyPublicKeyOrder(bool doVerify)
+{
+	blsPublicKeyVerifyOrder(doVerify);
+}
+
 #if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
