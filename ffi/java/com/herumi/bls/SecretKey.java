@@ -126,8 +126,16 @@ public class SecretKey {
     BlsJNI.SecretKey_sign__SWIG_0(swigCPtr, this, Signature.getCPtr(sig), sig, cbuf);
   }
 
+  public void signHash(Signature sig, byte[] cbuf) {
+    BlsJNI.SecretKey_signHash__SWIG_0(swigCPtr, this, Signature.getCPtr(sig), sig, cbuf);
+  }
+
   public Signature sign(byte[] cbuf) {
     return new Signature(BlsJNI.SecretKey_sign__SWIG_1(swigCPtr, this, cbuf), true);
+  }
+
+  public Signature signHash(byte[] cbuf) {
+    return new Signature(BlsJNI.SecretKey_signHash__SWIG_1(swigCPtr, this, cbuf), true);
   }
 
   public void share(SecretKeyVec secVec, SecretKey id) {

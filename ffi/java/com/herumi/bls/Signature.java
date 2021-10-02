@@ -90,6 +90,10 @@ public class Signature {
     return BlsJNI.Signature_verify(swigCPtr, this, PublicKey.getCPtr(pub), pub, cbuf);
   }
 
+  public boolean verifyHash(PublicKey pub, byte[] cbuf) {
+    return BlsJNI.Signature_verifyHash(swigCPtr, this, PublicKey.getCPtr(pub), pub, cbuf);
+  }
+
   public void recover(SignatureVec sigVec, SecretKeyVec idVec) {
     BlsJNI.Signature_recover(swigCPtr, this, SignatureVec.getCPtr(sigVec), sigVec, SecretKeyVec.getCPtr(idVec), idVec);
   }

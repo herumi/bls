@@ -34,7 +34,9 @@ public class BlsJNI {
   public final static native void SecretKey_getPublicKey__SWIG_0(long jarg1, SecretKey jarg1_, long jarg2, PublicKey jarg2_);
   public final static native long SecretKey_getPublicKey__SWIG_1(long jarg1, SecretKey jarg1_);
   public final static native void SecretKey_sign__SWIG_0(long jarg1, SecretKey jarg1_, long jarg2, Signature jarg2_, byte[] jarg3);
+  public final static native void SecretKey_signHash__SWIG_0(long jarg1, SecretKey jarg1_, long jarg2, Signature jarg2_, byte[] jarg3);
   public final static native long SecretKey_sign__SWIG_1(long jarg1, SecretKey jarg1_, byte[] jarg2);
+  public final static native long SecretKey_signHash__SWIG_1(long jarg1, SecretKey jarg1_, byte[] jarg2);
   public final static native void SecretKey_share(long jarg1, SecretKey jarg1_, long jarg2, SecretKeyVec jarg2_, long jarg3, SecretKey jarg3_);
   public final static native void SecretKey_recover(long jarg1, SecretKey jarg1_, long jarg2, SecretKeyVec jarg2_, long jarg3, SecretKeyVec jarg3_);
   public final static native void SecretKey_setHashOf(long jarg1, SecretKey jarg1_, byte[] jarg2);
@@ -70,6 +72,7 @@ public class BlsJNI {
   public final static native void Signature_mul(long jarg1, Signature jarg1_, long jarg2, SecretKey jarg2_);
   public final static native void Signature_neg(long jarg1, Signature jarg1_);
   public final static native boolean Signature_verify(long jarg1, Signature jarg1_, long jarg2, PublicKey jarg2_, byte[] jarg3);
+  public final static native boolean Signature_verifyHash(long jarg1, Signature jarg1_, long jarg2, PublicKey jarg2_, byte[] jarg3);
   public final static native void Signature_recover(long jarg1, Signature jarg1_, long jarg2, SignatureVec jarg2_, long jarg3, SecretKeyVec jarg3_);
   public final static native void Signature_setHashOf(long jarg1, Signature jarg1_, byte[] jarg2);
   public final static native void Signature_aggregate(long jarg1, Signature jarg1_, long jarg2, SignatureVec jarg2_);

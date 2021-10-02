@@ -137,7 +137,9 @@ public:
 	void getPublicKey(PublicKey& pub) const;
 	PublicKey getPublicKey() const;
 	void sign(Signature& sig, const char *cbuf, size_t bufSize) const;
+	void signHash(Signature& sig, const char *cbuf, size_t bufSize) const;
 	Signature sign(const char *cbuf, size_t bufSize) const;
+	Signature signHash(const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
 	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
 	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
@@ -274,6 +276,10 @@ public:
 	{
 		return blsVerify(&self_, &pub.self_, cbuf, bufSize) == 1;
 	}
+	bool verifyHash(const PublicKey& pub, const char *cbuf, size_t bufSize) const
+	{
+		return blsVerifyHash(&self_, &pub.self_, cbuf, bufSize) == 1;
+	}
 	void recover(const SignatureVec& sigVec, const SecretKeyVec& idVec);
 	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
 	void aggregate(const SignatureVec& sigVec) throw(std::exception)
@@ -319,10 +325,22 @@ inline void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) co
 	blsSign(&sig.self_, &self_, cbuf, bufSize);
 }
 
+inline void SecretKey::signHash(Signature& sig, const char *cbuf, size_t bufSize) const
+{
+	blsSignHash(&sig.self_, &self_, cbuf, bufSize);
+}
+
 inline Signature SecretKey::sign(const char *cbuf, size_t bufSize) const
 {
 	Signature sig;
 	sign(sig, cbuf, bufSize);
+	return sig;
+}
+
+inline Signature SecretKey::signHash(const char *cbuf, size_t bufSize) const
+{
+	Signature sig;
+	signHash(sig, cbuf, bufSize);
 	return sig;
 }
 

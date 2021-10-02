@@ -919,6 +919,39 @@ SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_SecretKey_1sign_1_1SWIG_10(JN
 }
 
 
+SWIGEXPORT void JNICALL Java_com_herumi_bls_BlsJNI_SecretKey_1signHash_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_, jbyteArray jarg3) {
+  SecretKey *arg1 = (SecretKey *) 0 ;
+  Signature *arg2 = 0 ;
+  char *arg3 = (char *) 0 ;
+  size_t arg4 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(SecretKey **)&jarg1; 
+  arg2 = *(Signature **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "Signature & reference is null");
+    return ;
+  } 
+  {
+    if (jarg3) {
+      arg3 = (char *) jenv->GetByteArrayElements(jarg3, 0);
+      arg4 = (size_t) jenv->GetArrayLength(jarg3);
+    } else {
+      arg3 = 0;
+      arg4 = 0;
+    }
+  }
+  ((SecretKey const *)arg1)->signHash(*arg2,(char const *)arg3,arg4);
+  {
+    if (jarg3) jenv->ReleaseByteArrayElements(jarg3, (jbyte *)arg3, 0);
+  }
+  
+}
+
+
 SWIGEXPORT jlong JNICALL Java_com_herumi_bls_BlsJNI_SecretKey_1sign_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jbyteArray jarg2) {
   jlong jresult = 0 ;
   SecretKey *arg1 = (SecretKey *) 0 ;
@@ -940,6 +973,36 @@ SWIGEXPORT jlong JNICALL Java_com_herumi_bls_BlsJNI_SecretKey_1sign_1_1SWIG_11(J
     }
   }
   result = ((SecretKey const *)arg1)->sign((char const *)arg2,arg3);
+  *(Signature **)&jresult = new Signature((const Signature &)result); 
+  {
+    if (jarg2) jenv->ReleaseByteArrayElements(jarg2, (jbyte *)arg2, 0);
+  }
+  
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_com_herumi_bls_BlsJNI_SecretKey_1signHash_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jbyteArray jarg2) {
+  jlong jresult = 0 ;
+  SecretKey *arg1 = (SecretKey *) 0 ;
+  char *arg2 = (char *) 0 ;
+  size_t arg3 ;
+  Signature result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(SecretKey **)&jarg1; 
+  {
+    if (jarg2) {
+      arg2 = (char *) jenv->GetByteArrayElements(jarg2, 0);
+      arg3 = (size_t) jenv->GetArrayLength(jarg2);
+    } else {
+      arg2 = 0;
+      arg3 = 0;
+    }
+  }
+  result = ((SecretKey const *)arg1)->signHash((char const *)arg2,arg3);
   *(Signature **)&jresult = new Signature((const Signature &)result); 
   {
     if (jarg2) jenv->ReleaseByteArrayElements(jarg2, (jbyte *)arg2, 0);
@@ -1640,6 +1703,43 @@ SWIGEXPORT jboolean JNICALL Java_com_herumi_bls_BlsJNI_Signature_1verify(JNIEnv 
     }
   }
   result = (bool)((Signature const *)arg1)->verify((PublicKey const &)*arg2,(char const *)arg3,arg4);
+  jresult = (jboolean)result; 
+  {
+    if (jarg3) jenv->ReleaseByteArrayElements(jarg3, (jbyte *)arg3, 0);
+  }
+  
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_com_herumi_bls_BlsJNI_Signature_1verifyHash(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_, jbyteArray jarg3) {
+  jboolean jresult = 0 ;
+  Signature *arg1 = (Signature *) 0 ;
+  PublicKey *arg2 = 0 ;
+  char *arg3 = (char *) 0 ;
+  size_t arg4 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(Signature **)&jarg1; 
+  arg2 = *(PublicKey **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "PublicKey const & reference is null");
+    return 0;
+  } 
+  {
+    if (jarg3) {
+      arg3 = (char *) jenv->GetByteArrayElements(jarg3, 0);
+      arg4 = (size_t) jenv->GetArrayLength(jarg3);
+    } else {
+      arg3 = 0;
+      arg4 = 0;
+    }
+  }
+  result = (bool)((Signature const *)arg1)->verifyHash((PublicKey const &)*arg2,(char const *)arg3,arg4);
   jresult = (jboolean)result; 
   {
     if (jarg3) jenv->ReleaseByteArrayElements(jarg3, (jbyte *)arg3, 0);
