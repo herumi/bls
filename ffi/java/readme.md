@@ -4,7 +4,8 @@
 ```
 cd bls
 make clean
-make lib/libmcl.a
+make -C mcl clean
+make -C mcl lib/libmcl.a
 cd ffi/java
 make test
 ```
@@ -14,7 +15,8 @@ make test
 ```
 cd bls
 make clean
-make lib/libmcl.a
+make -C mcl clean
+make -C mcl lib/libmcl.a
 cd ffi/java
 make test BLS_ETH=1
 ```
