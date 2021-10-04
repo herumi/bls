@@ -231,6 +231,27 @@ public class BlsTest {
 			}
 		}
 	}
+	public static void testHarmonyONE() {
+		assertBool("requirements", Bls.isDefinedBLS_ETH());
+		System.out.println("testHarmonyONE");
+		// setting for Harmony.ONE (make library with BLS_ETH=1)
+		Bls.init(Bls.BLS12_381);
+		Bls.setETHserialization(false);
+		Bls.setMapToMode(Bls.MAP_TO_MODE_ORIGINAL);
+		PublicKey gen = new PublicKey();
+		// the old generator
+		gen.setStr("1 17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb 8b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1");
+		Bls.setGeneratorOfPublicKey(gen);
+
+		SecretKey sec = new SecretKey();
+		sec.deserialize(new byte[] {
+			-71, 10, 0, -19, -60, -25, -21, -3, 95, -35, 36, -32, 109, -4, 10, -34, 14, -59, 82, 107, -36, 29, -48, 123, -87, -66, 98, -75, -16, -58, 35, 98});
+		Signature sig = new Signature();
+		sec.signHash(sig, new byte[] {
+-71, 10, 0, -19, -60, -25, -21, -3, 95, -35, 36, -32, 109, -4, 10, -34, 14, -59, 82, 107, -36, 29, -48, 123, -87, -66, 98, -75, -16, -58, 35, 98
+		});
+		assertBool("check sig", byteToHexStr(sig.serialize()).equals("2f4ff940216b2f13d75a231b988cd16ef22b45a4709df3461d9baeebfeaafeb54fad86ea7465212f35ceb0af6fe86b1828cf6de9099cefe233d97e0523ba6c0f5eecf4db71f7b1ae08cd098547946abbd0329fdac14d27102f2a1891e9188a19"));
+	}
 	public static void testCurve(int curveType, String name) {
 		try {
 			System.out.println("curve=" + name);
@@ -244,14 +265,7 @@ public class BlsTest {
 			if (Bls.isDefinedBLS_ETH() && curveType == Bls.BLS12_381) {
 				System.out.println("BLS ETH mode");
 				testAggregateVerify();
-				// setting for Harmony.ONE (make library with BLS_ETH=1)
-				/*
-					Bls.setETHserialization(false);
-					Bls.setMapToMode(Bls.MAP_TO_MODE_ORIGINAL);
-					PublicKey gen = new PublicKey();
-					gen.setStr("1 17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb 8b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1");
-					Bls.setGeneratorOfPublicKey(gen);
-				*/
+				testHarmonyONE();
 			}
 			if (errN == 0) {
 				System.out.println("all test passed");
