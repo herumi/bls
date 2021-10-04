@@ -649,21 +649,20 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 template<class G>
 inline bool toG(G& Hm, const void *h, mclSize size)
 {
-#ifdef BLS_ETH
-	BN::hashAndMapToG2(Hm, h, size);
-	return true;
-#else
 	if (g_irtfHashAndMap) {
-		BN::hashAndMapToG1(Hm, h, size);
+		hashAndMapToG(Hm, h, size);
 		return true;
 	}
 	// backward compatibility
 	Fp t;
 	t.setArrayMask((const uint8_t *)h, size);
 	bool b;
+#ifdef BLS_ETH
+	BN::mapToG2(&b, Hm, Fp2(t, 0));
+#else
 	BN::mapToG1(&b, Hm, t);
-	return b;
 #endif
+	return b;
 }
 
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
