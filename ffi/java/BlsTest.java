@@ -240,7 +240,7 @@ public class BlsTest {
 		Bls.setMapToMode(Bls.MAP_TO_MODE_ORIGINAL);
 		PublicKey gen = new PublicKey();
 		// the old generator
-		gen.setStr("1 17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb 8b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1");
+		gen.setStr("1 4f58f3d9ee829f9a853f80b0e32c2981be883a537f0c21ad4af17be22e6e9959915ec21b7f9d8cc4c7315f31f3600e5 1212110eb10dbc575bccc44dcd77400f38282c4728b5efac69c0b4c9011bd27b8ed608acd81f027039216a291ac636a8");
 		Bls.setGeneratorOfPublicKey(gen);
 
 		SecretKey sec = new SecretKey();
