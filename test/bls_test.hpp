@@ -900,7 +900,7 @@ void ethMultiVerifyTestOne(size_t n)
 	for (size_t i = 0; i < n; i++) {
 		bls::SecretKey sec;
 		sec.init();
-		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
+		sec.sign(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
 #ifndef DISABLE_THREAD_TEST
@@ -937,7 +937,7 @@ void ethMultiVerifyZeroTest()
 		} else {
 			sec.init();
 		}
-		sec.signHash(sigs[i], &msgs[i * msgSize], msgSize);
+		sec.sign(sigs[i], &msgs[i * msgSize], msgSize);
 		sec.getPublicKey(pubs[i]);
 	}
 #ifndef DISABLE_THREAD_TEST

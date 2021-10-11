@@ -327,7 +327,10 @@ inline void SecretKey::sign(Signature& sig, const char *cbuf, size_t bufSize) co
 
 inline void SecretKey::signHash(Signature& sig, const char *cbuf, size_t bufSize) const
 {
-	blsSignHash(&sig.self_, &self_, cbuf, bufSize);
+	int r = blsSignHash(&sig.self_, &self_, cbuf, bufSize);
+	if (r != 0) {
+		throw std::runtime_error("blsSignHash err");
+	}
 }
 
 inline Signature SecretKey::sign(const char *cbuf, size_t bufSize) const
