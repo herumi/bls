@@ -244,12 +244,12 @@ public class BlsTest {
 		Bls.setGeneratorOfPublicKey(gen);
 
 		SecretKey sec = new SecretKey();
-		sec.deserialize(new byte[] {
-			-71, 10, 0, -19, -60, -25, -21, -3, 95, -35, 36, -32, 109, -4, 10, -34, 14, -59, 82, 107, -36, 29, -48, 123, -87, -66, 98, -75, -16, -58, 35, 98});
+		byte[] bytes = new byte[] {
+			-71, 10, 0, -19, -60, -25, -21, -3, 95, -35, 36, -32, 109, -4, 10, -34, 14, -59, 82, 107, -36, 29, -48, 123, -87, -66, 98, -75, -16, -58, 35, 98
+		};
+		sec.deserialize(bytes);
 		Signature sig = new Signature();
-		sec.signHash(sig, new byte[] {
--71, 10, 0, -19, -60, -25, -21, -3, 95, -35, 36, -32, 109, -4, 10, -34, 14, -59, 82, 107, -36, 29, -48, 123, -87, -66, 98, -75, -16, -58, 35, 98
-		});
+		sec.signHash(sig, bytes);
 		assertBool("check sig", byteToHexStr(sig.serialize()).equals("2f4ff940216b2f13d75a231b988cd16ef22b45a4709df3461d9baeebfeaafeb54fad86ea7465212f35ceb0af6fe86b1828cf6de9099cefe233d97e0523ba6c0f5eecf4db71f7b1ae08cd098547946abbd0329fdac14d27102f2a1891e9188a19"));
 
 		sec.deserialize(hexStrToByte("d243f3f029c188a5b1c4c098f5719cbc967184ef962b5c5d6c72693c92c1f725"));
