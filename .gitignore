@@ -8,3 +8,4 @@ obj/*.o
 sample/*.txt
 !sample/CMakeLists.txt
 build/
+ffi/go/bls/vendor

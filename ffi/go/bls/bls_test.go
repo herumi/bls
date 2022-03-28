@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"testing"
 	"unsafe"
+
+	"github.com/herumi/mcl/ffi/go/mcl"
 )
 
 var unitN = 0
@@ -326,26 +328,26 @@ func testSerializeToHexStr(t *testing.T) {
 func testOrder(t *testing.T, c int) {
 	var curve string
 	var field string
-	if c == CurveFp254BNb {
+	if c == mcl.CurveFp254BNb {
 		curve = "16798108731015832284940804142231733909759579603404752749028378864165570215949"
 		field = "16798108731015832284940804142231733909889187121439069848933715426072753864723"
-	} else if c == CurveFp382_1 {
+	} else if c == mcl.CurveFp382_1 {
 		curve = "5540996953667913971058039301942914304734176495422447785042938606876043190415948413757785063597439175372845535461389"
 		field = "5540996953667913971058039301942914304734176495422447785045292539108217242186829586959562222833658991069414454984723"
-	} else if c == CurveFp382_2 {
+	} else if c == mcl.CurveFp382_2 {
 		curve = "5541245505022739011583672869577435255026888277144126952448297309161979278754528049907713682488818304329661351460877"
 		field = "5541245505022739011583672869577435255026888277144126952450651294188487038640194767986566260919128250811286032482323"
-	} else if c == BLS12_381 {
+	} else if c == mcl.BLS12_381 {
 		curve = "52435875175126190479447740508185965837690552500527637822603658699938581184513"
 		field = "4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787"
 	} else {
 		t.Fatal("bad c", c)
 	}
-	s := GetCurveOrder()
+	s := mcl.GetCurveOrder()
 	if s != curve {
 		t.Errorf("bad curve order\n%s\n%s\n", s, curve)
 	}
-	s = GetFieldOrder()
+	s = mcl.GetFieldOrder()
 	if s != field {
 		t.Errorf("bad field order\n%s\n%s\n", s, field)
 	}
@@ -401,7 +403,7 @@ func testAggregate(t *testing.T) {
 }
 
 func Hash(buf []byte) []byte {
-	if GetOpUnitSize() == 4 {
+	if mcl.GetOpUnitSize() == 4 {
 		d := sha256.Sum256([]byte(buf))
 		return d[:]
 	}
@@ -526,20 +528,20 @@ func testCast(t *testing.T) {
 		}
 	}
 	var pub PublicKey
-	var g2 G2
+	var g2 mcl.G2
 	if unsafe.Sizeof(pub) != unsafe.Sizeof(g2) {
 		return
 	}
 	pub = *sec.GetPublicKey()
 	g2 = *CastFromPublicKey(&pub)
-	G2Add(&g2, &g2, &g2)
+	mcl.G2Add(&g2, &g2, &g2)
 	pub.Add(&pub)
 	if !pub.IsEqual(CastToPublicKey(&g2)) {
 		t.Error("pub not equal")
 	}
 	sig := sec.Sign("abc")
 	g1 := *CastFromSign(sig)
-	G1Add(&g1, &g1, &g1)
+	mcl.G1Add(&g1, &g1, &g1)
 	sig.Add(sig)
 	if !sig.IsEqual(CastToSign(&g1)) {
 		t.Error("sig not equal")
@@ -579,7 +581,7 @@ func test(t *testing.T, c int) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	unitN = GetOpUnitSize()
+	unitN = mcl.GetOpUnitSize()
 	t.Logf("unitN=%d\n", unitN)
 	testReadRand(t)
 	testPre(t)
@@ -601,23 +603,23 @@ func test(t *testing.T, c int) {
 	testZero(t)
 }
 
-func TestMain(t *testing.T) {
-	t.Logf("GetMaxOpUnitSize() = %d\n", GetMaxOpUnitSize())
+func TestMainFunc(t *testing.T) {
+	t.Logf("GetMaxOpUnitSize() = %d\n", mcl.GetMaxOpUnitSize())
 	t.Log("CurveFp254BNb")
-	test(t, CurveFp254BNb)
-	if GetMaxOpUnitSize() == 6 {
-		if GetFrUnitSize() == 6 {
+	test(t, mcl.CurveFp254BNb)
+	if mcl.GetMaxOpUnitSize() == 6 {
+		if mcl.GetFrUnitSize() == 6 {
 			t.Log("CurveFp382_1")
-			test(t, CurveFp382_1)
+			test(t, mcl.CurveFp382_1)
 		}
 		t.Log("BLS12_381")
-		test(t, BLS12_381)
+		test(t, mcl.BLS12_381)
 	}
 }
 
 // Benchmarks
 
-var curve = CurveFp382_1
+var curve = mcl.CurveFp382_1
 
 //var curve = CurveFp254BNb
 
