@@ -7,7 +7,6 @@ package bls
 #cgo bn384 LDFLAGS:-lbls384
 #cgo bn384_256 CFLAGS:-DMCLBN_FP_UNIT_SIZE=6 -DMCLBN_FR_UNIT_SIZE=4
 #cgo bn384_256 LDFLAGS:-lbls384_256
-#cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
 
 #cgo LDFLAGS:-lcrypto -lgmp -lgmpxx -lstdc++
 typedef unsigned int (*ReadRandFunc)(void *, void *, unsigned int);
@@ -23,6 +22,8 @@ import (
 	"unsafe"
 )
 
+const ethMode = false
+
 const EthModeOld = C.BLS_ETH_MODE_OLD
 const EthModeDraft05 = C.BLS_ETH_MODE_DRAFT_05
 const EthModeDraft06 = C.BLS_ETH_MODE_DRAFT_06
@@ -36,6 +37,17 @@ func hex2byte(s string) ([]byte, error) {
 	return hex.DecodeString(s)
 }
 
+// SetETHmode --
+// Set hash function
+// mode = EthModeOld or EthModeLatest(=EthModeDraft07)
+// error if curve != MCL_BLS12_381
+func SetETHmode(mode int) error {
+	if C.blsSetETHmode(C.int(mode)) != 0 {
+		return fmt.Errorf("ERR SetETHmode")
+	}
+	return nil
+}
+
 // Init --
 // call this function before calling all the other operations
 // this function is not thread safe
@@ -44,7 +56,10 @@ func Init(curve int) error {
 	if err != 0 {
 		return fmt.Errorf("ERR Init curve=%d", curve)
 	}
-	return nil
+	if !ethMode {
+		return nil
+	}
+	return SetETHmode(C.BLS_ETH_MODE_LATEST)
 }
 
 // ID --
@@ -161,7 +176,7 @@ type SecretKey struct {
 
 // Serialize --
 func (sec *SecretKey) Serialize() []byte {
-	buf := make([]byte, 48)
+	buf := make([]byte, C.mclBn_getFpByteSize())
 	// #nosec
 	n := C.blsSecretKeySerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &sec.v)
 	if n == 0 {
@@ -373,7 +388,7 @@ func (keys PublicKeys) JSON() string {
 
 // Serialize --
 func (pub *PublicKey) Serialize() []byte {
-	buf := make([]byte, 96)
+	buf := make([]byte, C.blsGetSerializedPublicKeyByteSize())
 	// #nosec
 	n := C.blsPublicKeySerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &pub.v)
 	if n == 0 {
@@ -483,7 +498,7 @@ type Sign struct {
 
 // Serialize --
 func (sig *Sign) Serialize() []byte {
-	buf := make([]byte, 48)
+	buf := make([]byte, C.blsGetSerializedSignatureByteSize())
 	// #nosec
 	n := C.blsSignatureSerialize(unsafe.Pointer(&buf[0]), C.mclSize(len(buf)), &sig.v)
 	if n == 0 {
