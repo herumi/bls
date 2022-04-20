@@ -436,6 +436,7 @@ class Signature {
 	friend class SecretKey;
 public:
 	const blsSignature *getPtr() const { return &self_; }
+	blsSignature *getPtr() { return &self_; }
 	bool operator==(const Signature& rhs) const
 	{
 		return blsSignatureIsEqual(&self_, &rhs.self_) == 1;

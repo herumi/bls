@@ -141,16 +141,18 @@ BLS_DLL_API int blsVerify(const blsSignature *sig, const blsPublicKey *pub, cons
 	pubVec[i] *= randVec[i]
 	return blsAggregateVerifyNoCheck(sig, pubVec, msgVec, msgSize, n);
 	@remark return 0 if some pubVec[i] is zero
+	sigVec may be normalized
 */
-BLS_DLL_API int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN);
+BLS_DLL_API int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN);
 
 /*
 	subroutine of blsMultiVerify
 	e = prod_i millerLoop(pubVec[i] * randVec[i], Hash(msgVec[i]))
 	aggSig = sum_i sigVec[i] * randVec[i]
 	@remark set *e = 0 if some pubVec[i] is zero
+	sigVec may be normalized
 */
-BLS_DLL_API void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n);
+BLS_DLL_API void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n);
 
 /*
 	subroutine of blsMultiVerify
@@ -283,8 +285,9 @@ BLS_DLL_API void blsSecretKeyMul(blsSecretKey *y, const blsSecretKey *x);
 BLS_DLL_API void blsPublicKeyMul(blsPublicKey *y, const blsSecretKey *x);
 BLS_DLL_API void blsSignatureMul(blsSignature *y, const blsSecretKey *x);
 
-BLS_DLL_API void blsPublicKeyMulVec(blsPublicKey *z, const blsPublicKey *x, const blsSecretKey *y, mclSize n);
-BLS_DLL_API void blsSignatureMulVec(blsSignature *z, const blsSignature *x, const blsSecretKey *y, mclSize n);
+// x may be normalized, so it is not a const pointer
+BLS_DLL_API void blsPublicKeyMulVec(blsPublicKey *z, blsPublicKey *x, const blsSecretKey *y, mclSize n);
+BLS_DLL_API void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y, mclSize n);
 
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int compiledTimeVar);
