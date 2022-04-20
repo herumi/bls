@@ -254,7 +254,7 @@ int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, m
 #endif
 }
 
-void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, const blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n)
+void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, blsSignature *sigVec, const blsPublicKey *pubVec, const char *msg, mclSize msgSize, const char *randVec, mclSize randSize, mclSize n)
 {
 #ifdef BLS_ETH
 	const size_t N = 16;
@@ -325,7 +325,7 @@ int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 	verify prod e(H(pubVec[i], msgToG2[i]) == e(P, sig)
 	@remark return 0 if some pubVec[i] is zero
 */
-int blsMultiVerify(const blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
+int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
 {
 #ifdef BLS_ETH
 	if (n == 0) return 0;
