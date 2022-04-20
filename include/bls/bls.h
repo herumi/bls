@@ -283,8 +283,9 @@ BLS_DLL_API void blsSecretKeyMul(blsSecretKey *y, const blsSecretKey *x);
 BLS_DLL_API void blsPublicKeyMul(blsPublicKey *y, const blsSecretKey *x);
 BLS_DLL_API void blsSignatureMul(blsSignature *y, const blsSecretKey *x);
 
-BLS_DLL_API void blsPublicKeyMulVec(blsPublicKey *z, const blsPublicKey *x, const blsSecretKey *y, mclSize n);
-BLS_DLL_API void blsSignatureMulVec(blsSignature *z, const blsSignature *x, const blsSecretKey *y, mclSize n);
+// x may be normalized, so it is not a const pointer
+BLS_DLL_API void blsPublicKeyMulVec(blsPublicKey *z, blsPublicKey *x, const blsSecretKey *y, mclSize n);
+BLS_DLL_API void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y, mclSize n);
 
 // not thread safe version (old blsInit)
 BLS_DLL_API int blsInitNotThreadSafe(int curve, int compiledTimeVar);

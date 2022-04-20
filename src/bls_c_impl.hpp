@@ -19,8 +19,8 @@ inline void GmulCT(G1& z, const G1& x, const Fr& y) { G1::mulCT(z, x, y); }
 inline void GmulCT(G2& z, const G2& x, const Fr& y) { G2::mulCT(z, x, y); }
 inline void Gneg(G1& y, const G1& x) { G1::neg(y, x); }
 inline void Gneg(G2& y, const G2& x) { G2::neg(y, x); }
-inline void GmulVec(G1& z, const G1* x, const Fr *y, mclSize n) { G1::mulVec(z, x, y, n); }
-inline void GmulVec(G2& z, const G2* x, const Fr *y, mclSize n) { G2::mulVec(z, x, y, n); }
+inline void GmulVec(G1& z, G1* x, const Fr *y, mclSize n) { G1::mulVec(z, x, y, n); }
+inline void GmulVec(G2& z, G2* x, const Fr *y, mclSize n) { G2::mulVec(z, x, y, n); }
 inline void hashAndMapToG(G1& z, const void *m, mclSize size) { hashAndMapToG1(z, m, size); }
 inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z, m, size); }
 
@@ -903,12 +903,12 @@ void blsSignatureMul(blsSignature *y, const blsSecretKey *x)
 	*cast(&y->v) *= *cast(&x->v);
 }
 
-void blsPublicKeyMulVec(blsPublicKey *z, const blsPublicKey *x, const blsSecretKey *y, mclSize n)
+void blsPublicKeyMulVec(blsPublicKey *z, blsPublicKey *x, const blsSecretKey *y, mclSize n)
 {
 	GmulVec(*cast(&z->v), cast(&x->v), cast(&y->v), n);
 }
 
-void blsSignatureMulVec(blsSignature *z, const blsSignature *x, const blsSecretKey *y, mclSize n)
+void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y, mclSize n)
 {
 	GmulVec(*cast(&z->v), cast(&x->v), cast(&y->v), n);
 }
@@ -1123,7 +1123,7 @@ void hashToFr(Fr *out, const cybozu::Sha256& h0, mclSize begin, mclSize n)
 }
 
 template<class T, class U>
-void aggregate(T& out, const cybozu::Sha256& h0, const U *vec, mclSize n)
+void aggregate(T& out, const cybozu::Sha256& h0, U *vec, mclSize n)
 {
 	out.clear();
 	const size_t N = 16;
