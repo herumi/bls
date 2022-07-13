@@ -81,10 +81,10 @@ endif
 
 ANDROID_TARGET=armeabi-v7a # arm64-v8a x86_64
 android: $(BASE_LL)
-	@ndk-build -C android/jni NDK_DEBUG=0 BLS_LIB_SHARED=$(BLS_LIB_SHARED)
+	@$(NDK_BUILD) -C $(BLS_DIR)/android/jni NDK_DEBUG=0 BLS_LIB_SHARED=$(BLS_LIB_SHARED) ETH_CFLAGS=$(ETH_CFLAGS)
 	@for target in $(ANDROID_TARGET); do \
-		mkdir -p bls/lib/android/$$target; \
-		cp android/obj/local/$$target/libbls384_256.a bls/lib/android/$$target/; \
+		mkdir -p $(OUT_DIR)/bls/lib/android/$$target; \
+		cp $(BLS_DIR)/android/obj/local/$$target/libbls384_256.a $(OUT_DIR)/bls/lib/android/$$target/; \
 	done
 
 # ios
