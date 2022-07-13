@@ -132,15 +132,15 @@ each_ios: $(BASE_LL)
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/fp.cpp -o $(IOS_OUTDIR)/fp.o
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/base$(BIT).ll -o $(IOS_OUTDIR)/base$(BIT).o
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(BLS_DIR)/src/bls_c$(CURVE_BIT).cpp -o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
-ifeq ($(ARCH),x86_64)
-	@echo compile bint-x64-amd64.s
-	as -o $(IOS_OUTDIR)/bint-x64-amd64.o -c $(MCL_DIR)/src/asm/bint-x64-amd64.s
-	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint-x64-amd64.o
-else
+#ifeq ($(ARCH),x86_64)
+#	@echo compile bint-x64-amd64.s
+#	as -o $(IOS_OUTDIR)/bint-x64-amd64.o -c $(MCL_DIR)/src/asm/bint-x64-amd64.s
+#	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint-x64-amd64.o
+#else
 	@echo compile bint$(BIT).ll
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/bint$(BIT).ll -o $(IOS_OUTDIR)/bint$(BIT).o
 	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint$(BIT).o
-endif
+#endif
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
 
 clean:
