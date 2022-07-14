@@ -1,0 +1,178 @@
+# This Makefile is to build one bls384_256.a which contains libmcl.a for convenience.
+BLS_DIR?=./
+OUT_DIR?=./
+MCL_DIR?=$(BLS_DIR)/mcl
+include $(MCL_DIR)/common.mk
+#ETH_CFLAGS=-DBLS_ETH
+
+UNIT?=8
+
+MIN_CFLAGS=-std=c++03 -O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
+OBJ_DIR=obj
+OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
+
+ifeq ($(OS),mingw64)
+  _OS=windows
+else
+  MIN_CFLAGS+=-fPIC
+endif
+ifeq ($(OS),Linux)
+  _OS=linux
+endif
+ifeq ($(OS),mac)
+  _OS=darwin
+endif
+ifeq ($(OS),mac-m1)
+  _OS=darwin
+endif
+ifeq ($(OS),openbsd)
+  _OS=openbsd
+endif
+ifeq ($(OS),freebsd)
+  _OS=freebsd
+endif
+
+ifeq ($(CPU),x86-64)
+  _ARCH=amd64
+  ifeq ($(OS),mingw64)
+    BINT_OBJ=$(OBJ_DIR)/bint-x64.obj
+  else
+    BINT_OBJ=$(OBJ_DIR)/bint-x64-amd64.o
+    ifeq ($(OS),mac)
+      BASE_OBJ=$(OBJ_DIR)/x86-64mac.o
+    else
+      BASE_OBJ=$(OBJ_DIR)/x86-64.o
+    endif
+  endif
+endif
+ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
+  MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
+  MCL_STATIC_CODE=1
+  OBJS+=$(MCL_DIR)/obj/static_code.o
+endif
+ifeq ($(CPU),aarch64)
+  _ARCH=arm64
+  BINT_OBJ=$(OBJ_DIR)/bint-Linux-aarch64.o
+  BASE_OBJ=$(OBJ_DIR)/arch64.o
+endif
+ifeq ($(CPU),arm)
+  _ARCH=arm
+  UNIT=4
+endif
+ifeq ($(CPU),systemz)
+  _ARCH=s390x
+endif
+
+ifeq ($(BINT_OBJ),)
+  BINT_OBJ=$(OBJ_DIR)/bint${BIT}.o
+endif
+ifeq ($(BASE_OBJ),)
+  BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
+endif
+MIN_CFLAGS+=-DMCL_USE_LLVM=1
+OBJS+=$(BINT_OBJ) $(BASE_OBJ)
+
+LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
+
+all: $(LIB_DIR)/libbls384_256.a
+
+ifeq ($(OS),mingw64)
+$(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
+	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
+$(BINT_OBJ): $(MCL_DIR_)/src/asm/bint-x64.asm
+	nasm $(NASM_ELF_OPT) -o $@ $<
+endif
+
+$(LIB_DIR)/libbls384_256.a: $(OBJS)
+	-mkdir -p $(LIB_DIR)
+	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJS)
+
+$(OBJ_DIR)/fp.o:
+	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
+$(OBJ_DIR)/base$(BIT).o: $(MCL_DIR)/src/base$(BIT).ll
+	$(CXX) -c -o $(OBJ_DIR)/base$(BIT).o $(MCL_DIR)/src/base$(BIT).ll $(MIN_CFLAGS)
+$(OBJ_DIR)/bls_c384_256.o:
+	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o $(BLS_DIR)/src/bls_c384_256.cpp $(MIN_CFLAGS)
+$(MCL_DIR)/obj/static_code.o:
+	$(MAKE) -C $(MCL_DIR) obj/static_code.o
+
+ifeq ($(CPU),x86-64)
+$(OBJ_DIR)/bint-x64-amd64.o: $(MCL_DIR)/src/asm/bint-x64-amd64.s
+	$(AS) -c $< -o $@
+else
+$(OBJ_DIR)/bint${BIT}.o: $(MCL_DIR)/src/bint${BIT}.ll
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+endif
+$(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
+	$(AS) -c $< -o $@
+
+ANDROID_TARGET=armeabi-v7a # arm64-v8a x86_64
+android: $(BASE_LL)
+	@$(NDK_BUILD) -C $(BLS_DIR)/android/jni NDK_DEBUG=0 BLS_LIB_SHARED=$(BLS_LIB_SHARED) ETH_CFLAGS=$(ETH_CFLAGS)
+	@for target in $(ANDROID_TARGET); do \
+		mkdir -p $(OUT_DIR)/bls/lib/android/$$target; \
+		cp $(BLS_DIR)/android/obj/local/$$target/libbls384_256.a $(OUT_DIR)/bls/lib/android/$$target/; \
+	done
+
+# ios
+XCODEPATH=$(shell xcode-select -p)
+IOS_CLANG=$(XCODEPATH)/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+IOS_AR=${XCODEPATH}/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar
+PLATFORM?="iPhoneOS"
+IOS_MIN_VERSION?=7.0
+IOS_CFLAGS=-fembed-bitcode -fno-common -DPIC -fPIC -Dmcl_EXPORTS
+IOS_CFLAGS+=-fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-stack-protector -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING
+IOS_CFLAGS+=-DMCL_DONT_USE_XBYAK -DMCL_USE_LLVM=1 -std=c++03 -Wall -Wextra -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wfloat-equal -Wpointer-arith -O3 -DNDEBUG $(ETH_CFLAGS)
+IOS_CFLAGS+=-I $(MCL_DIR)/include -I $(BLS_DIR)/include
+IOS_LDFLAGS=-dynamiclib -Wl,-flat_namespace -Wl,-undefined -Wl,suppress
+CURVE_BIT?=384_256
+IOS_LIB=libbls$(CURVE_BIT).a
+IOS_LIBS=ios/armv7/$(IOS_LIB) ios/arm64/$(IOS_LIB) iossimulator/x86_64/$(IOS_LIB) iossimulator/i386/$(IOS_LIB)
+SIMULATOR_LIBS= iossimulator/arm64/$(IOS_LIB) iossimulator/x86_64/$(IOS_LIB) iossimulator/i386/$(IOS_LIB)
+
+
+THIS_FILE := $(realpath $(firstword $(MAKEFILE_LIST)))
+
+ios: ios_simulator
+	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="ios" MINVERSION="-mios-version-min" PLATFORM="iPhoneOS" ARCH=armv7 BIT=32 UNIT=4
+	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="ios" MINVERSION="-mios-version-min" PLATFORM="iPhoneOS" ARCH=arm64 BIT=64 UNIT=8
+	@echo $(IOS_LIBS)
+	@mkdir -p $(OUT_DIR)/bls/lib/ios
+	lipo $(IOS_LIBS) -create -output $(OUT_DIR)/bls/lib/ios/$(IOS_LIB)
+
+ios_simulator:
+	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="iossimulator" MINVERSION="-mios-simulator-version-min" PLATFORM="iPhoneSimulator" ARCH=arm64 BIT=64 UNIT=8
+	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="iossimulator" MINVERSION="-mios-simulator-version-min" PLATFORM="iPhoneSimulator" ARCH=x86_64 BIT=64 UNIT=8
+	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="iossimulator" MINVERSION="-mios-simulator-version-min" PLATFORM="iPhoneSimulator" ARCH=i386 BIT=32 UNIT=4
+	@echo $(SIMULATOR_LIBS)
+	@mkdir -p $(OUT_DIR)/bls/lib/iossimulator
+	lipo $(SIMULATOR_LIBS) -create  -output $(OUT_DIR)/bls/lib/iossimulator/$(IOS_LIB)
+
+each_ios: $(BASE_LL)
+	@echo "Building $(PLATFORM) $(ARCH) BIT=$(BIT) UNIT=$(UNIT)"
+	$(eval IOS_CFLAGS=$(IOS_CFLAGS) -DMCL_SIZEOF_UNIT=$(UNIT))
+	@echo IOS_CFLAGS=$(IOS_CFLAGS)
+	$(eval IOS_OUTDIR=$(OUTDIR)/$(ARCH))
+	$(eval IOS_SDK_PATH=$(XCODEPATH)/Platforms/$(PLATFORM).platform/Developer/SDKs/$(PLATFORM).sdk)
+	$(eval IOS_COMMON=-arch $(ARCH) -isysroot $(IOS_SDK_PATH) $(MINVERSION)=$(IOS_MIN_VERSION))
+	@mkdir -p $(IOS_OUTDIR)
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/fp.cpp -o $(IOS_OUTDIR)/fp.o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/base$(BIT).ll -o $(IOS_OUTDIR)/base$(BIT).o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(BLS_DIR)/src/bls_c$(CURVE_BIT).cpp -o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
+#ifeq ($(ARCH),x86_64)
+#	@echo compile bint-x64-amd64.s
+#	as -o $(IOS_OUTDIR)/bint-x64-amd64.o -c $(MCL_DIR)/src/asm/bint-x64-amd64.s
+#	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint-x64-amd64.o
+#else
+	@echo compile bint$(BIT).ll
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/bint$(BIT).ll -o $(IOS_OUTDIR)/bint$(BIT).o
+	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint$(BIT).o
+#endif
+	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
+
+clean:
+	$(MAKE) -C $(MCL_DIR) clean
+	$(MAKE) -C $(BLS_DIR) clean
+	$(RM) -rf obj/*.o android/obj/* bls/lib/android/*
+
+.PHONY: android ios ios_simulator each_ios clean

@@ -2,6 +2,7 @@
 #include <cybozu/test.hpp>
 #include <cybozu/inttype.hpp>
 #include <cybozu/benchmark.hpp>
+#include <mcl/config.hpp>
 #include <cybozu/sha2.hpp>
 #include <cybozu/atoi.hpp>
 #include <cybozu/file.hpp>
