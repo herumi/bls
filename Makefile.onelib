@@ -7,9 +7,9 @@ include $(MCL_DIR)/common.mk
 
 UNIT?=8
 
-MIN_CFLAGS=-std=c++03 -O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_USE_LLVM=1 -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
+MIN_CFLAGS=-std=c++03 -O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
 OBJ_DIR=obj
-OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/base$(BIT).o
+OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
 ifeq ($(OS),mingw64)
   _OS=windows
@@ -34,9 +34,16 @@ endif
 
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
-  OBJS+=$(OBJ_DIR)/bint-x64-amd64.o
-else
-  OBJS+=$(OBJ_DIR)/bint${BIT}.o
+  ifeq ($(OS),mingw64)
+    BINT_OBJ=$(OBJ_DIR)/bint-x64.obj
+  else
+    BINT_OBJ=$(OBJ_DIR)/bint-x64-amd64.o
+    ifeq ($(OS),mac)
+      BASE_OBJ=$(OBJ_DIR)/x86-64mac.o
+    else
+      BASE_OBJ=$(OBJ_DIR)/x86-64.o
+    endif
+  endif
 endif
 ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
   MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
@@ -45,6 +52,8 @@ ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
+  BINT_OBJ=$(OBJ_DIR)/bint-Linux-aarch64.o
+  BASE_OBJ=$(OBJ_DIR)/arch64.o
 endif
 ifeq ($(CPU),arm)
   _ARCH=arm
@@ -54,9 +63,25 @@ ifeq ($(CPU),systemz)
   _ARCH=s390x
 endif
 
+ifeq ($(BINT_OBJ),)
+  BINT_OBJ=$(OBJ_DIR)/bint${BIT}.o
+endif
+ifeq ($(BASE_OBJ),)
+  BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
+endif
+MIN_CFLAGS+=-DMCL_USE_LLVM=1
+OBJS+=$(BINT_OBJ) $(BASE_OBJ)
+
 LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
 all: $(LIB_DIR)/libbls384_256.a
+
+ifeq ($(OS),mingw64)
+$(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
+	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
+$(BINT_OBJ): $(MCL_DIR_)/src/asm/bint-x64.asm
+	nasm $(NASM_ELF_OPT) -o $@ $<
+endif
 
 $(LIB_DIR)/libbls384_256.a: $(OBJS)
 	-mkdir -p $(LIB_DIR)
@@ -78,6 +103,8 @@ else
 $(OBJ_DIR)/bint${BIT}.o: $(MCL_DIR)/src/bint${BIT}.ll
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 endif
+$(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
+	$(AS) -c $< -o $@
 
 ANDROID_TARGET=armeabi-v7a # arm64-v8a x86_64
 android: $(BASE_LL)
