@@ -52,8 +52,10 @@ ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
-  BINT_OBJ=$(OBJ_DIR)/bint-Linux-aarch64.o
-  BASE_OBJ=$(OBJ_DIR)/arch64.o
+  ifneq ($(OS),mac-m1)
+    BINT_OBJ=$(OBJ_DIR)/bint64-Linux-aarch64.o
+    BASE_OBJ=$(OBJ_DIR)/aarch64.o
+  endif
 endif
 ifeq ($(CPU),arm)
   _ARCH=arm
