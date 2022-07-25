@@ -68,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="bls_eth.cs" />
-    <Compile Include="bls_eth_test.cs" />
+    <Compile Include="bls_test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

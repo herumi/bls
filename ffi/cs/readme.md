@@ -9,11 +9,7 @@
 # How to build
 
 ```
-md work
-cd work
-git clone https://github.com/herumi/cybozulib_ext
-git clone https://github.com/herumi/mcl
-git clone https://github.com/herumi/bls
+git clone --recursive https://github.com/herumi/bls
 cd bls
 mklib dll
 ```
@@ -21,7 +17,14 @@ bls/bin/\*.dll are created
 
 # How to build a sample
 
-Open bls/ffi/cs/bls.sln and exec it.
+Open bls/ffi/cs/bls.sln and select bls proj and exec it.
+
+If you want to use ETH mode,
+
+```
+mklib dll eth
+```
+and select bls_eth proj and exec it.
 
 # bls.cs and bls\_eth.cs
 

@@ -8,23 +8,25 @@ namespace mcl
     {
         public const int BN254 = 0;
         public const int BLS12_381 = 5;
+        public const bool isETH = false;
 
         const int IoEcComp = 512; // fixed byte representation
         public const int FR_UNIT_SIZE = 4;
-        public const int FP_UNIT_SIZE = 6; // 4 if bls256.dll is used
-        public const int COMPILED_TIME_VAR = FR_UNIT_SIZE * 10 + FP_UNIT_SIZE;
+        public const int FP_UNIT_SIZE = 6;
+        public const int BLS_COMPILER_TIME_VAR_ADJ = isETH ? 200 : 0;
+        public const int COMPILED_TIME_VAR = FR_UNIT_SIZE * 10 + FP_UNIT_SIZE + BLS_COMPILER_TIME_VAR_ADJ;
 
         public const int ID_UNIT_SIZE = FR_UNIT_SIZE;
         public const int SECRETKEY_UNIT_SIZE = FR_UNIT_SIZE;
-        public const int PUBLICKEY_UNIT_SIZE = FP_UNIT_SIZE * 3 * 2;
-        public const int SIGNATURE_UNIT_SIZE = FP_UNIT_SIZE * 3;
+        public const int PUBLICKEY_UNIT_SIZE = FP_UNIT_SIZE * 3 * (isETH ? 1 : 2);
+        public const int SIGNATURE_UNIT_SIZE = FP_UNIT_SIZE * 3 * (isETH ? 2 : 1);
 
-        public const int ID_SERIALIZE_SIZE = FR_UNIT_SIZE * 8;
-        public const int SECRETKEY_SERIALIZE_SIZE = FR_UNIT_SIZE * 8;
-        public const int PUBLICKEY_SERIALIZE_SIZE = FP_UNIT_SIZE * 8 * 2;
-        public const int SIGNATURE_SERIALIZE_SIZE = FP_UNIT_SIZE * 8;
+        public const int ID_SERIALIZE_SIZE = ID_UNIT_SIZE * 8;
+        public const int SECRETKEY_SERIALIZE_SIZE = SECRETKEY_UNIT_SIZE * 8;
+        public const int PUBLICKEY_SERIALIZE_SIZE = PUBLICKEY_UNIT_SIZE * 8;
+        public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
 
-        public const string dllName = FP_UNIT_SIZE == 4 ? "bls256.dll" : "bls384_256.dll";
+        public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256.dll" : "bls256.dll";
         [DllImport(dllName)]
         public static extern int blsInit(int curveType, int compiledTimeVar);
 
@@ -128,7 +130,10 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsSignatureSetHexStr(ref Signature sig, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
         [DllImport(dllName)] public static extern ulong blsSignatureGetHexStr([Out]StringBuilder buf, ulong maxBufSize, in Signature sig);
 
-        public static void Init(int curveType = BN254) {
+        public static void Init(int curveType = BLS12_381) {
+            if (isETH && curveType != BLS12_381) {
+                throw new PlatformNotSupportedException("bad curveType");
+            }
             if (!System.Environment.Is64BitProcess) {
                 throw new PlatformNotSupportedException("not 64-bit system");
             }

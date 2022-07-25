@@ -276,10 +276,16 @@ make BLS_ETH=1 lib/libbls384_256.a
 ```
 If the option `MCL_USE_GMP=0` (resp.`MCL_USE_OPENSSL=0`) is used then GMP (resp. OpenSSL) is not used.
 
-### Build static library for Windows
+### Build library for Windows
 
+static library
 ```
 mklib eth
+```
+
+dynamic library
+```
+mklib dll eth
 ```
 
 ### Build static library for Android
