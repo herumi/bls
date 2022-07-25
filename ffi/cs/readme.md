@@ -17,11 +17,16 @@ git clone https://github.com/herumi/bls
 cd bls
 mklib dll
 ```
-bls/bin/*.dll are created
+bls/bin/\*.dll are created
 
 # How to build a sample
 
 Open bls/ffi/cs/bls.sln and exec it.
+
+# bls.cs and bls\_eth.cs
+
+- `bls.cs` is for the dll built by `mklib dll`.
+- `bls_eth.cs` is for the dll built by `mklib dll eth`.
 
 # class and API
 
@@ -29,7 +34,7 @@ Open bls/ffi/cs/bls.sln and exec it.
 
 * `Init(int curveType = BN254);`
     * initialize this library with a curve `curveType`.
-    * curveType = BN254 or BLS12_381
+    * curveType = BN254 or BLS12\_381
 * `SecretKey ShareSecretKey(in SecretKey[] msk, in Id id);`
     * generate the shared secret key from a sequence of master secret keys msk and Id.
 * `SecretKey RecoverSecretKey(in SecretKey[] secVec, in Id[] idVec);`
