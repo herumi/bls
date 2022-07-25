@@ -236,6 +236,9 @@ namespace mcl
             try {
                 int[] curveTypeTbl = { BN254, BLS12_381 };
                 foreach (int curveType in curveTypeTbl) {
+                    if (isETH && curveType != BLS12_381) {
+                        continue;
+                    }
                     Console.WriteLine("curveType={0}", curveType);
                     Init(curveType);
                     TestId();
