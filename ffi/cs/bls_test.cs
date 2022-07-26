@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace mcl
 {
@@ -98,11 +99,12 @@ namespace mcl
             SecretKey sec;
             sec.SetByCSPRNG();
             PublicKey pub = sec.GetPublicKey();
-            string m = "abc";
+            byte[] m = Encoding.UTF8.GetBytes("abc");
             Signature sig = sec.Sign(m);
             Console.WriteLine("sig={0}", sig.GetHexStr());
             assert("verify", pub.Verify(sig, m));
-            assert("not verify", !pub.Verify(sig, m + "a"));
+            m = new byte[]{m[0], m[1], m[2], (byte)0x61} ;
+            assert("not verify", !pub.Verify(sig, m));
             {
                 Signature sig2;
                 byte[] buf = sig.Serialize();
@@ -147,7 +149,7 @@ namespace mcl
                 pubs[i] = SharePublicKey(mpk, ids[i]);
                 assert("share publicKey", secs[i].GetPublicKey().IsEqual(pubs[i]));
             }
-            string m = "doremi";
+            byte[] m = Encoding.UTF8.GetBytes("doremi");
             for (int i = 0; i < n; i++) {
                 Signature Signature = secs[i].Sign(m);
                 assert("Signature.Verify", pubs[i].Verify(Signature, m));
@@ -176,7 +178,7 @@ namespace mcl
         static void TestAggregate() {
             Console.WriteLine("TestAggregate");
             const int n = 10;
-            const string m = "abc";
+            byte[] m = Encoding.UTF8.GetBytes("abc");
             SecretKey[] secVec = new SecretKey[n];
             PublicKey[] pubVec = new PublicKey[n];
             Signature[] popVec = new Signature[n];
@@ -216,7 +218,7 @@ namespace mcl
         {
             Console.WriteLine("TestMulVec");
             int n = 10;
-            const string m = "abc";
+            byte[] m = Encoding.UTF8.GetBytes("abc");
             SecretKey[] secVec = new SecretKey[n];
             PublicKey[] pubVec = new PublicKey[n];
             Signature[] sigVec = new Signature[n];

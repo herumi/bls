@@ -94,10 +94,9 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsPublicKeyRecover(ref PublicKey pub, in PublicKey pubVec, in Id idVec, ulong n);
         [DllImport(dllName)] public static extern int blsSignatureRecover(ref Signature sig, in Signature sigVec, in Id idVec, ulong n);
 
-        [DllImport(dllName)] public static extern void blsSign(ref Signature sig, in SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
-
+        [DllImport(dllName)] public static extern void blsSign(ref Signature sig, in SecretKey sec, [In]byte[] m, ulong size);
         // return 1 if valid
-        [DllImport(dllName)] public static extern int blsVerify(in Signature sig, in PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
+        [DllImport(dllName)] public static extern int blsVerify(in Signature sig, in PublicKey pub, [In]byte[] m, ulong size);
         [DllImport(dllName)] public static extern int blsVerifyPop(in Signature sig, in PublicKey pub);
 
         //////////////////////////////////////////////////////////////////////////
@@ -259,7 +258,7 @@ namespace mcl
                 blsGetPublicKey(ref pub, this);
                 return pub;
             }
-            public Signature Sign(string m) {
+            public Signature Sign(byte[] m) {
                 Signature sig;
                 blsSign(ref sig, this, m, (ulong)m.Length);
                 return sig;
@@ -338,7 +337,7 @@ namespace mcl
             {
                 blsPublicKeyMul(ref this, rhs);
             }
-            public bool Verify(in Signature sig, string m) {
+            public bool Verify(in Signature sig, byte[] m) {
                 return blsVerify(sig, this, m, (ulong)m.Length) == 1;
             }
             public bool VerifyPop(in Signature pop) {
