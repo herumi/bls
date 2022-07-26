@@ -26,7 +26,7 @@ namespace mcl
         public const int PUBLICKEY_SERIALIZE_SIZE = PUBLICKEY_UNIT_SIZE * 8;
         public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
 
-        public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256.dll" : "bls256.dll";
+        public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256" : "bls256";
         [DllImport(dllName)]
         public static extern int blsInit(int curveType, int compiledTimeVar);
 
