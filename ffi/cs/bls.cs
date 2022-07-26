@@ -1,4 +1,4 @@
-þ½Ž¿using System;
+using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -27,8 +27,9 @@ namespace mcl
         public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
 
         public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256.dll" : "bls256.dll";
-        [DllImport(dllName)]
-        public static extern int blsInit(int curveType, int compiledTimeVar);
+        [DllImport(dllName)] public static extern int blsInit(int curveType, int compiledTimeVar);
+        [DllImport(dllName)] public static extern int blsGetFrByteSize();
+        [DllImport(dllName)] public static extern int blsGetG1ByteSize();
 
         [DllImport(dllName)] public static extern void blsIdSetInt(ref Id id, int x);
         [DllImport(dllName)] public static extern int blsIdSetDecStr(ref Id id, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
@@ -147,16 +148,18 @@ namespace mcl
         {
             private fixed ulong v[ID_UNIT_SIZE];
             public byte[] Serialize() {
-                byte[] buf = new byte[ID_SERIALIZE_SIZE];
-                ulong n = blsIdSerialize(buf, (ulong)buf.Length, this);
-                if (n == 0) {
+                ulong bufSize = (ulong)blsGetFrByteSize();
+                byte[] buf = new byte[bufSize];
+                ulong n = blsIdSerialize(buf, bufSize, this);
+                if (n != bufSize) {
                     throw new ArithmeticException("blsIdSerialize");
                 }
                 return buf;
             }
             public void Deserialize(byte[] buf) {
-                ulong n = blsIdDeserialize(ref this, buf, (ulong)buf.Length);
-                if (n == 0) {
+                ulong bufSize = (ulong)buf.Length;
+                ulong n = blsIdDeserialize(ref this, buf, bufSize);
+                if (n == 0 || n != bufSize) {
                     throw new ArithmeticException("blsIdDeserialize");
                 }
             }
@@ -198,16 +201,18 @@ namespace mcl
         {
             private fixed ulong v[SECRETKEY_UNIT_SIZE];
             public byte[] Serialize() {
-                byte[] buf = new byte[SECRETKEY_SERIALIZE_SIZE];
-                ulong n = blsSecretKeySerialize(buf, (ulong)buf.Length, this);
-                if (n == 0) {
+                ulong bufSize = (ulong)blsGetFrByteSize();
+                byte[] buf = new byte[bufSize];
+                ulong n = blsSecretKeySerialize(buf, bufSize, this);
+                if (n != bufSize) {
                     throw new ArithmeticException("blsSecretKeySerialize");
                 }
                 return buf;
             }
             public void Deserialize(byte[] buf) {
-                ulong n = blsSecretKeyDeserialize(ref this, buf, (ulong)buf.Length);
-                if (n == 0) {
+                ulong bufSize = (ulong)buf.Length;
+                ulong n = blsSecretKeyDeserialize(ref this, buf, bufSize);
+                if (n == 0 || n != bufSize) {
                     throw new ArithmeticException("blsSecretKeyDeserialize");
                 }
             }
@@ -290,16 +295,18 @@ namespace mcl
         {
             private fixed ulong v[PUBLICKEY_UNIT_SIZE];
             public byte[] Serialize() {
-                byte[] buf = new byte[PUBLICKEY_SERIALIZE_SIZE];
-                ulong n = blsPublicKeySerialize(buf, (ulong)buf.Length, this);
-                if (n == 0) {
+                ulong bufSize = (ulong)blsGetG1ByteSize() * (isETH ? 1 : 2);
+                byte[] buf = new byte[bufSize];
+                ulong n = blsPublicKeySerialize(buf, bufSize, this);
+                if (n != bufSize) {
                     throw new ArithmeticException("blsPublicKeySerialize");
                 }
                 return buf;
             }
             public void Deserialize(byte[] buf) {
-                ulong n = blsPublicKeyDeserialize(ref this, buf, (ulong)buf.Length);
-                if (n == 0) {
+                ulong bufSize = (ulong)buf.Length;
+                ulong n = blsPublicKeyDeserialize(ref this, buf, bufSize);
+                if (n == 0 || n != bufSize) {
                     throw new ArithmeticException("blsPublicKeyDeserialize");
                 }
             }
@@ -365,16 +372,18 @@ namespace mcl
         {
             private fixed ulong v[SIGNATURE_UNIT_SIZE];
             public byte[] Serialize() {
-                byte[] buf = new byte[SIGNATURE_SERIALIZE_SIZE];
-                ulong n = blsSignatureSerialize(buf, (ulong)buf.Length, this);
-                if (n == 0) {
+                ulong bufSize = (ulong)blsGetG1ByteSize() * (isETH ? 2 : 1);
+                byte[] buf = new byte[bufSize];
+                ulong n = blsSignatureSerialize(buf, bufSize, this);
+                if (n != bufSize) {
                     throw new ArithmeticException("blsSignatureSerialize");
                 }
                 return buf;
             }
             public void Deserialize(byte[] buf) {
-                ulong n = blsSignatureDeserialize(ref this, buf, (ulong)buf.Length);
-                if (n == 0) {
+                ulong bufSize = (ulong)buf.Length;
+                ulong n = blsSignatureDeserialize(ref this, buf, bufSize);
+                if (n == 0 || n != bufSize) {
                     throw new ArithmeticException("blsSignatureDeserialize");
                 }
             }
