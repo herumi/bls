@@ -21,7 +21,7 @@ option(
 option(
 	BLS_ETH
 	"Ethereum 2.0 spec"
-	"OFF"
+	"ON"
 )
 
 if(BLS_ETH)
@@ -40,13 +40,20 @@ if(MSVC)
 	endif()
 else()
 	if("${CFLAGS_OPT_USER}" STREQUAL "")
-		set(CFLAGS_OPT_USER "-O3 -DNDEBUG -march=native")
+		set(CFLAGS_OPT_USER "-O3 -DNDEBUG")
 	endif()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wfloat-equal -Wpointer-arith ${CFLAGS_OPT_USER}")
 	set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 endif()
 
 add_subdirectory(mcl)
+
+if(MSVC)
+	add_library(semaphore src/win_semaphore.cpp)
+	target_include_directories(semaphore PUBLIC 
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
+endif()
 
 foreach(bit IN ITEMS 256 384 384_256)
 	add_library(bls${bit} SHARED src/bls_c${bit}.cpp)
@@ -56,17 +63,29 @@ foreach(bit IN ITEMS 256 384 384_256)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
 	target_link_libraries(bls${bit} PUBLIC mcl::mclbn${bit})
+	if(MSVC)
+		target_link_libraries(bls${bit} PUBLIC semaphore)
+	endif()
 	set_target_properties(bls${bit} PROPERTIES
 	  POSITION_INDEPENDENT_CODE ON
 	  VERSION ${bls_VERSION}
 	  SONAME ${bls_VERSION_MAJOR})
 endforeach()
 
-install(TARGETS bls256 bls384 bls384_256
-	EXPORT blsTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION lib)
+if(MSVC)
+	install(TARGETS bls256 bls384 bls384_256 semaphore
+		EXPORT blsTargets
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION lib)
+else()
+	install(TARGETS bls256 bls384 bls384_256
+			EXPORT blsTargets
+			LIBRARY DESTINATION lib
+			ARCHIVE DESTINATION lib
+			RUNTIME DESTINATION lib)
+endif()
+
 install(DIRECTORY include/bls
 	DESTINATION include)
 install(EXPORT blsTargets

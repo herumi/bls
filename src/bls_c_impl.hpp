@@ -12,6 +12,12 @@
 #define BLS_MULTI_VERIFY_THREAD
 #endif
 
+#if defined(_WIN32)
+	#include "win_semaphore.hpp"
+#else 
+	#include <semaphore.h>
+#endif
+
 
 inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
 inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
@@ -51,6 +57,10 @@ inline void hashAndMapToG(G2& z, const void *m, mclSize size) { hashAndMapToG2(z
 
 static int g_curveType;
 static bool g_irtfHashAndMap;
+static bool isInit = false;
+static sem_t blsMutex;
+static sem_t mclMutex;
+
 #ifdef BLS_ETH
 typedef G2 G;
 typedef G1 Gother;
@@ -77,6 +87,7 @@ int blsSetETHmode(int mode)
 		g_irtfHashAndMap = true;
 		break;
 	default:
+		sem_post(&blsMutex);
 		return -1;
 	}
 	return 0;
@@ -84,22 +95,39 @@ int blsSetETHmode(int mode)
 
 int blsSetMapToMode(int mode)
 {
-	return mclBn_setMapToMode(mode);
+	sem_wait(&mclMutex);
+	int result = mclBn_setMapToMode(mode);
+	sem_post(&mclMutex);
+	return result;
 }
 
 int blsInit(int curve, int compiledTimeVar)
 {
+	if(isInit) {
+		return 0;
+	}
+	isInit = true;
+	sem_init(&blsMutex, 0, 1);
+	sem_init(&mclMutex, 0, 1);
+
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
+		isInit = false;
 		return -(compiledTimeVar + (MCLBN_COMPILED_TIME_VAR * 1000));
 	}
 	const mcl::CurveParam* cp = mcl::getCurveParam(curve);
-	if (cp == 0) return -1;
+	if (cp == 0) {
+		isInit = false;
+		return -1;
+	}
 	bool b;
 	initPairing(&b, *cp);
 #ifdef __wasm__
 //	G2::setMulArrayGLV(0);
 #endif
-	if (!b) return -1;
+	if (!b) {
+		isInit = false;
+		return -1;
+	}
 	g_curveType = curve;
 
 #ifdef BLS_ETH
@@ -123,7 +151,10 @@ int blsInit(int curve, int compiledTimeVar)
 	} else {
 		mapToG2(&b, g_Q, 1);
 	}
-	if (!b) return -100;
+	if (!b) {
+		isInit = false;
+		return -100;
+	}
 #if MCL_SIZEOF_UNIT == 8
 	if (curve == MCL_BN254) {
 		#include "./qcoeff-bn254.hpp"
@@ -145,7 +176,10 @@ int blsInit(int curve, int compiledTimeVar)
 		precomputeG2(&b, g_Qcoeff, getBasePoint());
 	}
 #endif
-	if (!b) return -101;
+	if (!b){
+		isInit = false;
+		return -101;
+	}
 	verifyOrderG1(true);
 	verifyOrderG2(true);
 	return 0;
@@ -153,7 +187,9 @@ int blsInit(int curve, int compiledTimeVar)
 
 void blsSetETHserialization(int ETHserialization)
 {
+	sem_wait(&mclMutex);
 	mclBn_setETHserialization(ETHserialization);
+	sem_post(&mclMutex);
 }
 
 #ifdef __EMSCRIPTEN__
@@ -182,9 +218,14 @@ int blsSecretKeySetLittleEndian(blsSecretKey *sec, const void *buf, mclSize bufS
 }
 int blsSecretKeySetLittleEndianMod(blsSecretKey *sec, const void *buf, mclSize bufSize)
 {
+	sem_wait(&blsMutex);
+
 	bool b;
 	cast(&sec->v)->setArrayMod(&b, (const uint8_t *)buf, bufSize);
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&blsMutex);
+	return result;
 }
 
 void blsGetPublicKey(blsPublicKey *pub, const blsSecretKey *sec)
@@ -200,9 +241,13 @@ int blsHashToSignature(blsSignature *sig, const void *buf, mclSize bufSize)
 
 void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize size)
 {
+	sem_wait(&blsMutex);
+
 	blsHashToSignature(sig, m, size);
 	Fr s = *cast(&sec->v);
 	GmulCT(*cast(&sig->v), *cast(&sig->v), s);
+
+	sem_post(&blsMutex);
 }
 
 #ifdef BLS_ETH
@@ -212,6 +257,8 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 */
 bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 {
+	sem_wait(&blsMutex);
+
 	GT e;
 	G1 v1[2];
 	G2 v2[2] = { sHm, Hm };
@@ -219,7 +266,11 @@ bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 	G1::neg(v1[1], sP);
 	millerLoopVec(e, v1, v2, 2);
 	finalExp(e, e);
-	return e.isOne();
+	bool result = e.isOne();
+
+	sem_post(&blsMutex);
+
+	return result;
 }
 #else
 /*
@@ -231,26 +282,42 @@ bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 */
 bool isEqualTwoPairings(const G1& P1, const Fp6* Q1coeff, const G1& P2, const G2& Q2)
 {
+	sem_wait(&blsMutex);
+
 	GT e;
 	precomputedMillerLoop2mixed(e, P2, Q2, -P1, Q1coeff);
 	finalExp(e, e);
-	return e.isOne();
+	bool result = e.isOne();
+
+	sem_post(&blsMutex);
+
+	return result;
 }
 #endif
 
 int blsVerify(const blsSignature *sig, const blsPublicKey *pub, const void *m, mclSize size)
 {
-	if (cast(&pub->v)->isZero()) return 0;
+	sem_wait(&blsMutex);
+
+	if (cast(&pub->v)->isZero()) {
+		return 0;
+	}
 	G Hm;
 	hashAndMapToG(Hm, m, size);
 #ifdef BLS_ETH
-	return isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
+	bool result = isEqualTwoPairings(*cast(&sig->v), *cast(&pub->v), Hm);
+	sem_post(&blsMutex);
+
+	return result;
 #else
 	/*
 		e(sHm, Q) = e(Hm, sQ)
 		e(sig, Q) = e(Hm, pub)
 	*/
-	return isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+	bool result = isEqualTwoPairings(*cast(&sig->v), getQcoeff().data(), Hm, *cast(&pub->v));
+	sem_post(&blsMutex);
+
+	return result;
 #endif
 }
 
@@ -327,6 +394,8 @@ int blsMultiVerifyFinal(const mclBnGT *e, const blsSignature *aggSig)
 */
 int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, const void *randVec, mclSize randSize, mclSize n, int threadN)
 {
+	sem_wait(&blsMutex);
+
 #ifdef BLS_ETH
 	if (n == 0) return 0;
 	const char *msg = (const char*)msgVec;
@@ -382,7 +451,10 @@ int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void 
 	{
 		blsMultiVerifySub((mclBnGT*)&e, (blsSignature*)&aggSig, sigVec, pubVec, msg, msgSize, rp, randSize, n);
 	}
-	return blsMultiVerifyFinal((const mclBnGT*)&e, (const blsSignature*)&aggSig);
+	int result = blsMultiVerifyFinal((const mclBnGT*)&e, (const blsSignature*)&aggSig);
+	sem_post(&blsMutex);
+
+	return result;
 #else
 	(void)sigVec;
 	(void)pubVec;
@@ -392,27 +464,38 @@ int blsMultiVerify(blsSignature *sigVec, const blsPublicKey *pubVec, const void 
 	(void)randSize;
 	(void)n;
 	(void)threadN;
+	sem_post(&blsMutex);
+	
 	return 0;
 #endif
 }
 
 void blsAggregateSignature(blsSignature *aggSig, const blsSignature *sigVec, mclSize n)
 {
+	sem_wait(&blsMutex);
+
 	if (n == 0) {
 		memset(aggSig, 0, sizeof(*aggSig));
+		sem_post(&blsMutex);
 		return;
 	}
 	*aggSig = sigVec[0];
 	for (mclSize i = 1; i < n; i++) {
 		blsSignatureAdd(aggSig, &sigVec[i]);
 	}
+
+	sem_post(&blsMutex);
 }
 
 // return -1 if some pubVec[i] is zero else 0
+// Is subroutine of FastAggregateVerify
 int blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclSize n)
 {
+	sem_wait(&blsMutex);
+
 	if (n == 0) {
 		memset(aggPub, 0, sizeof(*aggPub));
+		sem_post(&blsMutex);
 		return 0;
 	}
 	int ret = 0;
@@ -422,22 +505,34 @@ int blsAggregatePublicKey(blsPublicKey *aggPub, const blsPublicKey *pubVec, mclS
 		if (cast(&pubVec[i].v)->isZero()) ret = -1;
 		blsPublicKeyAdd(aggPub, &pubVec[i]);
 	}
+
+	sem_post(&blsMutex);
 	return ret;
 }
 
 int blsFastAggregateVerify(const blsSignature *sig, const blsPublicKey *pubVec, mclSize n, const void *msg, mclSize msgSize)
 {
 	if (n == 0) return 0;
+	sem_wait(&blsMutex);
+
 	blsPublicKey aggPub;
 	int ret = blsAggregatePublicKey(&aggPub, pubVec, n);
-	if (ret < 0) return 0;
-	return blsVerify(sig, &aggPub, msg, msgSize);
+	if (ret < 0) {
+		sem_post(&blsMutex);
+		return 0;
+	}
+	int result = blsVerify(sig, &aggPub, msg, msgSize);
+	sem_post(&blsMutex);
+
+	return result;
 }
 
 int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVec, const void *msgVec, mclSize msgSize, mclSize n)
 {
 #ifdef BLS_ETH
 	if (n == 0) return 0;
+
+	sem_wait(&blsMutex);
 #if 1 // 1.1 times faster
 	GT e;
 	const char *msg = (const char*)msgVec;
@@ -450,7 +545,10 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
-			if (g1Vec[i].isZero()) return 0;
+			if (g1Vec[i].isZero()) {
+				sem_post(&blsMutex);
+				return 0;
+			}
 			hashAndMapToG(g2Vec[i], &msg[i * msgSize], msgSize);
 		}
 		pubVec += m;
@@ -465,21 +563,31 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 		initE = false;
 	}
 	BN::finalExp(e, e);
-	return e.isOne();
+	bool result = e.isOne();
+
+	sem_post(&blsMutex);
+
+	return result;
 #else
 	const char *p = (const char *)msgVec;
 	GT s(1), t;
 	for (mclSize i = 0; i < n; i++) {
 		G2 Q;
 		hashAndMapToG(Q, &p[msgSize * i], msgSize);
-		if (cast(&pubVec[i].v)->isZero()) return 0;
+		if (cast(&pubVec[i].v)->isZero()) {
+			sem_post(&blsMutex);
+			return 0;
+		}
 		millerLoop(t, *cast(&pubVec[i].v), Q);
 		s *= t;
 	}
 	millerLoop(t, -getBasePoint(), *cast(&sig->v));
 	s *= t;
 	finalExp(s, s);
-	return s.isOne() ? 1 : 0;
+	int result = s.isOne() ? 1 : 0;
+	sem_post(&blsMutex);
+
+	return result;
 #endif
 #else
 	(void)sig;
@@ -487,6 +595,8 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 	(void)msgVec;
 	(void)msgSize;
 	(void)n;
+	sem_post(&blsMutex);
+
 	return 0;
 #endif
 }
@@ -573,37 +683,62 @@ int blsSignatureIsZero(const blsSignature *x)
 
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id)
 {
+	sem_wait(&mclMutex);
+
 	bool b;
 	mcl::evaluatePolynomial(&b, *cast(&sec->v), cast(&msk->v), k, *cast(&id->v));
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&mclMutex);
+	return result;
 }
 
 int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, mclSize k, const blsId *id)
 {
+	sem_wait(&mclMutex);
+
 	bool b;
 	mcl::evaluatePolynomial(&b, *cast(&pub->v), cast(&mpk->v), k, *cast(&id->v));
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&mclMutex);
+	return result;
 }
 
 int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, mclSize n)
 {
+	sem_wait(&mclMutex);
+
 	bool b;
 	mcl::LagrangeInterpolation(&b, *cast(&sec->v), cast(&idVec->v), cast(&secVec->v), n);
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&mclMutex);
+	return result;
 }
 
 int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, mclSize n)
 {
+	sem_wait(&mclMutex);
+
 	bool b;
 	mcl::LagrangeInterpolation(&b, *cast(&pub->v), cast(&idVec->v), cast(&pubVec->v), n);
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&mclMutex);
+	return result;
 }
 
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n)
 {
+	sem_wait(&mclMutex);
+
 	bool b;
 	mcl::LagrangeInterpolation(&b, *cast(&sig->v), cast(&idVec->v), cast(&sigVec->v), n);
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+
+	sem_post(&mclMutex);
+	return result;
 }
 
 void blsSecretKeyAdd(blsSecretKey *sec, const blsSecretKey *rhs)
@@ -650,8 +785,11 @@ int blsPublicKeyIsValidOrder(const blsPublicKey *pub)
 template<class G>
 inline bool toG(G& Hm, const void *h, mclSize size)
 {
+	sem_wait(&mclMutex);
+
 	if (g_irtfHashAndMap) {
 		hashAndMapToG(Hm, h, size);
+		sem_post(&mclMutex);
 		return true;
 	}
 	// backward compatibility
@@ -663,12 +801,17 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 #else
 	BN::mapToG1(&b, Hm, t);
 #endif
+	sem_post(&mclMutex);
+
 	return b;
 }
 
 int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pubVec, const void *hVec, size_t sizeofHash, mclSize n)
 {
 	if (n == 0) return 0;
+
+	sem_wait(&blsMutex);
+
 	GT e;
 	const char *ph = (const char*)hVec;
 	const size_t N = 16;
@@ -680,8 +823,14 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		size_t m = mcl::fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
-			if (g1Vec[i].isZero()) return 0;
-			if (!toG(g2Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
+			if (g1Vec[i].isZero()) {
+				sem_post(&blsMutex);
+				return 0;
+			}
+			if (!toG(g2Vec[i], &ph[i * sizeofHash], sizeofHash)) {
+				sem_post(&blsMutex);
+				return 0;
+			}
 		}
 		pubVec += m;
 		ph += m * sizeofHash;
@@ -704,9 +853,15 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		size_t m = N;
 		if (n < m) m = n;
 		for (size_t i = 0; i < m; i++) {
-			if (!toG(g1Vec[i], &ph[i * sizeofHash], sizeofHash)) return 0;
+			if (!toG(g1Vec[i], &ph[i * sizeofHash], sizeofHash)) {
+				sem_post(&blsMutex);
+				return 0;
+			}
 			g2Vec[i] = *cast(&pubVec[i].v);
-			if (g2Vec[i].isZero()) return 0;
+			if (g2Vec[i].isZero()) {
+				sem_post(&blsMutex);
+				return 0;
+			}
 		}
 		millerLoopVec(e, g1Vec, g2Vec, m, false);
 		pubVec += m;
@@ -715,15 +870,25 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 	}
 #endif
 	BN::finalExp(e, e);
-	return e.isOne();
+	bool result = e.isOne();
+	sem_post(&blsMutex);
+
+	return result;
 }
 
 int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSize size)
 {
+	sem_wait(&blsMutex);
+
 	G Hm;
-	if (!toG(Hm, h, size)) return -1;
+	if (!toG(Hm, h, size)) {
+		sem_post(&blsMutex);
+		return -1;
+	}
 	Fr s = *cast(&sec->v);
 	GmulCT(*cast(&sig->v), Hm, s);
+
+	sem_post(&blsMutex);
 	return 0;
 }
 
@@ -731,6 +896,7 @@ int blsSignHash(blsSignature *sig, const blsSecretKey *sec, const void *h, mclSi
 const uint8_t ZERO_HEADER = 1 << 6;
 const mclSize serializedPublicKeySize = 48;
 const mclSize serializedSignatureSize = 48 * 2;
+// Is subroutine of blsPublicKeySerializeUncompressed
 inline bool isZeroFormat(const uint8_t *buf, mclSize n)
 {
 	if (buf[0] != ZERO_HEADER) return false;
@@ -745,8 +911,13 @@ mclSize blsPublicKeySerializeUncompressed(void *buf, mclSize maxBufSize, const b
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
+
+	sem_wait(&blsMutex);
 	const mclSize retSize = serializedPublicKeySize * 2;
-	if (maxBufSize < retSize) return 0;
+	if (maxBufSize < retSize) {
+		sem_post(&blsMutex);
+		return 0;
+	}
 	uint8_t *dst = (uint8_t*)buf;
 	if (cast(&pub->v)->isZero()) {
 		dst[0] = ZERO_HEADER;
@@ -754,14 +925,24 @@ mclSize blsPublicKeySerializeUncompressed(void *buf, mclSize maxBufSize, const b
 	} else {
 		G1 x;
 		G1::normalize(x, *cast(&pub->v));
-		if (x.x.serialize(dst, serializedPublicKeySize) == 0) return 0;
-		if (x.y.serialize(dst + serializedPublicKeySize, serializedPublicKeySize) == 0) return 0;
+		if (x.x.serialize(dst, serializedPublicKeySize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
+		if (x.y.serialize(dst + serializedPublicKeySize, serializedPublicKeySize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
 	}
+	sem_post(&blsMutex);
+
 	return retSize;
 #else
 	(void)buf;
 	(void)maxBufSize;
 	(void)pub;
+	sem_post(&blsMutex);
+
 	return 0;
 #endif
 }
@@ -770,8 +951,13 @@ mclSize blsSignatureSerializeUncompressed(void *buf, mclSize maxBufSize, const b
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
+
+	sem_wait(&blsMutex);
 	const mclSize retSize = serializedSignatureSize * 2;
-	if (maxBufSize < retSize) return 0;
+	if (maxBufSize < retSize) {
+		sem_post(&blsMutex);
+		return 0;
+	}
 	uint8_t *dst = (uint8_t*)buf;
 	if (cast(&sig->v)->isZero()) {
 		dst[0] = ZERO_HEADER;
@@ -779,14 +965,24 @@ mclSize blsSignatureSerializeUncompressed(void *buf, mclSize maxBufSize, const b
 	} else {
 		G2 x;
 		G2::normalize(x, *cast(&sig->v));
-		if (x.x.serialize(dst, serializedSignatureSize) == 0) return 0;
-		if (x.y.serialize(dst + serializedSignatureSize, serializedSignatureSize) == 0) return 0;
+		if (x.x.serialize(dst, serializedSignatureSize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
+		if (x.y.serialize(dst + serializedSignatureSize, serializedSignatureSize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
 	}
+	sem_post(&blsMutex);
+
 	return retSize;
 #else
 	(void)buf;
 	(void)maxBufSize;
 	(void)sig;
+	sem_post(&blsMutex);
+
 	return 0;
 #endif
 }
@@ -795,23 +991,38 @@ mclSize blsPublicKeyDeserializeUncompressed(blsPublicKey *pub, const void *buf, 
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
+
+	sem_wait(&blsMutex);
 	const mclSize retSize = serializedPublicKeySize * 2;
-	if (bufSize < retSize) return 0;
+	if (bufSize < retSize) {
+		sem_post(&blsMutex);
+		return 0;
+	}
 	const uint8_t *src = (const uint8_t*)buf;
 	G1& x = *cast(&pub->v);
 	if (isZeroFormat(src, retSize)) {
 		x.clear();
 	} else {
-		if (x.x.deserialize(src, serializedPublicKeySize) == 0) return 0;
-		if (x.y.deserialize(src + serializedPublicKeySize, serializedPublicKeySize) == 0) return 0;
+		if (x.x.deserialize(src, serializedPublicKeySize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
+		if (x.y.deserialize(src + serializedPublicKeySize, serializedPublicKeySize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
 		x.z = 1;
 	}
 	if (!x.isValid()) return 0;
+	sem_post(&blsMutex);
+
 	return retSize;
 #else
 	(void)pub;
 	(void)buf;
 	(void)bufSize;
+	sem_post(&blsMutex);
+
 	return 0;
 #endif
 }
@@ -820,23 +1031,41 @@ mclSize blsSignatureDeserializeUncompressed(blsSignature *sig, const void *buf, 
 {
 #ifdef BLS_ETH
 	if (g_curveType != MCL_BLS12_381) return 0;
+
+	sem_wait(&blsMutex);
 	const mclSize retSize = serializedSignatureSize * 2;
-	if (bufSize < retSize) return 0;
+	if (bufSize < retSize) {
+		sem_post(&blsMutex);
+		return 0;
+	}
 	const uint8_t *src = (const uint8_t*)buf;
 	G2& x = *cast(&sig->v);
 	if (isZeroFormat(src, retSize)) {
 		x.clear();
 	} else {
-		if (x.x.deserialize(src, serializedSignatureSize) == 0) return 0;
-		if (x.y.deserialize(src + serializedSignatureSize, serializedSignatureSize) == 0) return 0;
+		if (x.x.deserialize(src, serializedSignatureSize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
+		if (x.y.deserialize(src + serializedSignatureSize, serializedSignatureSize) == 0) {
+			sem_post(&blsMutex);
+			return 0;
+		}
 		x.z = 1;
 	}
-	if (!x.isValid()) return 0;
+	if (!x.isValid()) {
+		sem_post(&blsMutex);
+		return 0;
+	}
+	sem_post(&blsMutex);
+
 	return retSize;
 #else
 	(void)sig;
 	(void)buf;
 	(void)bufSize;
+	sem_post(&blsMutex);
+
 	return 0;
 #endif
 }
@@ -852,10 +1081,21 @@ int blsVerifyPairing(const blsSignature *X, const blsSignature *Y, const blsPubl
 
 int blsVerifyHash(const blsSignature *sig, const blsPublicKey *pub, const void *h, mclSize size)
 {
+	sem_wait(&blsMutex);
+
 	blsSignature Hm;
-	if (!toG(*cast(&Hm.v), h, size)) return 0;
-	if (cast(&pub->v)->isZero()) return 0;
-	return blsVerifyPairing(sig, &Hm, pub);
+	if (!toG(*cast(&Hm.v), h, size)) {
+		sem_post(&blsMutex);
+		return 0;
+	}
+	if (cast(&pub->v)->isZero()) {
+		sem_post(&blsMutex);
+		return 0;
+	}
+	int result = blsVerifyPairing(sig, &Hm, pub);
+	
+	sem_post(&blsMutex);
+	return result;
 }
 
 void blsSecretKeySub(blsSecretKey *sec, const blsSecretKey *rhs)
@@ -968,14 +1208,20 @@ void blsGetGeneratorOfPublicKey(blsPublicKey *pub)
 
 int blsSetGeneratorOfPublicKey(const blsPublicKey *pub)
 {
+	sem_wait(&blsMutex);
 #ifdef BLS_ETH
 	g_P = *cast(&pub->v);
+
+	sem_post(&blsMutex);
 	return 0;
 #else
 	g_Q = *cast(&pub->v);
 	bool b;
 	precomputeG2(&b, g_Qcoeff, getBasePoint());
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+	sem_post(&blsMutex);
+
+	return result; 
 #endif
 }
 
@@ -990,7 +1236,11 @@ int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize)
 
 int blsIdSetLittleEndian(blsId *id, const void *buf, mclSize bufSize)
 {
+	sem_wait(&blsMutex);
+
 	cast(&id->v)->setArrayMask((const uint8_t *)buf, bufSize);
+
+	sem_post(&blsMutex);
 	return 0;
 }
 
@@ -1013,32 +1263,52 @@ int blsHashToSecretKey(blsSecretKey *sec, const void *buf, mclSize bufSize)
 #ifndef MCL_DONT_USE_CSPRNG
 int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
 {
+	sem_wait(&blsMutex);
+
 	bool b;
 	cast(&sec->v)->setByCSPRNG(&b);
-	return b ? 0 : -1;
+	int result = b ? 0 : -1;
+	sem_post(&blsMutex);
+
+	return result;
 }
 void blsSetRandFunc(void *self, unsigned int (*readFunc)(void *self, void *buf, unsigned int bufSize))
 {
+	sem_wait(&mclMutex);
 	mcl::fp::RandGen::setRandFunc(self, readFunc);
+	sem_post(&mclMutex);
 }
 #endif
 
 void blsGetPop(blsSignature *sig, const blsSecretKey *sec)
 {
+	sem_wait(&blsMutex);
+
 	blsPublicKey pub;
 	blsGetPublicKey(&pub, sec);
 	char buf[1024];
 	mclSize n = cast(&pub.v)->serialize(buf, sizeof(buf));
 	assert(n);
 	blsSign(sig, sec, buf, n);
+
+	sem_post(&blsMutex);
 }
 
 int blsVerifyPop(const blsSignature *sig, const blsPublicKey *pub)
 {
+	sem_wait(&blsMutex);
+
 	char buf[1024];
 	mclSize n = cast(&pub->v)->serialize(buf, sizeof(buf));
-	if (n == 0) return 0;
-	return blsVerify(sig, pub, buf, n);
+	if (n == 0) {
+		sem_post(&blsMutex);
+		return 0;
+	}
+	int result = blsVerify(sig, pub, buf, n);
+
+	sem_post(&blsMutex);
+
+	return result;
 }
 
 mclSize blsIdGetLittleEndian(void *buf, mclSize maxBufSize, const blsId *id)
@@ -1143,22 +1413,30 @@ void aggregate(T& out, const cybozu::Sha256& h0, U *vec, mclSize n)
 // aggSig = sum sigVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
 void blsMultiAggregateSignature(blsSignature *aggSig, blsSignature *sigVec, blsPublicKey *pubVec, mclSize n)
 {
+	sem_wait(&blsMutex);
+
 	normalizePubVec(pubVec, n);
 	cybozu::Sha256 h0;
 	hashPublicKey(h0, pubVec, n);
 	G out;
 	aggregate(out, h0, sigVec, n);
 	*cast(&aggSig->v) = out;
+
+	sem_post(&blsMutex);
 }
 // aggPub = sum pubVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
 void blsMultiAggregatePublicKey(blsPublicKey *aggPub, blsPublicKey *pubVec, mclSize n)
 {
+	sem_wait(&blsMutex);
+
 	normalizePubVec(pubVec, n);
 	cybozu::Sha256 h0;
 	hashPublicKey(h0, pubVec, n);
 	Gother out;
 	aggregate(out, h0, pubVec, n);
 	*cast(&aggPub->v) = out;
+
+	sem_post(&blsMutex);
 }
 
 #endif

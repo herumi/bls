@@ -23,9 +23,10 @@ set OBJS=obj\fp.obj bint-x64-win.obj
 
 if %MAKE_DLL%==1 (
   echo make dynamic library DLL
+  cl /c %LOCAL_CFLAGS% /Foobj/semaphore.obj src/win_semaphore.cpp /DBLS_NO_AUTOLINK
   cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp /DBLS_NO_AUTOLINK
   cl /c %LOCAL_CFLAGS% /Foobj/fp.obj %MCL_DIR%/src/fp.cpp
-  link /nologo /DLL /OUT:bin\bls384_256.dll obj\bls_c384_256.obj %OBJS% %LDFLAGS% /implib:lib\bls384_256.lib
+  link /nologo /DLL /OUT:bin\bls384_256.dll obj\bls_c384_256.obj obj\semaphore.obj %OBJS% %LDFLAGS% /implib:lib\bls384_256.lib
 ) else (
   echo make static library LIB
   cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
