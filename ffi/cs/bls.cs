@@ -76,7 +76,7 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsPublicKeyIsZero(in PublicKey x);
         [DllImport(dllName)] public static extern int blsSignatureIsZero(in Signature x);
         //	hash buf and set
-        [DllImport(dllName)] public static extern int blsHashToSecretKey(ref SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
+        [DllImport(dllName)] public static extern int blsHashToSecretKey(ref SecretKey sec, [In]byte[] buf, ulong bufSize);
         /*
 			set secretKey if system has /dev/urandom or CryptGenRandom
 			return 0 if success else -1
@@ -95,10 +95,10 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsPublicKeyRecover(ref PublicKey pub, in PublicKey pubVec, in Id idVec, ulong n);
         [DllImport(dllName)] public static extern int blsSignatureRecover(ref Signature sig, in Signature sigVec, in Id idVec, ulong n);
 
-        [DllImport(dllName)] public static extern void blsSign(ref Signature sig, in SecretKey sec, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
+        [DllImport(dllName)] public static extern void blsSign(ref Signature sig, in SecretKey sec, [In]byte[] buf, ulong size);
 
         // return 1 if valid
-        [DllImport(dllName)] public static extern int blsVerify(in Signature sig, in PublicKey pub, [In][MarshalAs(UnmanagedType.LPStr)] string m, ulong size);
+        [DllImport(dllName)] public static extern int blsVerify(in Signature sig, in PublicKey pub, [In]byte[] buf, ulong size);
         [DllImport(dllName)] public static extern int blsVerifyPop(in Signature sig, in PublicKey pub);
 
         //////////////////////////////////////////////////////////////////////////
@@ -254,20 +254,29 @@ namespace mcl
             public void SetByCSPRNG() {
                 blsSecretKeySetByCSPRNG(ref this);
             }
-            public void SetHashOf(string s) {
-                if (blsHashToSecretKey(ref this, s, (ulong)s.Length) != 0) {
+            public void SetHashOf(byte[] buf)
+            {
+                if (blsHashToSecretKey(ref this, buf, (ulong)buf.Length) != 0) {
                     throw new ArgumentException("blsHashToSecretKey");
                 }
+            }
+            public void SetHashOf(string s) {
+                SetHashOf(Encoding.UTF8.GetBytes(s));
             }
             public PublicKey GetPublicKey() {
                 PublicKey pub;
                 blsGetPublicKey(ref pub, this);
                 return pub;
             }
-            public Signature Sign(string m) {
+            public Signature Sign(byte[] buf)
+            {
                 Signature sig;
-                blsSign(ref sig, this, m, (ulong)m.Length);
+                blsSign(ref sig, this, buf, (ulong)buf.Length);
                 return sig;
+            }
+            public Signature Sign(string s)
+            {
+                return Sign(Encoding.UTF8.GetBytes(s));
             }
             public Signature GetPop() {
                 Signature sig;
@@ -345,8 +354,12 @@ namespace mcl
             {
                 blsPublicKeyMul(ref this, rhs);
             }
-            public bool Verify(in Signature sig, string m) {
-                return blsVerify(sig, this, m, (ulong)m.Length) == 1;
+            public bool Verify(in Signature sig, byte[] buf)
+            {
+                return blsVerify(sig, this, buf, (ulong)buf.Length) == 1;
+            }
+            public bool Verify(in Signature sig, string s) {
+                return Verify(sig, Encoding.UTF8.GetBytes(s));
             }
             public bool VerifyPop(in Signature pop) {
                 return blsVerifyPop(pop, this) == 1;
