@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace mcl
 {
-    class BLS
+    public class BLS
     {
         public const int BN254 = 0;
         public const int BLS12_381 = 5;
