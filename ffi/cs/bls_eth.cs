@@ -131,6 +131,8 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsSignatureSetHexStr(ref Signature sig, [In][MarshalAs(UnmanagedType.LPStr)] string buf, ulong bufSize);
         [DllImport(dllName)] public static extern ulong blsSignatureGetHexStr([Out]StringBuilder buf, ulong maxBufSize, in Signature sig);
 
+        [DllImport(dllName)] public static extern int blsFastAggregateVerify(in Signature sig, in PublicKey pubVec, ulong n, [In]byte[] msg, ulong msgSize);
+
         public static void Init(int curveType = BLS12_381) {
             if (isETH && curveType != BLS12_381) {
                 throw new PlatformNotSupportedException("bad curveType");
@@ -460,6 +462,13 @@ namespace mcl
             Signature sig;
             blsSignatureMulVec(ref sig, sigVec[0], secVec[0], (ulong)sigVec.Length);
             return sig;
+        }
+        public static bool FastAggregateVerify(in Signature sig, in PublicKey[] pubVec, byte[] msg)
+        {
+            if (pubVec.Length == 0) {
+                throw new ArgumentException("pubVec is empty");
+            }
+            return blsFastAggregateVerify(in sig, in pubVec[0], (ulong)pubVec.Length, msg, (ulong)msg.Length) == 1;
         }
     }
 }
