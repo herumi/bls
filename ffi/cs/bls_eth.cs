@@ -485,6 +485,13 @@ namespace mcl
         public unsafe struct Msg
         {
             private fixed byte v[MSG_SIZE];
+            public void Set(byte[] buf) {
+                fixed (byte *p = v) {
+                    for (int i = 0; i < MSG_SIZE; i++) {
+                        p[i] = buf[i];
+                    }
+                }
+            }
         }
         public static bool AggregateVerifyNoCheck(in Signature sig, in PublicKey[] pubVec, in Msg[] msgVec)
         {
