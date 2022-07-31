@@ -291,7 +291,6 @@ namespace mcl
                 bool result = false;
                 try {
                     for (int i = 0; i < n; i++) {
-                        pubVec[i] = new PublicKey();
                         pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
                     }
                     var msg = FromHexStr(v.msg);
