@@ -244,8 +244,9 @@ namespace mcl
             Signature aggSig = MulVec(sigVec, frVec);
             assert("mulVec", aggPub.Verify(aggSig, m));
         }
-        static void TestFastAggregate()
+        static void TestFastAggregateVerify()
         {
+            Console.WriteLine("TestFastAggregateVerify");
             var tbl = new[] {
                 new {
                     pubVec = new[] {
@@ -304,6 +305,60 @@ namespace mcl
                 assert("FastAggregateVerify", result == v.expected);
             }
         }
+        static void TestAggregateVerify()
+        {
+            Console.WriteLine("TestAggregateVerify");
+            var tbl = new[] {
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                        "abababababababababababababababababababababababababababababababab",
+                    },
+                    sig = "9104e74bffffffff",
+                    expected = false,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                        "abababababababababababababababababababababababababababababababab",
+                    },
+                    sig = "9104e74b9dfd3ad502f25d6a5ef57db0ed7d9a0e00f3500586d8ce44231212542fcfaf87840539b398bf07626705cf1105d246ca1062c6c2e1a53029a0f790ed5e3cb1f52f8234dc5144c45fc847c0cd37a92d68e7c5ba7c648a8a339f171244",
+                    expected = true,
+                },
+            };
+            foreach (var v in tbl) {
+                int n = v.pubVec.Length;
+                PublicKey[] pubVec = new PublicKey[n];
+                bool result = false;
+                try {
+                    for (int i = 0; i < n; i++) {
+                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                    }
+                    Msg[] msgVec = new Msg[n];
+                    for (int i = 0; i < n; i++) {
+                        msgVec[i].Set(FromHexStr(v.msgVec[i]));
+                    }
+                    Signature sig = new Signature();
+                    sig.Deserialize(FromHexStr(v.sig));
+                    result = AggregateVerifyNoCheck(sig, pubVec, msgVec);
+                } catch (Exception) {
+                    // pass through
+                }
+                assert("AggregateVerify", result == v.expected);
+            }
+        }
         static void Main(string[] args) {
             try {
                 int[] curveTypeTbl = { BN254, BLS12_381 };
@@ -321,7 +376,8 @@ namespace mcl
                     TestAggregate();
                     TestMulVec();
                     if (isETH) {
-                        TestFastAggregate();
+                        TestFastAggregateVerify();
+                        TestAggregateVerify();
                     }
                     if (err == 0) {
                         Console.WriteLine("all tests succeed");
