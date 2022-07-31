@@ -486,6 +486,9 @@ namespace mcl
         {
             private fixed byte v[MSG_SIZE];
             public void Set(byte[] buf) {
+                if (buf.Length != MSG_SIZE) {
+                    throw new ArgumentException("bad buf size");
+                }
                 fixed (byte *p = v) {
                     for (int i = 0; i < MSG_SIZE; i++) {
                         p[i] = buf[i];
