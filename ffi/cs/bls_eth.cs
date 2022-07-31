@@ -1,3 +1,12 @@
+/**
+	@file
+	@brief C# interface of BLS signature
+	@author MITSUNARI Shigeo(@herumi)
+	@license modified new BSD license
+	http://opensource.org/licenses/BSD-3-Clause
+    @note
+    use bls384_256 built by `mklib dll eth` to use Ethereum mode
+*/
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -25,6 +34,7 @@ namespace mcl
         public const int SECRETKEY_SERIALIZE_SIZE = SECRETKEY_UNIT_SIZE * 8;
         public const int PUBLICKEY_SERIALIZE_SIZE = PUBLICKEY_UNIT_SIZE * 8;
         public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
+        public const int MSG_SIZE = 32;
 
         public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256" : "bls256";
         [DllImport(dllName)] public static extern int blsInit(int curveType, int compiledTimeVar);
@@ -132,6 +142,7 @@ namespace mcl
         [DllImport(dllName)] public static extern ulong blsSignatureGetHexStr([Out]StringBuilder buf, ulong maxBufSize, in Signature sig);
 
         [DllImport(dllName)] public static extern int blsFastAggregateVerify(in Signature sig, in PublicKey pubVec, ulong n, [In]byte[] msg, ulong msgSize);
+        [DllImport(dllName)] public static extern int blsAggregateVerifyNoCheck(in Signature sig, in PublicKey pubVec, in Msg msgVec, ulong msgSize, ulong n);
 
         public static void Init(int curveType = BLS12_381) {
             if (isETH && curveType != BLS12_381) {
@@ -469,6 +480,22 @@ namespace mcl
                 throw new ArgumentException("pubVec is empty");
             }
             return blsFastAggregateVerify(in sig, in pubVec[0], (ulong)pubVec.Length, msg, (ulong)msg.Length) == 1;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct Msg
+        {
+            private fixed byte v[MSG_SIZE];
+        }
+        public static bool AggregateVerifyNoCheck(in Signature sig, in PublicKey[] pubVec, in Msg[] msgVec)
+        {
+            if (pubVec.Length != msgVec.Length) {
+                    throw new ArgumentException("different lengt of pubVec and msgVec");
+            }
+            ulong n = (ulong)pubVec.Length;
+            if (n == 0) {
+                throw new ArgumentException("pubVec is empty");
+            }
+            return blsAggregateVerifyNoCheck(in sig, in pubVec[0], in msgVec[0], MSG_SIZE, n) == 1;
         }
     }
 }
