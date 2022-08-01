@@ -352,11 +352,41 @@ namespace mcl
                     }
                     Signature sig = new Signature();
                     sig.Deserialize(FromHexStr(v.sig));
-                    result = AggregateVerifyNoCheck(sig, pubVec, msgVec);
+                    result = AggregateVerify(sig, pubVec, msgVec);
                 } catch (Exception) {
                     // pass through
                 }
                 assert("AggregateVerify", result == v.expected);
+            }
+        }
+        static void TestAreAllMsgDifferent()
+        {
+            Console.WriteLine("TestAreAllMsgDifferent");
+            var tbl = new[] {
+                new {
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "0000000000000000000000000000000000000000000000000000000000000001",
+                        "0000000000000000000000000000000000000000000000000000000000000002",
+                    },
+                    expected = true,
+                },
+                new {
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "0000000000000000000000000000000000000000000000000000000000000001",
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                    },
+                    expected = false,
+                },
+            };
+            foreach (var t in tbl) {
+                int n = t.msgVec.Length;
+                var msgVec = new Msg[n];
+                for (int i = 0; i < n; i++) {
+                    msgVec[i].Set(FromHexStr(t.msgVec[i]));
+                }
+                assert("verify", AreAllMsgDifferent(msgVec) == t.expected);
             }
         }
         static void Main(string[] args) {
@@ -375,6 +405,7 @@ namespace mcl
                     TestSharing();
                     TestAggregate();
                     TestMulVec();
+                    TestAreAllMsgDifferent();
                     if (isETH) {
                         TestFastAggregateVerify();
                         TestAggregateVerify();

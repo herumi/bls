@@ -10,6 +10,7 @@
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace mcl
 {
@@ -495,6 +496,39 @@ namespace mcl
                     }
                 }
             }
+            public byte Get(int i)
+            {
+                fixed (byte *p = v) {
+                    return p[i];
+                }
+            }
+            public override int GetHashCode()
+            {
+                // FNV-1a 32-bit hash
+                uint v = 2166136261;
+                for (int i = 0; i < MSG_SIZE; i++) {
+                    v ^= Get(i);
+                    v *= 16777619;
+                }
+                return (int)v;
+            }
+            public override bool Equals(object obj)
+            {
+                if (!(obj is Msg)) return false;
+                var rhs = (Msg)obj;
+                for (int i = 0; i < MSG_SIZE; i++) {
+                    if (Get(i) != rhs.Get(i)) return false;
+                }
+                return true;
+            }
+        }
+        public static bool AreAllMsgDifferent(in Msg[] msgVec)
+        {
+            var set = new HashSet<Msg>();
+            foreach (var msg in msgVec) {
+                if (!set.Add(msg)) return false;
+            }
+            return true;
         }
         public static bool AggregateVerifyNoCheck(in Signature sig, in PublicKey[] pubVec, in Msg[] msgVec)
         {
@@ -506,6 +540,13 @@ namespace mcl
                 throw new ArgumentException("pubVec is empty");
             }
             return blsAggregateVerifyNoCheck(in sig, in pubVec[0], in msgVec[0], MSG_SIZE, n) == 1;
+        }
+        public static bool AggregateVerify(in Signature sig, in PublicKey[] pubVec, in Msg[] msgVec)
+        {
+            if (!AreAllMsgDifferent(msgVec)) {
+                return false;
+            }
+            return AggregateVerifyNoCheck(in sig, in pubVec, in msgVec);
         }
     }
 }
