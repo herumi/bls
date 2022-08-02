@@ -397,7 +397,9 @@ namespace mcl
                         continue;
                     }
                     Console.WriteLine("curveType={0}", curveType);
-                    Init(curveType);
+                    if (!isETH) {
+                        Init(curveType);
+                    }
                     TestId();
                     TestSecretKey();
                     TestPublicKey();

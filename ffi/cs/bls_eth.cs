@@ -145,7 +145,9 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsFastAggregateVerify(in Signature sig, in PublicKey pubVec, ulong n, [In]byte[] msg, ulong msgSize);
         [DllImport(dllName)] public static extern int blsAggregateVerifyNoCheck(in Signature sig, in PublicKey pubVec, in Msg msgVec, ulong msgSize, ulong n);
 
+        // don't call this if isETH = true, it calls in BLS()
         public static void Init(int curveType = BLS12_381) {
+            if (isETH && isInit) return;
             if (isETH && curveType != BLS12_381) {
                 throw new PlatformNotSupportedException("bad curveType");
             }
@@ -155,6 +157,15 @@ namespace mcl
             int err = blsInit(curveType, COMPILED_TIME_VAR);
             if (err != 0) {
                 throw new ArgumentException("blsInit");
+            }
+        }
+        static readonly bool isInit;
+        // call at once
+        static BLS()
+        {
+            if (isETH) {
+                Init(BLS12_381);
+                isInit = true;
             }
         }
         [StructLayout(LayoutKind.Sequential)]
