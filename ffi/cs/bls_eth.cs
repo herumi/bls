@@ -544,7 +544,7 @@ namespace mcl
         public static bool AggregateVerifyNoCheck(in Signature sig, in PublicKey[] pubVec, in Msg[] msgVec)
         {
             if (pubVec.Length != msgVec.Length) {
-                    throw new ArgumentException("different lengt of pubVec and msgVec");
+                    throw new ArgumentException("different length of pubVec and msgVec");
             }
             ulong n = (ulong)pubVec.Length;
             if (n == 0) {
