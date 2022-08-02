@@ -182,7 +182,7 @@ namespace mcl
             }
             public void SetDecStr(string s) {
                 if (blsIdSetDecStr(ref this, s, (ulong)s.Length) != 0) {
-                    throw new ArgumentException("blsIdSetDecSt:" + s);
+                    throw new ArgumentException("blsIdSetDecStr:" + s);
                 }
             }
             public void SetHexStr(string s) {
