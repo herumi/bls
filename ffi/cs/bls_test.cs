@@ -389,6 +389,74 @@ namespace mcl
                 assert("verify", AreAllMsgDifferent(msgVec) == t.expected);
             }
         }
+        static void TestMultiVerify()
+        {
+            Console.WriteLine("TestMultiVerify");
+            var tbl = new[] {
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                        "abababababababababababababababababababababababababababababababab",
+                    },
+                    sigVec = new[]
+                    {
+                        "b6ed936746e01f8ecf281f020953fbf1f01debd5657c4a383940b020b26507f6076334f91e2366c96e9ab279fb5158090352ea1c5b0c9274504f4f0e7053af24802e51e4568d164fe986834f41e55c8e850ce1f98458c0cfc9ab380b55285a55",
+                        "af1390c3c47acdb37131a51216da683c509fce0e954328a59f93aebda7e4ff974ba208d9a4a2a2389f892a9d418d618418dd7f7a6bc7aa0da999a9d3a5b815bc085e14fd001f6a1948768a3f4afefc8b8240dda329f984cb345c6363272ba4fe",
+                        "ae82747ddeefe4fd64cf9cedb9b04ae3e8a43420cd255e3c7cd06a8d88b7c7f8638543719981c5d16fa3527c468c25f0026704a6951bde891360c7e8d12ddee0559004ccdbe6046b55bae1b257ee97f7cdb955773d7cf29adf3ccbb9975e4eb9",
+                    },
+                    expected = true,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                    },
+                    sigVec = new[]
+                    {
+                        "a70f1f1b4bd97d182ebb55d08be3f90b1dc232bb50b44e259381a642ef0bad3629ad3542f3e8ff6a84e451fc0b595e090fc4f0e860cfc5584715ef1b6cd717b9994378f7a51b815bbf5a0d95bc3402583ad2e95a229731e539906249a5e4355c",
+                        "b758eb7e15c101f53be2214d2a6b65e8fe7053146dbe3c73c9fe9b5efecdf63ca06a4d5d938dbf18fe6600529c0011a7013f45ae012b02904d5c7c33316e935a0e084abead4f43f84383c52cd3b3f14024437e251a2a7c0d5147954022873a58",
+                    },
+                    expected = false,
+                },
+            };
+            foreach (var v in tbl) {
+                int n = v.pubVec.Length;
+                PublicKey[] pubVec = new PublicKey[n];
+                SecretKey[] randVec = new SecretKey[n];
+                bool result = false;
+                try {
+                    for (int i = 0; i < n; i++) {
+                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                    }
+                    Msg[] msgVec = new Msg[n];
+                    for (int i = 0; i < n; i++) {
+                        msgVec[i].Set(FromHexStr(v.msgVec[i]));
+                    }
+                    Signature[] sigVec = new Signature[n];
+                    for (int i = 0; i < n; i++) {
+                        sigVec[i].Deserialize(FromHexStr(v.sigVec[i]));
+                    }
+                    for (int i = 0; i < n; i++)
+                    {
+                        _ = blsSecretKeySetByCSPRNG(ref randVec[i]);
+                    }
+                    result = MultiVerify(sigVec, pubVec, msgVec, randVec);
+                } catch (Exception) {
+                    // pass through
+                }
+                assert("MultiVerify", result == v.expected);
+            }
+        }
         static void Main(string[] args) {
             try {
                 int[] curveTypeTbl = { BN254, BLS12_381 };
@@ -411,6 +479,7 @@ namespace mcl
                     if (isETH) {
                         TestFastAggregateVerify();
                         TestAggregateVerify();
+                        TestMultiVerify();
                     }
                     if (err == 0) {
                         Console.WriteLine("all tests succeed");
