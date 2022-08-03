@@ -18,14 +18,14 @@
 	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + BLS_COMPILER_TIME_VAR_ADJ)
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 	#ifdef BLS_DONT_EXPORT
 		#define BLS_DLL_API
 	#else
 		#ifdef BLS_DLL_EXPORT
 			#define BLS_DLL_API __declspec(dllexport)
 		#else
-			#define BLS_DLL_API __declspec(dllimport)
+			#define BLS_DLL_API //__declspec(dllimport)
 		#endif
 	#endif
 	#ifndef BLS_NO_AUTOLINK

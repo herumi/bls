@@ -1,9 +1,10 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.539
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bls", "bls.csproj", "{E9D06B1B-EA22-4EF4-BA4B-422F7625966D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bls_eth", "bls_eth.csproj", "{D32C3C79-9139-4488-AAD0-B6D28868BBA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +16,10 @@ Global
 		{E9D06B1B-EA22-4EF4-BA4B-422F7625966D}.Debug|x64.Build.0 = Debug|x64
 		{E9D06B1B-EA22-4EF4-BA4B-422F7625966D}.Release|x64.ActiveCfg = Release|x64
 		{E9D06B1B-EA22-4EF4-BA4B-422F7625966D}.Release|x64.Build.0 = Release|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Debug|x64.ActiveCfg = Debug|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Debug|x64.Build.0 = Debug|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Release|x64.ActiveCfg = Release|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

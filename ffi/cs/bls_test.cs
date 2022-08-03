@@ -11,6 +11,18 @@ namespace mcl
             Console.WriteLine("ERR {0}", msg);
             err++;
         }
+        public static byte[] FromHexStr(string s)
+        {
+            if (s.Length % 2 == 1) {
+                throw new ArgumentException("s.Length is odd." + s.Length);
+            }
+            int n = s.Length / 2;
+            var buf = new byte[n];
+            for (int i = 0; i < n; i++) {
+                buf[i] = Convert.ToByte(s.Substring(i * 2, 2), 16);
+            }
+            return buf;
+        }
         static void TestId() {
             Console.WriteLine("TestId");
             Id id1;
@@ -232,12 +244,162 @@ namespace mcl
             Signature aggSig = MulVec(sigVec, frVec);
             assert("mulVec", aggPub.Verify(aggSig, m));
         }
+        static void TestFastAggregateVerify()
+        {
+            Console.WriteLine("TestFastAggregateVerify");
+            var tbl = new[] {
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msg = "abababababababababababababababababababababababababababababababab",
+                    sig = "9712c3edd73a209c742b8250759db12549b3eaf43b5ca61376d9f30e2747dbcf842d8b2ac0901d2a093713e20284a7670fcf6954e9ab93de991bb9b313e664785a075fc285806fa5224c82bde146561b446ccfc706a64b8579513cfcffffffff",
+                    expected = false,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                    },
+                    msg = "0000000000000000000000000000000000000000000000000000000000000000",
+                    sig = "b6ed936746e01f8ecf281f020953fbf1f01debd5657c4a383940b020b26507f6076334f91e2366c96e9ab279fb5158090352ea1c5b0c9274504f4f0e7053af24802e51e4568d164fe986834f41e55c8e850ce1f98458c0cfc9ab380b55285a55",
+                    expected = true,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                    },
+                    msg = "5656565656565656565656565656565656565656565656565656565656565656",
+                    sig = "912c3615f69575407db9392eb21fee18fff797eeb2fbe1816366ca2a08ae574d8824dbfafb4c9eaa1cf61b63c6f9b69911f269b664c42947dd1b53ef1081926c1e82bb2a465f927124b08391a5249036146d6f3f1e17ff5f162f779746d830d1",
+                    expected = true,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msg = "abababababababababababababababababababababababababababababababab",
+                    sig = "9712c3edd73a209c742b8250759db12549b3eaf43b5ca61376d9f30e2747dbcf842d8b2ac0901d2a093713e20284a7670fcf6954e9ab93de991bb9b313e664785a075fc285806fa5224c82bde146561b446ccfc706a64b8579513cfc4ff1d930",
+                    expected = true,
+                },
+            };
+            foreach (var v in tbl) {
+                int n = v.pubVec.Length;
+                PublicKey[] pubVec = new PublicKey[n];
+                bool result = false;
+                try {
+                    for (int i = 0; i < n; i++) {
+                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                    }
+                    var msg = FromHexStr(v.msg);
+                    Signature sig = new Signature();
+                    sig.Deserialize(FromHexStr(v.sig));
+                    result = FastAggregateVerify(sig, pubVec, msg);
+                }
+                catch (Exception) {
+                    // pass through
+                }
+                assert("FastAggregateVerify", result == v.expected);
+            }
+        }
+        static void TestAggregateVerify()
+        {
+            Console.WriteLine("TestAggregateVerify");
+            var tbl = new[] {
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                        "abababababababababababababababababababababababababababababababab",
+                    },
+                    sig = "9104e74bffffffff",
+                    expected = false,
+                },
+                new {
+                    pubVec = new[] {
+                        "a491d1b0ecd9bb917989f0e74f0dea0422eac4a873e5e2644f368dffb9a6e20fd6e10c1b77654d067c0618f6e5a7f79a",
+                        "b301803f8b5ac4a1133581fc676dfedc60d891dd5fa99028805e5ea5b08d3491af75d0707adab3b70c6a6a580217bf81",
+                        "b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f",
+                    },
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "5656565656565656565656565656565656565656565656565656565656565656",
+                        "abababababababababababababababababababababababababababababababab",
+                    },
+                    sig = "9104e74b9dfd3ad502f25d6a5ef57db0ed7d9a0e00f3500586d8ce44231212542fcfaf87840539b398bf07626705cf1105d246ca1062c6c2e1a53029a0f790ed5e3cb1f52f8234dc5144c45fc847c0cd37a92d68e7c5ba7c648a8a339f171244",
+                    expected = true,
+                },
+            };
+            foreach (var v in tbl) {
+                int n = v.pubVec.Length;
+                PublicKey[] pubVec = new PublicKey[n];
+                bool result = false;
+                try {
+                    for (int i = 0; i < n; i++) {
+                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                    }
+                    Msg[] msgVec = new Msg[n];
+                    for (int i = 0; i < n; i++) {
+                        msgVec[i].Set(FromHexStr(v.msgVec[i]));
+                    }
+                    Signature sig = new Signature();
+                    sig.Deserialize(FromHexStr(v.sig));
+                    result = AggregateVerify(sig, pubVec, msgVec);
+                } catch (Exception) {
+                    // pass through
+                }
+                assert("AggregateVerify", result == v.expected);
+            }
+        }
+        static void TestAreAllMsgDifferent()
+        {
+            Console.WriteLine("TestAreAllMsgDifferent");
+            var tbl = new[] {
+                new {
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "0000000000000000000000000000000000000000000000000000000000000001",
+                        "0000000000000000000000000000000000000000000000000000000000000002",
+                    },
+                    expected = true,
+                },
+                new {
+                    msgVec = new[] {
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                        "0000000000000000000000000000000000000000000000000000000000000001",
+                        "0000000000000000000000000000000000000000000000000000000000000000",
+                    },
+                    expected = false,
+                },
+            };
+            foreach (var t in tbl) {
+                int n = t.msgVec.Length;
+                var msgVec = new Msg[n];
+                for (int i = 0; i < n; i++) {
+                    msgVec[i].Set(FromHexStr(t.msgVec[i]));
+                }
+                assert("verify", AreAllMsgDifferent(msgVec) == t.expected);
+            }
+        }
         static void Main(string[] args) {
             try {
                 int[] curveTypeTbl = { BN254, BLS12_381 };
                 foreach (int curveType in curveTypeTbl) {
+                    if (isETH && curveType != BLS12_381) {
+                        continue;
+                    }
                     Console.WriteLine("curveType={0}", curveType);
-                    Init(curveType);
+                    if (!isETH) {
+                        Init(curveType);
+                    }
                     TestId();
                     TestSecretKey();
                     TestPublicKey();
@@ -245,6 +407,11 @@ namespace mcl
                     TestSharing();
                     TestAggregate();
                     TestMulVec();
+                    TestAreAllMsgDifferent();
+                    if (isETH) {
+                        TestFastAggregateVerify();
+                        TestAggregateVerify();
+                    }
                     if (err == 0) {
                         Console.WriteLine("all tests succeed");
                     } else {

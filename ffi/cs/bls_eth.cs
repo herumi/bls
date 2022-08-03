@@ -18,7 +18,7 @@ namespace mcl
     {
         public const int BN254 = 0;
         public const int BLS12_381 = 5;
-        public const bool isETH = false;
+        public const bool isETH = true;
 
         const int IoEcComp = 512; // fixed byte representation
         public const int FR_UNIT_SIZE = 4;
