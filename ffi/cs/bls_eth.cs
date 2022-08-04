@@ -145,6 +145,10 @@ namespace mcl
         [DllImport(dllName)] public static extern int blsFastAggregateVerify(in Signature sig, in PublicKey pubVec, ulong n, [In]byte[] msg, ulong msgSize);
         [DllImport(dllName)] public static extern int blsAggregateVerifyNoCheck(in Signature sig, in PublicKey pubVec, in Msg msgVec, ulong msgSize, ulong n);
 
+        [DllImport(dllName)]
+        public static extern int blsMultiVerify(in Signature sigVec, in PublicKey pubVec, in Msg msgVec,
+            ulong msgSize, in SecretKey randVec, ulong randSize, ulong n, int threadN);
+        
         // don't call this if isETH = true, it calls in BLS()
         public static void Init(int curveType = BLS12_381) {
             if (isETH && isInit) return;
@@ -558,6 +562,26 @@ namespace mcl
                 return false;
             }
             return AggregateVerifyNoCheck(in sig, in pubVec, in msgVec);
+        }
+        
+        public static bool MultiVerify(in Signature[] sigVec, in PublicKey[] pubVec, in Msg[] msgVec, in SecretKey[] randVec)
+        {
+            if (pubVec.Length != msgVec.Length) {
+                throw new ArgumentException("different length of pubVec and msgVec");
+            }
+            if (pubVec.Length != sigVec.Length)
+            {
+                throw new ArgumentException("different length of pubVec and sigVec");
+            }
+            if (pubVec.Length != randVec.Length)
+            {
+                throw new ArgumentException("different length of pubVec and randVec");
+            }
+            ulong n = (ulong)pubVec.Length;
+            if (n == 0) {
+                throw new ArgumentException("pubVec is empty");
+            }
+            return blsMultiVerify(in sigVec[0], in pubVec[0], in msgVec[0], MSG_SIZE, in randVec[0], n, n, 4) == 1;
         }
     }
 }
