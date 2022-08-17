@@ -122,7 +122,7 @@ test: $(TEST_EXE)
 	$(MAKE) sample_test
 
 sample_test: $(EXE_DIR)/bls_smpl.exe
-	env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib python bls_smpl.py
+	env PATH=$$PATH:$(MCL_DIR)/lib $(LIBPATH_KEY)=$(MCL_DIR)/lib python3 bls_smpl.py
 
 # PATH is for mingw, LD_LIBRARY_PATH is for linux, DYLD_LIBRARY_PATH is for mac
 COMMON_LIB_PATH="../../../lib:../../../$(MCL_DIR)/lib"
@@ -194,7 +194,9 @@ $(MCL_DIR)/src/base64.ll:
 $(MCL_DIR)/src/base64m.ll:
 	$(MAKE) -C $(MCL_DIR) src/base64m.ll
 
-MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_VINT -DMCL_SIZEOF_UNIT=8 -DMCL_VINT_FIXED_BUFFER -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I $(MCL_DIR)/include
+# This library is slow because of no x64-optimized code. This is for checking a standalone environment.
+# Use make -f Makefile.onelib to get a static library including libmcl.a
+MIN_CFLAGS=-std=c++03 -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_SIZEOF_UNIT=8 -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -I./include -I $(MCL_DIR)/include
 ifneq ($(MIN_WITH_XBYAK),1)
   MIN_CFLAGS+=-DMCL_DONT_USE_XBYAK -fno-exceptions -fno-rtti -fno-threadsafe-statics -nodefaultlibs -nostdlib -fno-use-cxa-atexit -fno-unwind-tables -nostdinc++
 endif
@@ -204,7 +206,18 @@ endif
 minimized_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
 	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(MIN_CFLAGS)
-	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
+ifeq ($(CPU),x86-64)
+	$(CXX) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/src/asm/bint-x64-amd64.s
+else
+	clang++$(LLVM_VER) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/$(BINT_SRC)
+endif
+	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/bint-asm.o
+
+$(EXE_DIR)/minimized_static_test.exe: minimized_static
+	$(CXX) -o $@ test/bls_c384_256_test.cpp $(LIB_DIR)/libbls384_256.a -DMCL_MAX_BIT_SIZE=384 -I ./include -I $(MCL_DIR)/include -DNDEBUG
+
+minimized_static_test: $(EXE_DIR)/minimized_static_test.exe
+	$(EXE_DIR)/minimized_static_test.exe
 
 
 clean:
