@@ -108,7 +108,7 @@ endif
 $(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
 	$(AS) -c $< -o $@
 
-ANDROID_TARGET=armeabi-v7a # arm64-v8a x86_64
+ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 android: $(BASE_LL)
 	@$(NDK_BUILD) -C $(BLS_DIR)/android/jni NDK_DEBUG=0 BLS_LIB_SHARED=$(BLS_LIB_SHARED) ETH_CFLAGS=$(ETH_CFLAGS)
 	@for target in $(ANDROID_TARGET); do \
