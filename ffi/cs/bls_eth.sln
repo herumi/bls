@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bls_eth", "bls_eth.csproj", "{D32C3C79-9139-4488-AAD0-B6D28868BBA1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Debug|x64.ActiveCfg = Debug|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Debug|x64.Build.0 = Debug|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Release|x64.ActiveCfg = Release|x64
+		{D32C3C79-9139-4488-AAD0-B6D28868BBA1}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1935C301-6478-4F82-9587-6A66B531E327}
+	EndGlobalSection
+EndGlobal
