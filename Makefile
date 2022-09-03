@@ -44,13 +44,13 @@ $(MCL_LIB):
 	$(MAKE) -C $(MCL_DIR)
 
 $(BLS256_LIB): $(OBJ_DIR)/bls_c256.o
-	$(AR) $@ $<
+	$(AR) r $@ $<
 $(BLS384_LIB): $(OBJ_DIR)/bls_c384.o
-	$(AR) $@ $<
+	$(AR) r $@ $<
 $(BLS512_LIB): $(OBJ_DIR)/bls_c512.o
-	$(AR) $@ $<
+	$(AR) r $@ $<
 $(BLS384_256_LIB): $(OBJ_DIR)/bls_c384_256.o
-	$(AR) $@ $<
+	$(AR) r $@ $<
 
 ifneq ($(findstring $(OS),mac/mingw64),)
   COMMON_LIB=$(GMP_LIB) $(OPENSSL_LIB) -lstdc++
@@ -211,7 +211,7 @@ ifeq ($(CPU),x86-64)
 else
 	clang++$(LLVM_VER) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/$(BINT_SRC)
 endif
-	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/bint-asm.o
+	$(AR) r $(LIB_DIR)/libbls384_256.a $(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o $(OBJ_DIR)/bint-asm.o
 
 $(EXE_DIR)/minimized_static_test.exe: minimized_static
 	$(CXX) -o $@ test/bls_c384_256_test.cpp $(LIB_DIR)/libbls384_256.a -DMCL_MAX_BIT_SIZE=384 -I ./include -I $(MCL_DIR)/include -DNDEBUG
