@@ -66,7 +66,7 @@ ifeq ($(CPU),systemz)
 endif
 
 ifeq ($(BINT_OBJ),)
-  BINT_OBJ=$(OBJ_DIR)/bint${BIT}.o
+  BINT_OBJ=$(OBJ_DIR)/bint$(BIT).o
 endif
 ifeq ($(BASE_OBJ),)
   BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
@@ -102,7 +102,7 @@ ifeq ($(CPU),x86-64)
 $(OBJ_DIR)/bint-x64-amd64.o: $(MCL_DIR)/src/asm/bint-x64-amd64.s
 	$(AS) -c $< -o $@
 else
-$(OBJ_DIR)/bint${BIT}.o: $(MCL_DIR)/src/bint${BIT}.ll
+$(OBJ_DIR)/bint$(BIT).o: $(MCL_DIR)/src/bint$(BIT).ll
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 endif
 $(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
