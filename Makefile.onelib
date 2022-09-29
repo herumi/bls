@@ -72,6 +72,10 @@ ifeq ($(BASE_OBJ),)
   BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
 endif
 MIN_CFLAGS+=-DMCL_USE_LLVM=1
+ifneq ($(TARGET),)
+  MIN_CFLAGS+=-target $(TARGET)
+  ASFLAGS+=-target $(TARGET)
+endif
 OBJS+=$(BINT_OBJ) $(BASE_OBJ)
 
 LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
@@ -106,7 +110,7 @@ $(OBJ_DIR)/bint$(BIT).o: $(MCL_DIR)/src/bint$(BIT).ll
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 endif
 $(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
-	$(AS) -c $< -o $@
+	$(AS) -c $< -o $@ $(ASFLAGS)
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 android: $(BASE_LL)
