@@ -177,11 +177,13 @@ endif
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
 
 # cross compile
-# e.g. make -f Makefile.onelib build_aarch64 CXX=clang++-12 AS=clang++-12
+# e.g. make -f Makefile.onelib CXX=clang++-12 AS=clang++-12 build_aarch64
 build_aarch64:
 	$(MAKE) -f $(THIS_FILE) ARCH=aarch64 TARGET=aarch64
+#	$(CXX) -target aarch64 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/arm64/libbls384_256.a
 build_i686:
 	$(MAKE) -f $(THIS_FILE) ARCH=x86 TARGET=i686
+#	g++ -m32 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/libbls384_256.a
 
 clean:
 	$(MAKE) -C $(MCL_DIR) clean
