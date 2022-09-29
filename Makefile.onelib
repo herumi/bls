@@ -87,7 +87,7 @@ endif
 
 $(LIB_DIR)/libbls384_256.a: $(OBJS)
 	-mkdir -p $(LIB_DIR)
-	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJS)
+	$(AR) $(ARFLAGS) $(LIB_DIR)/libbls384_256.a $(OBJS)
 
 $(OBJ_DIR)/fp.o:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
