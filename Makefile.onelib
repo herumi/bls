@@ -5,7 +5,7 @@ MCL_DIR?=$(BLS_DIR)/mcl
 include $(MCL_DIR)/common.mk
 #ETH_CFLAGS=-DBLS_ETH
 
-UNIT?=8
+UNIT?=$(shell expr $(BIT) / 8)
 
 MIN_CFLAGS=-O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
 OBJ_DIR=obj
@@ -59,7 +59,6 @@ ifeq ($(CPU),aarch64)
 endif
 ifeq ($(CPU),arm)
   _ARCH=arm
-  UNIT=4
 endif
 ifeq ($(CPU),systemz)
   _ARCH=s390x
