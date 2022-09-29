@@ -323,6 +323,8 @@ void blsTrivialShareTest()
 	CYBOZU_TEST_ASSERT(blsPublicKeyIsEqual(&pub1, &pub2));
 }
 
+#if 0
+// disable this test because GMP is necessary
 void modTest(const char *rStr)
 {
 	unsigned char buf[1024] = {};
@@ -346,6 +348,7 @@ void modTest(const char *rStr)
 	CYBOZU_TEST_EQUAL(y, x % r);
 #endif
 }
+#endif
 
 void blsBench()
 {
@@ -451,7 +454,7 @@ CYBOZU_TEST_AUTO(all)
 #endif
 		blsAddSubTest();
 		blsTrivialShareTest();
-		modTest(tbl[i].r);
+//		modTest(tbl[i].r);
 		blsBench();
 	}
 }
