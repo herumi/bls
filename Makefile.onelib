@@ -5,16 +5,17 @@ MCL_DIR?=$(BLS_DIR)/mcl
 include $(MCL_DIR)/common.mk
 #ETH_CFLAGS=-DBLS_ETH
 
-UNIT?=8
+UNIT?=$(shell expr $(BIT) / 8)
 
 MIN_CFLAGS=-O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
+MIN_CFLAGS+=-std=c++03
 OBJ_DIR=obj
 OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
 ifeq ($(OS),mingw64)
   _OS=windows
 else
-  MIN_CFLAGS+=-fPIC
+  MIN_CFLAGS+=-fpic
 endif
 ifeq ($(OS),Linux)
   _OS=linux
@@ -32,81 +33,67 @@ ifeq ($(OS),freebsd)
   _OS=freebsd
 endif
 
+BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
+BINT_OBJ=$(OBJ_DIR)/bint$(BIT).o
+
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
-  ifeq ($(OS),mingw64)
-    BINT_OBJ=$(OBJ_DIR)/bint-x64.obj
-  else
-    BINT_OBJ=$(OBJ_DIR)/bint-x64-amd64.o
-    ifeq ($(OS),mac)
-      BASE_OBJ=$(OBJ_DIR)/x86-64mac.o
-    else
-      BASE_OBJ=$(OBJ_DIR)/x86-64.o
-    endif
-  endif
 endif
 ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
   MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
   MCL_STATIC_CODE=1
   OBJS+=$(MCL_DIR)/obj/static_code.o
+$(MCL_DIR)/obj/static_code.o:
+	$(MAKE) -C $(MCL_DIR) obj/static_code.o
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
-  ifneq ($(OS),mac-m1)
-    BINT_OBJ=$(OBJ_DIR)/bint64-Linux-aarch64.o
-    BASE_OBJ=$(OBJ_DIR)/aarch64.o
-  endif
 endif
 ifeq ($(CPU),arm)
   _ARCH=arm
-  UNIT=4
 endif
 ifeq ($(CPU),systemz)
   _ARCH=s390x
 endif
 
-ifeq ($(BINT_OBJ),)
-  BINT_OBJ=$(OBJ_DIR)/bint${BIT}.o
-endif
-ifeq ($(BASE_OBJ),)
-  BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
-endif
 MIN_CFLAGS+=-DMCL_USE_LLVM=1
+ifneq ($(TARGET),)
+  MIN_CFLAGS+=-target $(TARGET)
+  ASFLAGS+=-target $(TARGET)
+endif
 OBJS+=$(BINT_OBJ) $(BASE_OBJ)
 
 LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
 all: $(LIB_DIR)/libbls384_256.a
 
+$(LIB_DIR)/libbls384_256.a: $(OBJS)
+	-mkdir -p $(LIB_DIR)
+	$(AR) $(ARFLAGS) $(LIB_DIR)/libbls384_256.a $(OBJS)
+
+$(OBJ_DIR)/fp.o: $(MCL_DIR)/src/fp.cpp
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+$(OBJ_DIR)/bls_c384_256.o: $(BLS_DIR)/src/bls_c384_256.cpp
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+
+ifeq ($(CPU),x86-64)
 ifeq ($(OS),mingw64)
 $(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
 	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
-$(BINT_OBJ): $(MCL_DIR_)/src/asm/bint-x64.asm
+$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64.asm
 	nasm $(NASM_ELF_OPT) -o $@ $<
-endif
-
-$(LIB_DIR)/libbls384_256.a: $(OBJS)
-	-mkdir -p $(LIB_DIR)
-	$(AR) $(LIB_DIR)/libbls384_256.a $(OBJS)
-
-$(OBJ_DIR)/fp.o:
-	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
-$(OBJ_DIR)/base$(BIT).o: $(MCL_DIR)/src/base$(BIT).ll
-	$(CXX) -c -o $(OBJ_DIR)/base$(BIT).o $(MCL_DIR)/src/base$(BIT).ll $(MIN_CFLAGS)
-$(OBJ_DIR)/bls_c384_256.o:
-	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o $(BLS_DIR)/src/bls_c384_256.cpp $(MIN_CFLAGS)
-$(MCL_DIR)/obj/static_code.o:
-	$(MAKE) -C $(MCL_DIR) obj/static_code.o
-
-ifeq ($(CPU),x86-64)
-$(OBJ_DIR)/bint-x64-amd64.o: $(MCL_DIR)/src/asm/bint-x64-amd64.s
-	$(AS) -c $< -o $@
 else
-$(OBJ_DIR)/bint${BIT}.o: $(MCL_DIR)/src/bint${BIT}.ll
+$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64-amd64.s
+	$(AS) $(ASFLAGS) -c $< -o $@
+endif
+$(BASE_OBJ): $(MCL_DIR)/src/asm/x86-64.s
+	$(AS) $(ASFLAGS) -c $< -o $@
+else
+$(BINT_OBJ): $(MCL_DIR)/src/bint$(BIT).ll
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+$(BASE_OBJ): $(MCL_DIR)/src/base$(BIT).ll
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 endif
-$(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
-	$(AS) -c $< -o $@
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 android: $(BASE_LL)
@@ -171,6 +158,15 @@ else
 	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint$(BIT).o
 endif
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
+
+# cross compile
+# e.g. make -f Makefile.onelib CXX=clang++-12 AS=clang++-12 build_aarch64
+build_aarch64:
+	$(MAKE) -f $(THIS_FILE) ARCH=aarch64 TARGET=aarch64
+#	$(CXX) -target aarch64 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/arm64/libbls384_256.a
+build_i686:
+	$(MAKE) -f $(THIS_FILE) ARCH=x86 TARGET=i686
+#	g++ -m32 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/libbls384_256.a
 
 clean:
 	$(MAKE) -C $(MCL_DIR) clean
