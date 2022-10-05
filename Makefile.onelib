@@ -15,7 +15,7 @@ OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 ifeq ($(OS),mingw64)
   _OS=windows
 else
-  MIN_CFLAGS+=-fPIC
+  MIN_CFLAGS+=-fpic
 endif
 ifeq ($(OS),Linux)
   _OS=linux
@@ -33,30 +33,21 @@ ifeq ($(OS),freebsd)
   _OS=freebsd
 endif
 
+BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
+BINT_OBJ=$(OBJ_DIR)/bint$(BIT).o
+
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
-  ifeq ($(OS),mingw64)
-    BINT_OBJ=$(OBJ_DIR)/bint-x64.obj
-  else
-    BINT_OBJ=$(OBJ_DIR)/bint-x64-amd64.o
-    ifeq ($(OS),mac)
-      BASE_OBJ=$(OBJ_DIR)/x86-64mac.o
-    else
-      BASE_OBJ=$(OBJ_DIR)/x86-64.o
-    endif
-  endif
 endif
 ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
   MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
   MCL_STATIC_CODE=1
   OBJS+=$(MCL_DIR)/obj/static_code.o
+$(MCL_DIR)/obj/static_code.o:
+	$(MAKE) -C $(MCL_DIR) obj/static_code.o
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
-  ifneq ($(OS),mac-m1)
-    BINT_OBJ=$(OBJ_DIR)/bint64-Linux-aarch64.o
-    BASE_OBJ=$(OBJ_DIR)/aarch64.o
-  endif
 endif
 ifeq ($(CPU),arm)
   _ARCH=arm
@@ -65,12 +56,6 @@ ifeq ($(CPU),systemz)
   _ARCH=s390x
 endif
 
-ifeq ($(BINT_OBJ),)
-  BINT_OBJ=$(OBJ_DIR)/bint$(BIT).o
-endif
-ifeq ($(BASE_OBJ),)
-  BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
-endif
 MIN_CFLAGS+=-DMCL_USE_LLVM=1
 ifneq ($(TARGET),)
   MIN_CFLAGS+=-target $(TARGET)
@@ -82,35 +67,33 @@ LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
 all: $(LIB_DIR)/libbls384_256.a
 
-ifeq ($(OS),mingw64)
-$(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
-	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
-$(BINT_OBJ): $(MCL_DIR_)/src/asm/bint-x64.asm
-	nasm $(NASM_ELF_OPT) -o $@ $<
-endif
-
 $(LIB_DIR)/libbls384_256.a: $(OBJS)
 	-mkdir -p $(LIB_DIR)
 	$(AR) $(ARFLAGS) $(LIB_DIR)/libbls384_256.a $(OBJS)
 
-$(OBJ_DIR)/fp.o:
-	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
-$(OBJ_DIR)/base$(BIT).o: $(MCL_DIR)/src/base$(BIT).ll
-	$(CXX) -c -o $(OBJ_DIR)/base$(BIT).o $(MCL_DIR)/src/base$(BIT).ll $(MIN_CFLAGS)
-$(OBJ_DIR)/bls_c384_256.o:
-	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o $(BLS_DIR)/src/bls_c384_256.cpp $(MIN_CFLAGS)
-$(MCL_DIR)/obj/static_code.o:
-	$(MAKE) -C $(MCL_DIR) obj/static_code.o
+$(OBJ_DIR)/fp.o: $(MCL_DIR)/src/fp.cpp
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+$(OBJ_DIR)/bls_c384_256.o: $(BLS_DIR)/src/bls_c384_256.cpp
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 
 ifeq ($(CPU),x86-64)
-$(OBJ_DIR)/bint-x64-amd64.o: $(MCL_DIR)/src/asm/bint-x64-amd64.s
-	$(AS) -c $< -o $@
+ifeq ($(OS),mingw64)
+$(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
+	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
+$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64.asm
+	nasm $(NASM_ELF_OPT) -o $@ $<
 else
-$(OBJ_DIR)/bint$(BIT).o: $(MCL_DIR)/src/bint$(BIT).ll
+$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64-amd64.s
+	$(AS) $(ASFLAGS) -c $< -o $@
+endif
+$(BASE_OBJ): $(MCL_DIR)/src/asm/x86-64.s
+	$(AS) $(ASFLAGS) -c $< -o $@
+else
+$(BINT_OBJ): $(MCL_DIR)/src/bint$(BIT).ll
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
+$(BASE_OBJ): $(MCL_DIR)/src/base$(BIT).ll
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 endif
-$(OBJ_DIR)/%.o: $(MCL_DIR)/src/asm/%.s
-	$(AS) -c $< -o $@ $(ASFLAGS)
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 android: $(BASE_LL)
