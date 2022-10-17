@@ -7,6 +7,8 @@ include $(MCL_DIR)/common.mk
 
 UNIT?=$(shell expr $(BIT) / 8)
 
+THIS_FILE := $(realpath $(firstword $(MAKEFILE_LIST)))
+
 MIN_CFLAGS=-O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
 MIN_CFLAGS+=-std=c++03
 OBJ_DIR=obj
@@ -33,8 +35,8 @@ ifeq ($(OS),freebsd)
   _OS=freebsd
 endif
 
-BASE_OBJ=$(OBJ_DIR)/base$(BIT).o
-BINT_OBJ=$(OBJ_DIR)/bint$(BIT).o
+BASE_OBJ=$(MCL_DIR)/$(OBJ_DIR)/base$(BIT).o
+BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
@@ -76,24 +78,11 @@ $(OBJ_DIR)/fp.o: $(MCL_DIR)/src/fp.cpp
 $(OBJ_DIR)/bls_c384_256.o: $(BLS_DIR)/src/bls_c384_256.cpp
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
 
-ifeq ($(CPU),x86-64)
-ifeq ($(OS),mingw64)
-$(MCL_DIR)/src/asm/bint-x64.asm: $(MCL_DIR)/src/gen_x86asm.py $(MCL_DIR)/src/gen_bint_x64.py
-	python3 $(MCL_DIR)/src/gen_bint_x64.py -win -m nasm > $@
-$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64.asm
-	nasm $(NASM_ELF_OPT) -o $@ $<
-else
-$(BINT_OBJ): $(MCL_DIR)/src/asm/bint-x64-amd64.s
-	$(AS) $(ASFLAGS) -c $< -o $@
-endif
-$(BASE_OBJ): $(MCL_DIR)/src/asm/x86-64.s
-	$(AS) $(ASFLAGS) -c $< -o $@
-else
-$(BINT_OBJ): $(MCL_DIR)/src/bint$(BIT).ll
-	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
-$(BASE_OBJ): $(MCL_DIR)/src/base$(BIT).ll
-	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
-endif
+$(BINT_OBJ):
+	$(MAKE) -C $(MCL_DIR) obj/bint$(BIT).o CPU=$(CPU) OS=$(OS) BIT=$(BIT)
+
+$(BASE_OBJ):
+	$(MAKE) -C $(MCL_DIR) obj/base$(BIT).o CPU=$(CPU) OS=$(OS) BIT=$(BIT)
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 android: $(BASE_LL)
@@ -118,9 +107,6 @@ CURVE_BIT?=384_256
 IOS_LIB=libbls$(CURVE_BIT).a
 IOS_LIBS=ios/armv7/$(IOS_LIB) ios/arm64/$(IOS_LIB) iossimulator/x86_64/$(IOS_LIB) iossimulator/i386/$(IOS_LIB)
 SIMULATOR_LIBS= iossimulator/arm64/$(IOS_LIB) iossimulator/x86_64/$(IOS_LIB) iossimulator/i386/$(IOS_LIB)
-
-
-THIS_FILE := $(realpath $(firstword $(MAKEFILE_LIST)))
 
 ios: ios_simulator
 	$(MAKE) -f $(THIS_FILE) each_ios OUTDIR="ios" MINVERSION="-mios-version-min" PLATFORM="iPhoneOS" ARCH=armv7 BIT=32 UNIT=4
@@ -150,17 +136,16 @@ each_ios: $(BASE_LL)
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(BLS_DIR)/src/bls_c$(CURVE_BIT).cpp -o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o
 ifeq ($(ARCH),x86_64)
 	@echo compile bint-x64-amd64.s
-	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/asm/bint-x64-amd64.s -o $(IOS_OUTDIR)/bint-x64-amd64.o
-	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint-x64-amd64.o
+	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/asm/bint-x64-amd64.s -o $(IOS_OUTDIR)/bint64.o
 else
 	@echo compile bint$(BIT).ll
 	$(IOS_CLANG) $(IOS_COMMON) $(IOS_CFLAGS) -c $(MCL_DIR)/src/bint$(BIT).ll -o $(IOS_OUTDIR)/bint$(BIT).o
-	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint$(BIT).o
 endif
+	ar cru $(IOS_OUTDIR)/$(IOS_LIB) $(IOS_OUTDIR)/fp.o $(IOS_OUTDIR)/base$(BIT).o $(IOS_OUTDIR)/bls_c$(CURVE_BIT).o $(IOS_OUTDIR)/bint$(BIT).o
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
 
 # cross compile
-# e.g. make -f Makefile.onelib CXX=clang++-12 AS=clang++-12 build_aarch64
+# e.g. make -f Makefile.onelib CXX=clang++ AS=clang++ build_aarch64 LLVM_VER=-12
 build_aarch64:
 	$(MAKE) -f $(THIS_FILE) ARCH=aarch64 TARGET=aarch64
 #	$(CXX) -target aarch64 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/arm64/libbls384_256.a
