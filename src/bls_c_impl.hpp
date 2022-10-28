@@ -133,7 +133,7 @@ int blsInit(int curve, int compiledTimeVar)
 			Fp6& x6 = g_Qcoeff[i];
 			for (size_t j = 0; j < 6; j++) {
 				Fp& x = x6.getFp0()[j];
-				mcl::fp::Unit *p = const_cast<mcl::fp::Unit*>(x.getUnit());
+				mcl::Unit *p = const_cast<mcl::Unit*>(x.getUnit());
 				for (size_t k = 0; k < 4; k++) {
 					p[k] = QcoeffTblBN254[i][j][k];
 				}
@@ -915,7 +915,7 @@ void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y,
 
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
-	return Fp::getUnitSize() * sizeof(mcl::fp::Unit) / sizeof(uint64_t);
+	return Fp::getUnitSize() * sizeof(mcl::Unit) / sizeof(uint64_t);
 }
 
 int blsGetCurveOrder(char *buf, mclSize maxBufSize)
