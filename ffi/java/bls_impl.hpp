@@ -10,7 +10,13 @@
 #pragma GCC diagnostic ignored "-Wdeprecated"
 #endif
 
-void init(int curveType) throw(std::exception)
+#if __cplusplus >= 201703
+	#define _MCL_THROW noexcept(false)
+#else
+	#define _MCL_THROW throw(std::exception)
+#endif
+
+void init(int curveType) _MCL_THROW
 {
 	int ret = blsInit(curveType, MCLBN_COMPILED_TIME_VAR);
 	if (ret) {
@@ -51,7 +57,7 @@ public:
 		return blsSecretKeyIsEqual(&self_, &rhs.self_) != 0;
 	}
 	bool isZero() const { return blsSecretKeyIsZero(&self_) != 0; }
-	void setStr(const std::string& str, int base = 10) throw(std::exception)
+	void setStr(const std::string& str, int base = 10) _MCL_THROW
 	{
 		size_t n = 0;
 		const size_t len = str.size();
@@ -74,7 +80,7 @@ public:
 	{
         blsSecretKeySetByCSPRNG(&self_);
 	}
-	std::string toString(int base = 10) const throw(std::exception)
+	std::string toString(int base = 10) const _MCL_THROW
 	{
 		size_t n = 0;
 		std::string s;
@@ -88,14 +94,14 @@ public:
 		s.resize(n);
 		return s;
 	}
-	void deserialize(const char *cbuf, size_t bufSize) throw(std::exception)
+	void deserialize(const char *cbuf, size_t bufSize) _MCL_THROW
 	{
         int n = blsSecretKeyDeserialize(&self_, cbuf, bufSize);
         if (n == 0) {
             throw std::runtime_error("blsSecretKeyDeserialize");
         }
 	}
-	void serialize(std::string& out) const throw(std::exception)
+	void serialize(std::string& out) const _MCL_THROW
 	{
         out.resize(128);
         size_t n = blsSecretKeySerialize(&out[0], out.size(), &self_);
@@ -104,14 +110,14 @@ public:
         }
         out.resize(n);
 	}
-	void setLittleEndian(const char *cbuf, size_t bufSize) throw(std::exception)
+	void setLittleEndian(const char *cbuf, size_t bufSize) _MCL_THROW
 	{
 		int r = blsSecretKeySetLittleEndian(&self_, cbuf, bufSize);
 		if (r != 0) {
 			throw std::runtime_error("blsSecretKeySetLittleEndian");
 		}
 	}
-	void setLittleEndianMod(const char *cbuf, size_t bufSize) throw(std::exception)
+	void setLittleEndianMod(const char *cbuf, size_t bufSize) _MCL_THROW
 	{
 		int r = blsSecretKeySetLittleEndianMod(&self_, cbuf, bufSize);
 		if (r != 0) {
@@ -142,14 +148,14 @@ public:
 	Signature signHash(const char *cbuf, size_t bufSize) const;
 	void share(const SecretKeyVec& secVec, const SecretKey& id);
 	void recover(const SecretKeyVec& secVec, const SecretKeyVec& idVec);
-	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
+	void setHashOf(const char *cbuf, size_t bufSize) _MCL_THROW;
 };
 
 class PublicKey {
 	blsPublicKey self_;
 	friend class SecretKey;
 	friend class Signature;
-	friend void setGeneratorOfPublicKey(const PublicKey& pub) throw(std::exception);
+	friend void setGeneratorOfPublicKey(const PublicKey& pub) _MCL_THROW;
 public:
 	PublicKey() {}
 	PublicKey(const PublicKey& rhs) : self_(rhs.self_) {}
@@ -158,7 +164,7 @@ public:
 		return blsPublicKeyIsEqual(&self_, &rhs.self_) != 0;
 	}
 	bool isZero() const { return blsPublicKeyIsZero(&self_) != 0; }
-	void setStr(const std::string& str) throw(std::exception)
+	void setStr(const std::string& str) _MCL_THROW
 	{
 		const size_t len = str.size();
 		size_t n = blsPublicKeySetHexStr(&self_, str.c_str(), len);
@@ -168,21 +174,21 @@ public:
 	{
         memset(&self_, 0, sizeof(self_));
 	}
-	std::string toString() const throw(std::exception)
+	std::string toString() const _MCL_THROW
 	{
 		char buf[512];
 		size_t n = blsPublicKeyGetHexStr(buf, sizeof(buf), &self_);
 		if (n == 0) throw std::runtime_error("err toString");
 		return std::string(buf, n);
 	}
-	void deserialize(const char *cbuf, size_t bufSize) throw(std::exception)
+	void deserialize(const char *cbuf, size_t bufSize) _MCL_THROW
 	{
         int n = blsPublicKeyDeserialize(&self_, cbuf, bufSize);
         if (n == 0) {
             throw std::runtime_error("blsPublicKeyDeserialize");
         }
 	}
-	void serialize(std::string& out) const throw(std::exception)
+	void serialize(std::string& out) const _MCL_THROW
 	{
         out.resize(128);
         size_t n = blsPublicKeySerialize(&out[0], out.size(), &self_);
@@ -223,7 +229,7 @@ public:
 		return blsSignatureIsEqual(&self_, &rhs.self_) != 0;
 	}
 	bool isZero() const { return blsSignatureIsZero(&self_) != 0; }
-	void setStr(const std::string& str) throw(std::exception)
+	void setStr(const std::string& str) _MCL_THROW
 	{
 		const size_t len = str.size();
 		size_t n = blsSignatureSetHexStr(&self_, str.c_str(), len);
@@ -233,21 +239,21 @@ public:
 	{
         memset(&self_, 0, sizeof(self_));
 	}
-	std::string toString() const throw(std::exception)
+	std::string toString() const _MCL_THROW
 	{
 		char buf[256];
 		size_t n = blsSignatureGetHexStr(buf, sizeof(buf), &self_);
 		if (n == 0) throw std::runtime_error("err toString");
 		return std::string(buf, n);
 	}
-	void deserialize(const char *cbuf, size_t bufSize) throw(std::exception)
+	void deserialize(const char *cbuf, size_t bufSize) _MCL_THROW
 	{
         int n = blsSignatureDeserialize(&self_, cbuf, bufSize);
         if (n == 0) {
             throw std::runtime_error("blsSignatureDeserialize");
         }
 	}
-	void serialize(std::string& out) const throw(std::exception)
+	void serialize(std::string& out) const _MCL_THROW
 	{
         out.resize(128);
         size_t n = blsSignatureSerialize(&out[0], out.size(), &self_);
@@ -281,8 +287,8 @@ public:
 		return blsVerifyHash(&self_, &pub.self_, cbuf, bufSize) == 1;
 	}
 	void recover(const SignatureVec& sigVec, const SecretKeyVec& idVec);
-	void setHashOf(const char *cbuf, size_t bufSize) throw(std::exception);
-	void aggregate(const SignatureVec& sigVec) throw(std::exception)
+	void setHashOf(const char *cbuf, size_t bufSize) _MCL_THROW;
+	void aggregate(const SignatureVec& sigVec) _MCL_THROW
 	{
 		const size_t n = sigVec.size();
 		if (n == 0) throw std::runtime_error("aggregate zero");
@@ -399,7 +405,7 @@ inline void Signature::recover(const SignatureVec& sigVec, const SecretKeyVec& i
 	}
 }
 
-inline void SecretKey::setHashOf(const char *cbuf, size_t bufSize) throw(std::exception)
+inline void SecretKey::setHashOf(const char *cbuf, size_t bufSize) _MCL_THROW
 {
 	int r = blsHashToSecretKey(&self_, cbuf, bufSize);
 	if (r != 0) {
@@ -407,7 +413,7 @@ inline void SecretKey::setHashOf(const char *cbuf, size_t bufSize) throw(std::ex
 	}
 }
 
-inline void Signature::setHashOf(const char *cbuf, size_t bufSize) throw(std::exception)
+inline void Signature::setHashOf(const char *cbuf, size_t bufSize) _MCL_THROW
 {
 	int r = blsHashToSignature(&self_, cbuf, bufSize);
 	if (r != 0) {
@@ -462,7 +468,7 @@ void setETHserialization(bool ETH)
 	blsSetETHserialization(ETH);
 }
 
-void setGeneratorOfPublicKey(const PublicKey& pub) throw(std::exception)
+void setGeneratorOfPublicKey(const PublicKey& pub) _MCL_THROW
 {
 	int r = blsSetGeneratorOfPublicKey(&pub.self_);
 	if (r != 0) {
