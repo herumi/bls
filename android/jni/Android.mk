@@ -31,7 +31,7 @@ ifeq ($(MY_BIT),32)
   LOCAL_CPPFLAGS += -DMCL_SIZEOF_UNIT=4
 endif
 ifeq ($(TARGET_ARCH_ABI),x86_64)
-  MY_BINT := $(LOCAL_PATH)/../../mcl/src/asm/bint-x64-amd64.s
+  MY_BINT := $(LOCAL_PATH)/../../mcl/src/asm/bint-x64-amd64.S
 else
   MY_BINT := $(LOCAL_PATH)/../../mcl/src/bint64.ll
 endif

@@ -207,7 +207,7 @@ minimized_static:
 	$(CXX) -c -o $(OBJ_DIR)/fp.o $(MCL_DIR)/src/fp.cpp $(MIN_CFLAGS)
 	$(CXX) -c -o $(OBJ_DIR)/bls_c384_256.o src/bls_c384_256.cpp $(MIN_CFLAGS)
 ifeq ($(CPU),x86-64)
-	$(CXX) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/src/asm/bint-x64-amd64.s
+	$(CXX) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/src/asm/bint-x64-amd64.S
 else
 	clang++$(LLVM_VER) -c -o $(OBJ_DIR)/bint-asm.o $(MCL_DIR)/$(BINT_SRC)
 endif
