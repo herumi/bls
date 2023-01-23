@@ -127,17 +127,21 @@ sample_test: $(EXE_DIR)/bls_smpl.exe
 # PATH is for mingw, LD_LIBRARY_PATH is for linux, DYLD_LIBRARY_PATH is for mac
 COMMON_LIB_PATH="../../../lib:../../../$(MCL_DIR)/lib"
 PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRARY_PATH=$(COMMON_LIB_PATH) CGO_LDFLAGS="-L../../../lib -L$(OPENSSL_DIR)/lib" CGO_CFLAGS="-I$(PWD)/include -I$(MCL_DIR)/include"
-test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn256 .
-test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384 .
-test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_SLIB)
-	cd ffi/go/bls && env PATH=$(PATH_VAL) go test -tags bn384_256 .
+test_go256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS256_LIB)
+	$(RM) $(BLS256_SLIB)
+	cd ffi/go/bls && go test -tags bn256 .
+test_go384: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_LIB)
+	$(RM) $(BLS384_SLIB)
+	cd ffi/go/bls && go test -tags bn384 .
+test_go384_256: ffi/go/bls/bls.go ffi/go/bls/bls_test.go $(BLS384_256_LIB)
+	$(RM) $(BLS384_256_SLIB)
+	cd ffi/go/bls && go test -tags bn384_256 .
 
 test_eth: bin/bls_c384_256_test.exe
 	bin/bls_c384_256_test.exe
 
-test_go:
+test_go: $(MCL_LIB)
+	$(RM) $(MCL_DIR)/lib/libmcl.$(LIB_SUF)
 	$(MAKE) test_go256
 	$(MAKE) test_go384
 	$(MAKE) test_go384_256
