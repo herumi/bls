@@ -153,7 +153,7 @@ namespace mcl
 
         [DllImport(dllName)] public static extern void blsSetETHserialization(int mode);
         [DllImport(dllName)] public static extern int blsSetMapToMode(int mode);
-        [DllImport(dllName)] public static extern int blsSetGeneratorOfPublicKey(ref PublicKey pub);
+        [DllImport(dllName)] public static extern int blsSetGeneratorOfPublicKey(in PublicKey pub);
         // set dst of HashAndMap
         [DllImport(dllName)] public static extern int mclBnG1_setDst([In][MarshalAs(UnmanagedType.LPStr)] string dst, ulong dstSize);
         [DllImport(dllName)] public static extern int mclBnG2_setDst([In][MarshalAs(UnmanagedType.LPStr)] string dst, ulong dstSize);
@@ -582,9 +582,9 @@ namespace mcl
                 throw new Exception("SetMapToMode");
             }
         }
-        public static void SetGeneratorOfPublicKey(ref PublicKey pub)
+        public static void SetGeneratorOfPublicKey(PublicKey pub)
         {
-            if (blsSetGeneratorOfPublicKey(ref pub) != 0) {
+            if (blsSetGeneratorOfPublicKey(in pub) != 0) {
                 throw new ArgumentException("SetGeneratorOfPublicKey");
             }
         }
