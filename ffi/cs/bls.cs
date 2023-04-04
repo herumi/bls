@@ -37,6 +37,12 @@ namespace mcl
         public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
         public const int MSG_SIZE = 32;
 
+        public enum MapToMode
+        {
+            Original = 0, // for backward compatibility
+            HashToCurve = 5, // irtf-cfrg-hash-to-curve
+        }
+
         public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256" : "bls256";
         [DllImport(dllName)] public static extern int blsInit(int curveType, int compiledTimeVar);
         [DllImport(dllName)] public static extern int blsGetFrByteSize();
@@ -144,6 +150,13 @@ namespace mcl
 
         [DllImport(dllName)] public static extern int blsFastAggregateVerify(in Signature sig, in PublicKey pubVec, ulong n, [In]byte[] msg, ulong msgSize);
         [DllImport(dllName)] public static extern int blsAggregateVerifyNoCheck(in Signature sig, in PublicKey pubVec, in Msg msgVec, ulong msgSize, ulong n);
+
+        [DllImport(dllName)] public static extern void blsSetETHserialization(int mode);
+        [DllImport(dllName)] public static extern int blsSetMapToMode(int mode);
+        [DllImport(dllName)] public static extern int blsSetGeneratorOfPublicKey(ref PublicKey pub);
+        // set dst of HashAndMap
+        [DllImport(dllName)] public static extern int mclBnG1_setDst([In][MarshalAs(UnmanagedType.LPStr)] string dst, ulong dstSize);
+        [DllImport(dllName)] public static extern int mclBnG2_setDst([In][MarshalAs(UnmanagedType.LPStr)] string dst, ulong dstSize);
 
         // don't call this if isETH = true, it calls in BLS()
         public static void Init(int curveType = BLS12_381) {
@@ -558,6 +571,32 @@ namespace mcl
                 return false;
             }
             return AggregateVerifyNoCheck(in sig, in pubVec, in msgVec);
+        }
+        public static void SetETHserialization(bool b)
+        {
+            blsSetETHserialization(b ? 1 : 0);
+        }
+        public static void SetMapToMode(MapToMode mode)
+        {
+            if (blsSetMapToMode((int)mode) != 0) {
+                throw new Exception("SetMapToMode");
+            }
+        }
+        public static void SetGeneratorOfPublicKey(ref PublicKey pub)
+        {
+            if (blsSetGeneratorOfPublicKey(ref pub) != 0) {
+                throw new ArgumentException("SetGeneratorOfPublicKey");
+            }
+        }
+        public static void SetDstG1(string dst) {
+            if (mclBnG1_setDst(dst, (ulong)dst.Length) != 0) {
+                throw new ArgumentException("SetDstG1:" + dst);
+            }
+        }
+        public static void SetDstG2(string dst) {
+            if (mclBnG2_setDst(dst, (ulong)dst.Length) != 0) {
+                throw new ArgumentException("SetDstG2:" + dst);
+            }
         }
     }
 }
