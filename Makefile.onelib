@@ -58,12 +58,16 @@ ifeq ($(CPU),systemz)
   _ARCH=s390x
 endif
 
-MIN_CFLAGS+=-DMCL_USE_LLVM=1
 ifneq ($(TARGET),)
   MIN_CFLAGS+=-target $(TARGET)
   ASFLAGS+=-target $(TARGET)
 endif
-OBJS+=$(BINT_OBJ) $(BASE_OBJ)
+OBJS+=$(BINT_OBJ)
+MCL_USE_LLVM?=1
+ifeq ($(MCL_USE_LLVM),1)
+MIN_CFLAGS+=-DMCL_USE_LLVM=1
+OBJS+=$(BASE_OBJ)
+endif
 
 LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
