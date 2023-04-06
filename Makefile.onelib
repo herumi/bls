@@ -73,7 +73,7 @@ MIN_CFLAGS+=-DMCL_USE_LLVM=1
 OBJS+=$(BASE_OBJ)
 endif
 
-LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
+LIB_DIR?=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
 all: $(LIB_DIR)/libbls384_256.a
 
