@@ -63,13 +63,17 @@ ifneq ($(TARGET),)
   ASFLAGS+=-target $(TARGET)
 endif
 OBJS+=$(BINT_OBJ)
-MCL_USE_LLVM?=1
+ifeq ($(findstring $(OS),mingw64/cygwin),)
+  MCL_USE_LLVM?=1
+else
+  MCL_USE_LLVM=0
+endif
 ifeq ($(MCL_USE_LLVM),1)
 MIN_CFLAGS+=-DMCL_USE_LLVM=1
 OBJS+=$(BASE_OBJ)
 endif
 
-LIB_DIR=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
+LIB_DIR?=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
 
 all: $(LIB_DIR)/libbls384_256.a
 
