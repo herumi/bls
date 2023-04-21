@@ -82,10 +82,10 @@ ifeq ($(BLS_LIB_SHARED),1)
 TARGET+=$(SHARED_LIB)
 endif
 ifneq ($(findstring $(OS),mac/mingw64),)
-  LDFLAGS+=-lstdc++
+#  MIN_LDFLAGS+=-lstdc++
 endif
 ifeq ($(OS),mingw64)
-  LDFLAGS+=-Wl,--out-implib,$(STATIC_LIB)
+  MIN_LDFLAGS+=-Wl,--out-implib,$(STATIC_LIB)
 endif
 
 all: $(TARGET)
@@ -95,7 +95,7 @@ $(STATIC_LIB): $(OBJS)
 	$(AR) $(ARFLAGS) $(STATIC_LIB) $(OBJS)
 
 $(SHARED_LIB): $(OBJS) $(STATIC_LIB)
-	$(PRE)$(CXX) -shared -o $@ $(OBJS) $(LDFLAGS)
+	$(PRE)$(CXX) -shared -o $@ $(OBJS) $(MIN_LDFLAGS)
 
 $(OBJ_DIR)/fp.o: $(MCL_DIR)/src/fp.cpp
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
