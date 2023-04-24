@@ -18,6 +18,14 @@ bls/bin/\*.dll are created
 # How to build a sample
 
 Open bls/ffi/cs/bls.sln and select bls proj and exec it.
+```
+msbuild /p:Configuration=Release /t:Rebuild ffi/cs/bls.sln
+bin\bls.exe
+```
+If you use Linux/Intel macOS, then
+```
+mono bin/bls.exe
+```
 
 If you want to use ETH mode,
 

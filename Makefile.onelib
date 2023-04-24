@@ -74,12 +74,28 @@ OBJS+=$(BASE_OBJ)
 endif
 
 LIB_DIR?=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
+STATIC_LIB=$(LIB_DIR)/libbls384_256.a
+SHARED_LIB=$(LIB_DIR)/libbls384_256.$(LIB_SUF)
 
-all: $(LIB_DIR)/libbls384_256.a
+TARGET=$(STATIC_LIB)
+ifeq ($(BLS_LIB_SHARED),1)
+TARGET+=$(SHARED_LIB)
+endif
+ifneq ($(findstring $(OS),mac/mingw64),)
+#  MIN_LDFLAGS+=-lstdc++
+endif
+ifeq ($(OS),mingw64)
+  MIN_LDFLAGS+=-Wl,--out-implib,$(STATIC_LIB)
+endif
 
-$(LIB_DIR)/libbls384_256.a: $(OBJS)
+all: $(TARGET)
+
+$(STATIC_LIB): $(OBJS)
 	-mkdir -p $(LIB_DIR)
-	$(AR) $(ARFLAGS) $(LIB_DIR)/libbls384_256.a $(OBJS)
+	$(AR) $(ARFLAGS) $(STATIC_LIB) $(OBJS)
+
+$(SHARED_LIB): $(OBJS) $(STATIC_LIB)
+	$(PRE)$(CXX) -shared -o $@ $(OBJS) $(MIN_LDFLAGS)
 
 $(OBJ_DIR)/fp.o: $(MCL_DIR)/src/fp.cpp
 	$(CXX) -c $< -o $@ $(MIN_CFLAGS)
@@ -93,6 +109,7 @@ $(BASE_OBJ):
 	$(MAKE) -C $(MCL_DIR) obj/base$(BIT).o CPU=$(CPU) OS=$(OS) BIT=$(BIT)
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
+NDK_BUILD?=ndk-build
 android: $(BASE_LL)
 	@$(NDK_BUILD) -C $(BLS_DIR)/android/jni NDK_DEBUG=0 BLS_LIB_SHARED=$(BLS_LIB_SHARED) ETH_CFLAGS=$(ETH_CFLAGS)
 	@for target in $(ANDROID_TARGET); do \
