@@ -39,6 +39,21 @@ ETH2.0 spec (BLS_ETH=1)|Fr|G1|G2|
 
 If you need ETH2.0 spec, then use this library with `BLS_ETH=1` mode.
 
+## Interoperability of BLS signature on BLS12-381 pairing
+
+If you want to use the same parameters as Ethereum 2.0, just define `BLS_ETH`.
+If you want to use mcl/bls without `BLS_ETH`, then check the following settings.
+- Serialization/Deserialization between Fr/G1/G2 and byte sequences.
+  - call `blsSetETHserialization(1);` to use the same specification as ETH2.0.
+  - `Serialize()` compresses a point of G1/G2.
+- The generator of G1/G2.
+  - call `blsPublicKeySetHexStr`.
+- Hash function from arbitrary byte sequences to G1/G2.
+  - call `blsSetMapToMode(MCL_MAP_TO_MODE_HASH_TO_CURVE);` to use the same specification as ETH2.0.
+  - call `mclBnG1_setDst` to set up domain separation.
+
+For example, see [initForDFINITY](https://github.com/herumi/bls/blob/master/sample/dfinity.c#L11) for DFINITY compatibility.
+
 ## Support language bindings
 
 language|ETH2.0 spec (PublicKey = G1)|default (PublicKey = G2)|
