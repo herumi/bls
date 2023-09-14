@@ -208,7 +208,7 @@ void blsSign(blsSignature *sig, const blsSecretKey *sec, const void *m, mclSize 
 #ifdef BLS_ETH
 /*
 	e(P, sHm) == e(sP, Hm)
-	<=> finalExp(ML(P, sHm) * e(-sP, Hm)) == 1
+	<=> finalExp(ML(P, sHm) * ML(-sP, Hm)) == 1
 */
 bool isEqualTwoPairings(const G2& sHm, const G1& sP, const G2& Hm)
 {
