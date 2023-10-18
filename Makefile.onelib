@@ -44,9 +44,10 @@ endif
 ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
   MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
   MCL_STATIC_CODE=1
-  OBJS+=$(MCL_DIR)/obj/static_code.o
-$(MCL_DIR)/obj/static_code.o:
-	$(MAKE) -C $(MCL_DIR) obj/static_code.o
+  OBJS+=$(MCL_DIR)/$(OBJ_DIR)/static_code.o
+$(MCL_DIR)/$(OBJ_DIR)/static_code.o:
+	-mkdir -p $(OBJ_DIR)
+	$(MAKE) -C $(MCL_DIR) $(OBJ_DIR)/static_code.o
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
