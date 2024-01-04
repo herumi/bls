@@ -41,6 +41,20 @@ BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
 endif
+ifeq ($(CPU)$(ETH_CFLAGS),x86-64-DBLS_ETH)
+ifeq ($(_OS),windows)
+  MCL_STATIC_CODE?=0
+else
+  MCL_STATIC_CODE?=1
+endif
+endif
+
+ifeq ($(MCL_STATIC_CODE),1)
+  MIN_CFLAGS+=-DMCL_STATIC_CODE -DMCL_DONT_USE_XBYAK
+  OBJS+=$(MCL_DIR)/obj/static_code.o
+$(MCL_DIR)/obj/static_code.o:
+	$(MAKE) -C $(MCL_DIR) obj/static_code.o
+endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
 endif
