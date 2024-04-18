@@ -40,6 +40,8 @@ BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
+  MSM=msm_avx
+  MCL_MSM?=0
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
@@ -69,6 +71,11 @@ endif
 ifeq ($(MCL_USE_LLVM),1)
 MIN_CFLAGS+=-DMCL_USE_LLVM=1
 OBJS+=$(BASE_OBJ)
+endif
+ifeq ($(MCL_MSM),1)
+  MIN_CFLAGS+=-DMCL_MSM=1
+  MSM_OBJ=$(MCL_DIR)/$(OBJ_DIR)/$(MSM).o
+  OBJS+=$(MSM_OBJ)
 endif
 
 LIB_DIR?=$(OUT_DIR)/bls/lib/$(_OS)/$(_ARCH)
@@ -119,6 +126,9 @@ $(BINT_OBJ):
 
 $(BASE_OBJ):
 	$(MAKE) -C $(MCL_DIR) obj/base$(BIT).o CPU=$(CPU) OS=$(OS) BIT=$(BIT)
+
+$(MSM_OBJ): $(MCL_DIR)/src/$(MSM).cpp
+	$(CXX) -c $< -o $@ $(MIN_CFLAGS) -mavx512f -mavx512ifma -std=c++11
 
 ANDROID_TARGET=armeabi-v7a arm64-v8a x86_64
 NDK_BUILD?=ndk-build
