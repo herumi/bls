@@ -10,7 +10,7 @@ UNIT?=$(shell expr $(BIT) / 8)
 THIS_FILE := $(realpath $(firstword $(MAKEFILE_LIST)))
 
 MIN_CFLAGS=-O3 -fno-exceptions -fno-threadsafe-statics -fno-rtti -fno-stack-protector -DNDEBUG -DMCL_DONT_USE_OPENSSL -DMCL_SIZEOF_UNIT=$(UNIT) -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -D_FORTIFY_SOURCE=0 -I$(BLS_DIR)/include -I$(MCL_DIR)/include $(ETH_CFLAGS) $(CFLAGS_USER)
-MIN_CFLAGS+=-std=c++03
+MIN_CFLAGS+=-std=c++11
 OBJ_DIR=obj
 OBJS=$(OBJ_DIR)/bls_c384_256.o $(OBJ_DIR)/fp.o
 
