@@ -41,7 +41,7 @@ BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
   MSM=msm_avx
-  MCL_MSM?=0
+  MCL_MSM?=1
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
