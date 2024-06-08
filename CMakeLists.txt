@@ -81,8 +81,7 @@ set(CMAKE_EXPORT_PACKAGE_REGISTERY ON)
 export(PACKAGE bls)
 
 # Tests
-if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR BLS_BUILD_TESTING)
-	AND BUILD_TESTING)
+if(BLS_BUILD_TESTING)
 	enable_testing()
 	add_subdirectory(test)
 endif()
