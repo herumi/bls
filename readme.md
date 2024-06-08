@@ -293,6 +293,7 @@ make BLS_ETH=1 lib/libbls384_256.a
 If the option `MCL_USE_GMP=0` (resp.`MCL_USE_OPENSSL=0`) is used then GMP (resp. OpenSSL) is not used.
 
 ### Build library for Windows
+Open the x64 Native Tools for Visual Studio and type the following command.
 
 static library
 ```
@@ -303,6 +304,9 @@ dynamic library
 ```
 mklib dll eth
 ```
+
+Or open `bls.sln` and build it.
+*REMARK* CmakeLists.txt is not maintained for Visual Studio.
 
 ### Build static library for Android
 
