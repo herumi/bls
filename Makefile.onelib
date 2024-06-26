@@ -192,13 +192,20 @@ endif
 	ranlib $(IOS_OUTDIR)/$(IOS_LIB)
 
 # cross compile
-# e.g. make -f Makefile.onelib CXX=clang++ AS=clang++ build_aarch64 LLVM_VER=-12
+#Try a compiler option `-isystem <include directory>` if you have trouble with including standard heder file.
+# make -f Makefile.onelib build_aarch64 CXX=clang++ LLVM_VER=-18 build_aarch64
+# aarch64-linux-gnu-gcc-13 sample/minsample.c bls/lib/linux/arm64/libbls384_256.a -I include/ -I mcl/include/
+# env QEMU_LD_PREFIX=/usr/aarch64-linux-gnu/ ./a.out
 build_aarch64:
 	$(MAKE) -f $(THIS_FILE) ARCH=aarch64 CLANG_TARGET=aarch64
 #	$(CXX) -target aarch64 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/arm64/libbls384_256.a
 build_i686:
 	$(MAKE) -f $(THIS_FILE) ARCH=x86 CLANG_TARGET=i686
 #	g++ -m32 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/libbls384_256.a
+
+#make -f Makefile.onelib ARCH=mipsisa32r6el CLANG_TARGET=mipsisa32r6el BIT=32 CXX=clang++-17
+#mipsisa32r6el-linux-gnu-gcc-13 sample/minsample.c -I include/ -I mcl/include/ bls/lib/linux/libbls384_256.a
+#env QEMU_LD_PREFIX=/usr/mipsisa32r6el-linux-gnu/ ./a.out
 
 clean:
 	$(MAKE) -C $(MCL_DIR) clean
