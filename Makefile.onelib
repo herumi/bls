@@ -40,8 +40,9 @@ BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
-  MSM=msm_avx
-  MCL_MSM?=1
+  ifeq ($(UNAME_S),Darwin)
+    MCL_MSM?=1
+  endif
 endif
 ifeq ($(CPU),aarch64)
   _ARCH=arm64
@@ -73,6 +74,9 @@ MIN_CFLAGS+=-DMCL_USE_LLVM=1
 OBJS+=$(BASE_OBJ)
 endif
 ifeq ($(MCL_MSM),1)
+  ifeq ($(CPU),x86-64)
+    MSM=msm_avx
+  endif
   MIN_CFLAGS+=-DMCL_MSM=1
   MSM_OBJ=$(MCL_DIR)/$(OBJ_DIR)/$(MSM).o
   OBJS+=$(MSM_OBJ)
