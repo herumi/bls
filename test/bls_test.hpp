@@ -731,7 +731,7 @@ void blsAggregateVerifyNoCheckTestOne(size_t n, bool hasZero = false)
 			sec.clear();
 		}
 		sec.getPublicKey(pubs[i]);
-		msgs[msgSize * i] = i;
+		msgs[msgSize * i] = char(i);
 		sec.sign(sigs[i], &msgs[msgSize * i], msgSize);
 	}
 	blsSignature aggSig;
@@ -1068,6 +1068,11 @@ void testAll(int type)
 }
 CYBOZU_TEST_AUTO(all)
 {
+#ifdef BLS_ETH
+	puts("BLS_ETH is defined");
+#else
+	puts("BLS_ETH is undefined");
+#endif
 	const struct {
 		int type;
 		const char *name;
