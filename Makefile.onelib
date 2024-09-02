@@ -40,7 +40,7 @@ BINT_OBJ=$(MCL_DIR)/$(OBJ_DIR)/bint$(BIT).o
 
 ifeq ($(CPU),x86-64)
   _ARCH=amd64
-  ifeq ($(UNAME_S),Darwin)
+  ifneq ($(UNAME_S),Darwin)
     MCL_MSM?=1
   endif
 endif
