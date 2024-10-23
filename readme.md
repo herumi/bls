@@ -6,6 +6,7 @@ This library is an implementation of BLS threshold signature,
 which supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https://github.com/ethereum/eth2.0-specs/blob/dev/specs/phase0/beacon-chain.md#bls-signatures).
 
 ## News
+- 2024/Oct/23 Add a sample for Zig (See ffi/zig/).
 - 2023/Aug/17 The performance of Sign is improved.
 - 2022/Apr/20 The performance of MulVec got 2x speed for n >= 256, but const attribute of some arguments of MulVec and MultiVerify is removed.
   - They may be normalized in processing but the value are not changed.

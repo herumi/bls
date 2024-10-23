@@ -8,3 +8,5 @@ obj/*.o
 sample/*.txt
 !sample/CMakeLists.txt
 build/
+ffi/zig/.zig-cache/
+ffi/zig/zig-out/
