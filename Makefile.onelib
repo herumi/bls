@@ -211,6 +211,10 @@ build_i686:
 #mipsisa32r6el-linux-gnu-gcc-13 sample/minsample.c -I include/ -I mcl/include/ bls/lib/linux/libbls384_256.a
 #env QEMU_LD_PREFIX=/usr/mipsisa32r6el-linux-gnu/ ./a.out
 
+# for mingw64
+# make -f Makefile.onelib CXX=x86_64-w64-mingw32-g++ MCL_USE_LLVM=0 OS=mingw64 LIB_DIR=./
+# x86_64-w64-mingw32-g++ -o pairing.exe -I mcl/include/ mcl/sample/pairing.cpp -DMCL_MAX_BIT_SIZE=384 libbls384_256.a
+
 clean:
 	$(MAKE) -C $(MCL_DIR) clean
 	$(MAKE) -C $(BLS_DIR) clean
