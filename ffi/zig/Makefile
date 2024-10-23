@@ -6,8 +6,14 @@ lib:
 sample: lib
 	zig build
 
+run: sample
+	zig-out/bin/sample
+
 fmt:
 	zig fmt *.zig
+
+test: fmt
+	zig build test
 
 clean:
 	\rm -rf .zig-cache/  zig-out/
