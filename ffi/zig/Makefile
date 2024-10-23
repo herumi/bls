@@ -12,7 +12,7 @@ run: sample
 fmt:
 	zig fmt *.zig
 
-test: fmt
+test:
 	zig build test
 
 clean:
