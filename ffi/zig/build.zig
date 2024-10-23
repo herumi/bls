@@ -1,5 +1,13 @@
 const std = @import("std");
 
+fn setOption(comptime T: type, target: T, b: *std.Build) void {
+    target.addIncludePath(b.path("../../include"));
+    target.addIncludePath(b.path("../../mcl/include"));
+    target.linkLibC();
+    target.linkSystemLibrary("stdc++");
+    target.addObjectFile(b.path("../../lib/libbls384_256.a"));
+}
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -11,11 +19,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe.addIncludePath(b.path("../../include"));
-    exe.addIncludePath(b.path("../../mcl/include"));
-    exe.linkLibC();
-    exe.linkSystemLibrary("stdc++");
-    exe.addObjectFile(b.path("../../lib/libbls384_256.a"));
+    setOption(@TypeOf(exe), exe, b);
 
     // Make the executable installable
     b.installArtifact(exe);
@@ -32,11 +36,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    test_exe.addIncludePath(b.path("../../include"));
-    test_exe.addIncludePath(b.path("../../mcl/include"));
-    test_exe.linkLibC();
-    test_exe.linkSystemLibrary("stdc++");
-    test_exe.addObjectFile(b.path("../../lib/libbls384_256.a"));
+    setOption(@TypeOf(test_exe), test_exe, b);
 
     const test_cmd = b.addRunArtifact(test_exe);
     test_cmd.step.dependOn(&test_exe.step);
