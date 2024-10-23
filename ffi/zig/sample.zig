@@ -7,7 +7,7 @@ fn multiSig() void {
     var pkVec: [N]bls.PublicKey = undefined;
     var sigVec: [N]bls.Signature = undefined;
     var sig2Vec: [N]bls.Signature = undefined;
-    var msgVec: [N][bls.MSG_SIZE]u8 = undefined;
+    var msgVec: [N]bls.Message = undefined;
     const msg = "doremifa";
     for (0..N) |i| {
         skVec[i].setByCSPRNG();

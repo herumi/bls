@@ -13,6 +13,7 @@ const bls = @cImport({
 });
 
 pub const MSG_SIZE = 32;
+pub const Message = [MSG_SIZE]u8;
 
 pub fn init() bool {
     const res = bls.blsInit(bls.MCL_BLS12_381, bls.MCLBN_COMPILED_TIME_VAR);
@@ -109,7 +110,7 @@ pub const Signature = struct {
         bls.blsAggregateSignature(&self.v_, &sigVec[0].v_, sigVec.len);
         return true;
     }
-    pub fn aggregateVerifyNocheck(self: *const Signature, pubVec: []const PublicKey, msgVec: []const [MSG_SIZE]u8) bool {
+    pub fn aggregateVerifyNocheck(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
         const n = pubVec.len;
         if (n == 0 or n != msgVec.len) return false;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
