@@ -86,6 +86,19 @@ pub const PublicKey = struct {
     }
 };
 
+// Returns true if all msgVec are different.
+pub fn areAllMessageDifferent(msgVec: []const Message) bool {
+    const gpa_allocator = std.heap.page_allocator;
+    var set = std.HashMap(Message, u8).init(gpa_allocator);
+    defer set.deinit();
+
+    for (msgVec) |msg| {
+        const ret = set.getOrPut(msg, 0);
+        if (!ret.made_new) return false;
+    }
+    return true;
+}
+
 pub const Signature = struct {
     v_: bls.blsSignature,
     // Returns a zero-length slice if the function fails.
