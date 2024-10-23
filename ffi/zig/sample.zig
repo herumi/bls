@@ -47,18 +47,18 @@ fn multiSig() void {
         return;
     }
     // valid
-    if (agg.aggregateVerifyNocheck(&pkVec, &msgVec)) {
-        std.debug.print("OK aggregateVerifyNocheck\n", .{});
+    if (agg.aggregateVerify(&pkVec, &msgVec)) {
+        std.debug.print("OK aggregateVerify\n", .{});
     } else {
-        std.debug.print("ERR aggregateVerifyNocheck\n", .{});
+        std.debug.print("ERR aggregateVerify\n", .{});
         return;
     }
     // invalid
     msgVec[0][0] += 1;
-    if (!agg.aggregateVerifyNocheck(&pkVec, &msgVec)) {
-        std.debug.print("OK aggregateVerifyNocheck for invalid msg\n", .{});
+    if (!agg.aggregateVerify(&pkVec, &msgVec)) {
+        std.debug.print("OK aggregateVerify for invalid msg\n", .{});
     } else {
-        std.debug.print("ERR aggregateVerifyNocheck\n", .{});
+        std.debug.print("ERR aggregateVerify\n", .{});
         return;
     }
 }

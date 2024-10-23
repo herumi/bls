@@ -110,9 +110,17 @@ pub const Signature = struct {
         bls.blsAggregateSignature(&self.v_, &sigVec[0].v_, sigVec.len);
         return true;
     }
+	// Assume that all msgVec are different..
     pub fn aggregateVerifyNocheck(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
         const n = pubVec.len;
         if (n == 0 or n != msgVec.len) return false;
+        return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
+    }
+	// Check whether all msgVec are different..
+    pub fn aggregateVerify(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
+        const n = pubVec.len;
+        if (n == 0 or n != msgVec.len) return false;
+		if (!areAllMessageDifferent(msgVec)) return false;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
 };
