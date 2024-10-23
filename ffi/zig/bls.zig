@@ -86,19 +86,6 @@ pub const PublicKey = struct {
     }
 };
 
-// Returns true if all msgVec are different.
-pub fn areAllMessageDifferent(msgVec: []const Message) bool {
-    const gpa_allocator = std.heap.page_allocator;
-    var set = std.HashMap(Message, u8).init(gpa_allocator);
-    defer set.deinit();
-
-    for (msgVec) |msg| {
-        const ret = set.getOrPut(msg, 0);
-        if (!ret.made_new) return false;
-    }
-    return true;
-}
-
 pub const Signature = struct {
     v_: bls.blsSignature,
     // Returns a zero-length slice if the function fails.
@@ -129,3 +116,30 @@ pub const Signature = struct {
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
 };
+
+const MessageComp = struct {
+    pub fn hash(self: @This(), key: Message) u64 {
+        _ = self;
+        return std.hash.Wyhash.hash(0, &key);
+    }
+
+    pub fn eql(self: @This(), lhs: Message, rhs: Message) bool {
+        _ = self;
+        return std.mem.eql(u8, &lhs, &rhs);
+    }
+};
+// Returns true if all msgVec are different.
+pub fn areAllMessageDifferent(msgVec: []const Message) bool {
+    if (msgVec.len <= 1) return true;
+    const gpa_allocator = std.heap.page_allocator;
+    //    var set = std.AutoHashMap(Message, u8).init(gpa_allocator);
+    var set = std.HashMap(Message, void, MessageComp, std.hash_map.default_max_load_percentage).init(gpa_allocator);
+
+    defer set.deinit();
+
+    for (msgVec) |msg| {
+        const ret = set.getOrPut(msg) catch undefined;
+        if (ret.found_existing) return false;
+    }
+    return true;
+}
