@@ -12,17 +12,17 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-	const lib = b.addStaticLibrary(.{
-		.name = "bls-zig",
-		.root_source_file = b.path("bls.zig"),
-		.target = target,
-		.optimize = optimize,
-	});
-	lib.linkLibC();
-	lib.addLibraryPath(b.path("../../lib"));
-	lib.linkSystemLibrary("stdc++");
-	lib.linkSystemLibrary("bls384_256");
-	b.installArtifact(lib);
+    const lib = b.addStaticLibrary(.{
+        .name = "bls-zig",
+        .root_source_file = b.path("bls.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    lib.linkLibC();
+    lib.addLibraryPath(b.path("../../lib"));
+    lib.linkSystemLibrary("stdc++");
+    lib.linkSystemLibrary("bls384_256");
+    b.installArtifact(lib);
 
     const exe = b.addExecutable(.{
         .name = "sample",

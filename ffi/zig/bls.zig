@@ -27,9 +27,9 @@ pub const SecretKey = struct {
         if (ret != 0) @panic("mclBnFr_setByCSPRNG");
     }
     // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const SecretKey, buf: *[]u8) []u8 {
-        const len: usize = @intCast(bls.blsSecretKeySerialize(buf.*.ptr, buf.*.len, &self.v_));
-        return buf.*[0..len];
+    pub fn serialize(self: *const SecretKey, buf: []u8) []u8 {
+        const len: usize = @intCast(bls.blsSecretKeySerialize(buf.ptr, buf.len, &self.v_));
+        return buf[0..len];
     }
     pub fn deserialize(self: *SecretKey, buf: []const u8) bool {
         const len: usize = @intCast(bls.blsSecretKeyDeserialize(&self.v_, buf.ptr, buf.len));
@@ -51,9 +51,9 @@ pub const SecretKey = struct {
         return r == 0;
     }
     // Returns a zero-length slice if the function fails.
-    pub fn getStr(self: *const SecretKey, s: *[]u8, base: i32) []u8 {
-        const len: usize = @intCast(bls.mclBnFr_getStr(s.*.ptr, s.*.len, &self.v_.v, base));
-        return s.*[0..len];
+    pub fn getStr(self: *const SecretKey, s: []u8, base: i32) []u8 {
+        const len: usize = @intCast(bls.mclBnFr_getStr(s.ptr, s.len, &self.v_.v, base));
+        return s[0..len];
     }
     pub fn getPublicKey(self: *const SecretKey, pk: *PublicKey) void {
         bls.blsGetPublicKey(&pk.v_, &self.v_);
@@ -69,9 +69,9 @@ pub const SecretKey = struct {
 pub const PublicKey = struct {
     v_: bls.blsPublicKey,
     // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const PublicKey, buf: *[]u8) []u8 {
-        const len: usize = @intCast(bls.blsPublicKeySerialize(buf.*.ptr, buf.*.len, &self.v_));
-        return buf.*[0..len];
+    pub fn serialize(self: *const PublicKey, buf: []u8) []u8 {
+        const len: usize = @intCast(bls.blsPublicKeySerialize(buf.ptr, buf.len, &self.v_));
+        return buf[0..len];
     }
     pub fn deserialize(self: *PublicKey, buf: []const u8) bool {
         const len: usize = @intCast(bls.blsPublicKeyDeserialize(&self.v_, buf.ptr, buf.len));
@@ -89,9 +89,9 @@ pub const PublicKey = struct {
 pub const Signature = struct {
     v_: bls.blsSignature,
     // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const Signature, buf: *[]u8) []u8 {
-        const len: usize = @intCast(bls.blsSignatureSerialize(buf.*.ptr, buf.*.len, &self.v_));
-        return buf.*[0..len];
+    pub fn serialize(self: *const Signature, buf: []u8) []u8 {
+        const len: usize = @intCast(bls.blsSignatureSerialize(buf.ptr, buf.len, &self.v_));
+        return buf[0..len];
     }
     pub fn deserialize(self: *Signature, buf: []const u8) bool {
         const len: usize = @intCast(bls.blsSignatureDeserialize(&self.v_, buf.ptr, buf.len));
@@ -110,17 +110,17 @@ pub const Signature = struct {
         bls.blsAggregateSignature(&self.v_, &sigVec[0].v_, sigVec.len);
         return true;
     }
-	// Assume that all msgVec are different..
+    // Assume that all msgVec are different..
     pub fn aggregateVerifyNocheck(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
         const n = pubVec.len;
         if (n == 0 or n != msgVec.len) return false;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
-	// Check whether all msgVec are different..
+    // Check whether all msgVec are different..
     pub fn aggregateVerify(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
         const n = pubVec.len;
         if (n == 0 or n != msgVec.len) return false;
-		if (!areAllMessageDifferent(msgVec)) return false;
+        if (!areAllMessageDifferent(msgVec)) return false;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
 };

@@ -70,29 +70,28 @@ pub fn main() void {
     }
     var sk: bls.SecretKey = undefined;
     sk.setByCSPRNG();
-    var buf128: [128]u8 = undefined;
-    var buf: []u8 = &buf128;
+    var buf: [128]u8 = undefined;
 
-    const cbuf: []u8 = sk.serialize(&buf);
+    const cbuf: []u8 = sk.serialize(buf[0..]);
     std.debug.print("sk:serialize={}\n", .{std.fmt.fmtSliceHexLower(cbuf)});
     var sk2: bls.SecretKey = undefined;
     if (sk2.deserialize(cbuf)) {
-        std.debug.print("sk2:serialize={}\n", .{std.fmt.fmtSliceHexLower(sk2.serialize(&buf))});
+        std.debug.print("sk2:serialize={}\n", .{std.fmt.fmtSliceHexLower(sk2.serialize(buf[0..]))});
     } else {
         std.debug.print("ERR sk2:serialize\n", .{});
     }
-    std.debug.print("sk:getStr(10)={s}\n", .{sk.getStr(&buf, 10)});
-    std.debug.print("sk:getStr(16)=0x{s}\n", .{sk.getStr(&buf, 16)});
+    std.debug.print("sk:getStr(10)={s}\n", .{sk.getStr(buf[0..], 10)});
+    std.debug.print("sk:getStr(16)=0x{s}\n", .{sk.getStr(buf[0..], 16)});
     sk.setLittleEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
-    std.debug.print("sk={s}\n", .{sk.getStr(&buf, 16)});
+    std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 16)});
     sk.setBigEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
-    std.debug.print("sk={s}\n", .{sk.getStr(&buf, 16)});
+    std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 16)});
     if (sk.setStr("1234567890123", 10)) {
-        std.debug.print("sk={s}\n", .{sk.getStr(&buf, 10)});
+        std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 10)});
     }
     var pk: bls.PublicKey = undefined;
     sk.getPublicKey(&pk);
-    std.debug.print("pk={}\n", .{std.fmt.fmtSliceHexLower(pk.serialize(&buf))});
+    std.debug.print("pk={}\n", .{std.fmt.fmtSliceHexLower(pk.serialize(buf[0..]))});
     const msg = "abcdefg";
     var sig: bls.Signature = undefined;
     sk.sign(&sig, msg);
