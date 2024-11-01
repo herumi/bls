@@ -1,7 +1,7 @@
 const std = @import("std");
 const bls = @import("bls.zig");
 
-fn multiSig() void {
+fn multiSig() !void {
     const N = 30;
     var skVec: [N]bls.SecretKey = undefined;
     var pkVec: [N]bls.PublicKey = undefined;
@@ -23,31 +23,25 @@ fn multiSig() void {
         skVec[i].sign(&sig2Vec[i], &msgVec[i]);
     }
     var agg: bls.Signature = undefined;
-    if (!agg.aggregate(&sigVec)) {
-        std.debug.print("ERR aggregate\n", .{});
-        return;
-    }
+    try agg.aggregate(&sigVec);
     // valid
-    if (agg.fastAggregateVerify(&pkVec, msg)) {
+    if (try agg.fastAggregateVerify(&pkVec, msg)) {
         std.debug.print("OK fastAggregateVerify\n", .{});
     } else {
         std.debug.print("ERR fastAggregateVerify\n", .{});
         return;
     }
     // invalid
-    if (!agg.fastAggregateVerify(pkVec[0 .. N - 1], msg)) {
+    if (!try agg.fastAggregateVerify(pkVec[0 .. N - 1], msg)) {
         std.debug.print("OK fastAggregateVerify for invalid pk\n", .{});
     } else {
         std.debug.print("ERR fastAggregateVerify\n", .{});
         return;
     }
 
-    if (!agg.aggregate(&sig2Vec)) {
-        std.debug.print("ERR aggregate2\n", .{});
-        return;
-    }
+    try agg.aggregate(&sig2Vec);
     // valid
-    if (agg.aggregateVerify(&pkVec, &msgVec)) {
+    if (try agg.aggregateVerify(&pkVec, &msgVec)) {
         std.debug.print("OK aggregateVerify\n", .{});
     } else {
         std.debug.print("ERR aggregateVerify\n", .{});
@@ -55,7 +49,7 @@ fn multiSig() void {
     }
     // invalid
     msgVec[0][0] += 1;
-    if (!agg.aggregateVerify(&pkVec, &msgVec)) {
+    if (!try agg.aggregateVerify(&pkVec, &msgVec)) {
         std.debug.print("OK aggregateVerify for invalid msg\n", .{});
     } else {
         std.debug.print("ERR aggregateVerify\n", .{});
@@ -63,7 +57,7 @@ fn multiSig() void {
     }
 }
 
-pub fn main() void {
+pub fn main() !void {
     if (!bls.init()) {
         std.debug.print("ERR bls.init()\n", .{});
         return;
@@ -72,30 +66,26 @@ pub fn main() void {
     sk.setByCSPRNG();
     var buf: [128]u8 = undefined;
 
-    const cbuf: []u8 = sk.serialize(buf[0..]);
+    const cbuf: []u8 = try sk.serialize(buf[0..]);
     std.debug.print("sk:serialize={}\n", .{std.fmt.fmtSliceHexLower(cbuf)});
     var sk2: bls.SecretKey = undefined;
-    if (sk2.deserialize(cbuf)) {
-        std.debug.print("sk2:serialize={}\n", .{std.fmt.fmtSliceHexLower(sk2.serialize(buf[0..]))});
-    } else {
-        std.debug.print("ERR sk2:serialize\n", .{});
-    }
-    std.debug.print("sk:getStr(10)={s}\n", .{sk.getStr(buf[0..], 10)});
-    std.debug.print("sk:getStr(16)=0x{s}\n", .{sk.getStr(buf[0..], 16)});
-    sk.setLittleEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
-    std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 16)});
-    sk.setBigEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
-    std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 16)});
-    if (sk.setStr("1234567890123", 10)) {
-        std.debug.print("sk={s}\n", .{sk.getStr(buf[0..], 10)});
-    }
+    try sk2.deserialize(cbuf);
+    std.debug.print("sk2:serialize={}\n", .{std.fmt.fmtSliceHexLower(try sk2.serialize(buf[0..]))});
+    std.debug.print("sk:getStr(10)={s}\n", .{try sk.getStr(buf[0..], 10)});
+    std.debug.print("sk:getStr(16)=0x{s}\n", .{try sk.getStr(buf[0..], 16)});
+    try sk.setLittleEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
+    std.debug.print("sk={s}\n", .{try sk.getStr(buf[0..], 16)});
+    try sk.setBigEndianMod(@as([]const u8, &.{ 1, 2, 3, 4, 5 }));
+    std.debug.print("sk={s}\n", .{try sk.getStr(buf[0..], 16)});
+    try sk.setStr("1234567890123", 10);
+    std.debug.print("sk={s}\n", .{try sk.getStr(buf[0..], 10)});
     var pk: bls.PublicKey = undefined;
     sk.getPublicKey(&pk);
-    std.debug.print("pk={}\n", .{std.fmt.fmtSliceHexLower(pk.serialize(buf[0..]))});
+    std.debug.print("pk={}\n", .{std.fmt.fmtSliceHexLower(try pk.serialize(buf[0..]))});
     const msg = "abcdefg";
     var sig: bls.Signature = undefined;
     sk.sign(&sig, msg);
     std.debug.print("verify={}\n", .{pk.verify(&sig, msg)});
     std.debug.print("verify={}\n", .{pk.verify(&sig, "abc")});
-    multiSig();
+    try multiSig();
 }

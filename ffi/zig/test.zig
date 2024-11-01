@@ -11,11 +11,11 @@ test "all" {
     const msg2 = "bls zig te";
     try std.testing.expect(signAndVerifyTest(msg1, msg1));
     try std.testing.expect(!signAndVerifyTest(msg1, msg2));
-    try std.testing.expect(areAllMessageDifferentTest(5));
-    try std.testing.expect(areAllMessageDifferentTest(100));
-    try std.testing.expect(areAllMessageDifferentTest(255));
-    try std.testing.expect(areAllMessageDifferentTest(256));
-    try std.testing.expect(!areAllMessageDifferentTest(257)); // contains the same msg
+    try std.testing.expect(try areAllMessageDifferentTest(5));
+    try std.testing.expect(try areAllMessageDifferentTest(100));
+    try std.testing.expect(try areAllMessageDifferentTest(255));
+    try std.testing.expect(try areAllMessageDifferentTest(256));
+    try std.testing.expect(!try areAllMessageDifferentTest(257)); // contains the same msg
 }
 
 fn signAndVerifyTest(msg1: []const u8, msg2: []const u8) bool {
@@ -28,7 +28,7 @@ fn signAndVerifyTest(msg1: []const u8, msg2: []const u8) bool {
     return pk.verify(&sig, msg2);
 }
 
-fn areAllMessageDifferentTest(n: usize) bool {
+fn areAllMessageDifferentTest(n: usize) !bool {
     var msgVec: [MSG_N]bls.Message = undefined;
     for (0..MSG_N) |i| {
         @memset(&msgVec[i], 0);

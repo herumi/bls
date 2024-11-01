@@ -15,6 +15,13 @@ const bls = @cImport({
 pub const MSG_SIZE = 32;
 pub const Message = [MSG_SIZE]u8;
 
+pub const Error = error{
+    BufferTooSmall, // serialize, getStr
+    BufferTooLarge, // setLittleEndianMod, setBigEndianMod
+    InvalidFormat, // deserialize, setStr
+    InvalidLength,
+};
+
 pub fn init() bool {
     const res = bls.blsInit(bls.MCL_BLS12_381, bls.MCLBN_COMPILED_TIME_VAR);
     return res == 0;
@@ -26,33 +33,32 @@ pub const SecretKey = struct {
         const ret = bls.mclBnFr_setByCSPRNG(&self.v_.v);
         if (ret != 0) @panic("mclBnFr_setByCSPRNG");
     }
-    // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const SecretKey, buf: []u8) []u8 {
+    pub fn serialize(self: *const SecretKey, buf: []u8) ![]u8 {
         const len: usize = @intCast(bls.blsSecretKeySerialize(buf.ptr, buf.len, &self.v_));
+        if (len == 0) return Error.BufferTooSmall;
         return buf[0..len];
     }
-    pub fn deserialize(self: *SecretKey, buf: []const u8) bool {
+    pub fn deserialize(self: *SecretKey, buf: []const u8) !void {
         const len: usize = @intCast(bls.blsSecretKeyDeserialize(&self.v_, buf.ptr, buf.len));
-        std.debug.print("len={} buf.len={}\n", .{ len, buf.len });
-        return len > 0 and len == buf.len;
+        if (len == 0 or len != buf.len) return Error.InvalidFormat;
     }
     // set (buf[] as littleEndian) % r
-    pub fn setLittleEndianMod(self: *SecretKey, buf: []const u8) void {
+    pub fn setLittleEndianMod(self: *SecretKey, buf: []const u8) !void {
         const r = bls.mclBnFr_setLittleEndianMod(&self.v_.v, buf.ptr, buf.len);
-        if (r < 0) @panic("mclBnFr_setLittleEndianMod");
+        if (r < 0) return Error.BufferTooLarge;
     }
     // set (buf[] as bigEndian) % r
-    pub fn setBigEndianMod(self: *SecretKey, buf: []const u8) void {
+    pub fn setBigEndianMod(self: *SecretKey, buf: []const u8) !void {
         const r = bls.mclBnFr_setBigEndianMod(&self.v_.v, buf.ptr, buf.len);
-        if (r < 0) @panic("mclBnFr_setBigEndianMod");
+        if (r < 0) return Error.BufferTooLarge;
     }
-    pub fn setStr(self: *SecretKey, s: []const u8, base: i32) bool {
+    pub fn setStr(self: *SecretKey, s: []const u8, base: i32) !void {
         const r = bls.mclBnFr_setStr(&self.v_.v, s.ptr, s.len, base);
-        return r == 0;
+        if (r != 0) return Error.InvalidFormat;
     }
-    // Returns a zero-length slice if the function fails.
-    pub fn getStr(self: *const SecretKey, s: []u8, base: i32) []u8 {
+    pub fn getStr(self: *const SecretKey, s: []u8, base: i32) ![]u8 {
         const len: usize = @intCast(bls.mclBnFr_getStr(s.ptr, s.len, &self.v_.v, base));
+        if (len == 0) return Error.BufferTooSmall;
         return s[0..len];
     }
     pub fn getPublicKey(self: *const SecretKey, pk: *PublicKey) void {
@@ -68,15 +74,14 @@ pub const SecretKey = struct {
 
 pub const PublicKey = struct {
     v_: bls.blsPublicKey,
-    // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const PublicKey, buf: []u8) []u8 {
+    pub fn serialize(self: *const PublicKey, buf: []u8) ![]u8 {
         const len: usize = @intCast(bls.blsPublicKeySerialize(buf.ptr, buf.len, &self.v_));
+        if (len == 0) return Error.BufferTooSmall;
         return buf[0..len];
     }
-    pub fn deserialize(self: *PublicKey, buf: []const u8) bool {
+    pub fn deserialize(self: *PublicKey, buf: []const u8) !void {
         const len: usize = @intCast(bls.blsPublicKeyDeserialize(&self.v_, buf.ptr, buf.len));
-        std.debug.print("len={} buf.len={}\n", .{ len, buf.len });
-        return len > 0 and len == buf.len;
+        if (len == 0 or len != buf.len) return Error.InvalidFormat;
     }
     pub fn verify(self: *const PublicKey, sig: *const Signature, msg: []const u8) bool {
         return bls.blsVerify(&sig.v_, &self.v_, msg.ptr, msg.len) == 1;
@@ -89,38 +94,37 @@ pub const PublicKey = struct {
 pub const Signature = struct {
     v_: bls.blsSignature,
     // Returns a zero-length slice if the function fails.
-    pub fn serialize(self: *const Signature, buf: []u8) []u8 {
+    pub fn serialize(self: *const Signature, buf: []u8) ![]u8 {
         const len: usize = @intCast(bls.blsSignatureSerialize(buf.ptr, buf.len, &self.v_));
+        if (len == 0) return Error.BufferTooSmall;
         return buf[0..len];
     }
-    pub fn deserialize(self: *Signature, buf: []const u8) bool {
+    pub fn deserialize(self: *Signature, buf: []const u8) !void {
         const len: usize = @intCast(bls.blsSignatureDeserialize(&self.v_, buf.ptr, buf.len));
-        std.debug.print("len={} buf.len={}\n", .{ len, buf.len });
-        return len > 0 and len == buf.len;
+        if (len == 0 or len != buf.len) return Error.InvalidFormat;
     }
     pub fn add(self: *Signature, rhs: *const Signature) void {
         bls.blsSignatureAdd(&self.v_, &rhs.v_);
     }
-    pub fn fastAggregateVerify(self: *const Signature, pubVec: []const PublicKey, msg: []const u8) bool {
-        if (pubVec.len == 0) @panic("fastAggregateVerify zero-size pubVec");
+    pub fn fastAggregateVerify(self: *const Signature, pubVec: []const PublicKey, msg: []const u8) !bool {
+        if (pubVec.len == 0) return Error.InvalidLength;
         return bls.blsFastAggregateVerify(&self.v_, &pubVec[0].v_, pubVec.len, msg.ptr, msg.len) == 1;
     }
-    pub fn aggregate(self: *Signature, sigVec: []const Signature) bool {
-        if (sigVec.len == 0) return false;
+    pub fn aggregate(self: *Signature, sigVec: []const Signature) !void {
+        if (sigVec.len == 0) return Error.InvalidLength;
         bls.blsAggregateSignature(&self.v_, &sigVec[0].v_, sigVec.len);
-        return true;
     }
     // Assume that all msgVec are different..
     pub fn aggregateVerifyNocheck(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
         const n = pubVec.len;
-        if (n == 0 or n != msgVec.len) return false;
+        if (n == 0 or n != msgVec.len) return Error.InvalidLength;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
     // Check whether all msgVec are different..
-    pub fn aggregateVerify(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) bool {
+    pub fn aggregateVerify(self: *const Signature, pubVec: []const PublicKey, msgVec: []const Message) !bool {
         const n = pubVec.len;
-        if (n == 0 or n != msgVec.len) return false;
-        if (!areAllMessageDifferent(msgVec)) return false;
+        if (n == 0 or n != msgVec.len) return Error.InvalidLength;
+        if (!try areAllMessageDifferent(msgVec)) return false;
         return bls.blsAggregateVerifyNoCheck(&self.v_, &pubVec[0].v_, &msgVec[0][0], MSG_SIZE, n) == 1;
     }
 };
@@ -137,16 +141,15 @@ const MessageComp = struct {
     }
 };
 // Returns true if all msgVec are different.
-pub fn areAllMessageDifferent(msgVec: []const Message) bool {
+pub fn areAllMessageDifferent(msgVec: []const Message) !bool {
     if (msgVec.len <= 1) return true;
     const gpa_allocator = std.heap.page_allocator;
-    //    var set = std.AutoHashMap(Message, u8).init(gpa_allocator);
     var set = std.HashMap(Message, void, MessageComp, std.hash_map.default_max_load_percentage).init(gpa_allocator);
 
     defer set.deinit();
 
     for (msgVec) |msg| {
-        const ret = set.getOrPut(msg) catch undefined;
+        const ret = try set.getOrPut(msg);
         if (ret.found_existing) return false;
     }
     return true;
