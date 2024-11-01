@@ -16,15 +16,16 @@ pub const MSG_SIZE = 32;
 pub const Message = [MSG_SIZE]u8;
 
 pub const Error = error{
+    CantInit,
     BufferTooSmall, // serialize, getStr
     BufferTooLarge, // setLittleEndianMod, setBigEndianMod
     InvalidFormat, // deserialize, setStr
     InvalidLength,
 };
 
-pub fn init() bool {
+pub fn init() !void {
     const res = bls.blsInit(bls.MCL_BLS12_381, bls.MCLBN_COMPILED_TIME_VAR);
-    return res == 0;
+    if (res != 0) return Error.CantInit;
 }
 
 pub const SecretKey = struct {

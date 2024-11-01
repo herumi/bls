@@ -58,10 +58,7 @@ fn multiSig() !void {
 }
 
 pub fn main() !void {
-    if (!bls.init()) {
-        std.debug.print("ERR bls.init()\n", .{});
-        return;
-    }
+    try bls.init();
     var sk: bls.SecretKey = undefined;
     sk.setByCSPRNG();
     var buf: [128]u8 = undefined;

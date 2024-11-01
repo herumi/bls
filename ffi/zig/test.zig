@@ -2,7 +2,7 @@ const std = @import("std");
 const bls = @import("bls.zig");
 
 test "init bls" {
-    try std.testing.expect(bls.init());
+    try bls.init();
 }
 const MSG_N: usize = 258;
 
