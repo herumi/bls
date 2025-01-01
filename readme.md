@@ -13,7 +13,7 @@ which supports the new BLS Signatures specified at [Ethereum 2.0 Phase 0](https:
 - 2021/Sep/16 update mcl and improve performance of isValidOrder, which is called from setStr/deserialize.
 - 2021/Apr/28 add blsSetGeneratorOfPublicKey to change the generator.
 - 2021/Jan/28 check zero public key on BLS_ETH mode
-- 2020/Oct/07 add `blsMultiVerify` to process many verification all togather with multi thread.
+- 2020/Oct/07 add `blsMultiVerify` to process many verification all together with multi thread.
 
 ## Support architectures
 
