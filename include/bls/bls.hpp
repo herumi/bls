@@ -166,7 +166,7 @@ public:
 		local::convertArray(x, p, n);
 		setLittleEndian(x, n * sizeof(uint64_t));
 	}
-	// bufSize is truncted/zero extended to keySize
+	// bufSize is truncated/zero extended to keySize
 	void setLittleEndian(const uint8_t *buf, size_t bufSize)
 	{
 		mclBnFr_setLittleEndian(&self_.v, buf, bufSize);
