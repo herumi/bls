@@ -389,7 +389,7 @@ BLS_DLL_API void blsDHKeyExchange(blsPublicKey *out, const blsSecretKey *sec, co
 	https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html
 	H(pubVec)_i := SHA-256(pubVec[0], ..., pubVec[n-1], 4-byte little endian(i))
 	@note
-	1. this hash function will be modifed in the future
+	1. this hash function will be modified in the future
 	2. sigVec and pubVec are not const because they may be normalized (the value are not changed)
 */
 // aggSig = sum sigVec[i] t_i where (t_1, ..., t_n) = H({pubVec})
