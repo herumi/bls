@@ -220,7 +220,7 @@ BLS_DLL_API void blsSignatureAdd(blsSignature *sig, const blsSignature *rhs);
 
 /*
 	verify whether a point of an elliptic curve has order r
-	This api affetcs setStr(), deserialize() for G2 on BN or G1/G2 on BLS12
+	This api affects setStr(), deserialize() for G2 on BN or G1/G2 on BLS12
 	@param doVerify [in] does not verify if zero(default 1)
 	Signature = G1, PublicKey = G2
 */

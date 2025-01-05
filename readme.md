@@ -274,7 +274,7 @@ void blsMultiAggregatePublicKey(
 ```
 Set `aggPub = sum_{i=0^n-1} pubVec[i] t_i, where (t_1, ..., t_n) = Hash({pubVec[0..n-1]})`.
 
-## How to build a static library by ownself
+## How to build a static library by oneself
 
 The following description is for `BLS_ETH=1` mode.
 Remove it if you need PublicKey as G1.
