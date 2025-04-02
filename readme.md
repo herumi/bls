@@ -67,7 +67,7 @@ Rust|[bls-eth-rust](https://github.com/herumi/bls-eth-rust)|-|
 ## Compiled static library with `BLS_ETH=1`
 
 The compiled static libraries with `BLS_ETH=1` mode for {windows, darwin}/amd64, linux/{amd64, arm64} and android/{arm64-v8a, armeabi-v7a}
-are provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/master/bls/lib).
+are provided at [bls-eth-go-binary/bls/lib](https://github.com/herumi/bls-eth-go-binary/tree/release/bls/lib).
 
 ## Basic C API
 
