@@ -206,6 +206,11 @@ build_aarch64:
 build_i686:
 	$(MAKE) -f $(THIS_FILE) ARCH=x86 CLANG_TARGET=i686
 #	g++ -m32 test/bls_c384_256_test.cpp -I ./include -I mcl/include bls/lib/linux/libbls384_256.a
+build_riscv64:
+	$(MAKE) -f $(THIS_FILE) ARCH=riscv64 OS=linux CLANG_TARGET=riscv64-linux-gnu BIT=64 _ARCH=riscv64 _OS=linux
+#clang++ --target=riscv64-linux-gnu test/bls_c384_256_test.cpp -I include/ -I mcl/include/ bls/lib/linux/libbls384_256.a
+#env QEMU_LD_PREFIX=/usr/riscv64-linux-gnu ./a.out
+
 
 #make -f Makefile.onelib ARCH=mipsisa32r6el CLANG_TARGET=mipsisa32r6el BIT=32 CXX=clang++-17
 #mipsisa32r6el-linux-gnu-gcc-13 sample/minsample.c -I include/ -I mcl/include/ bls/lib/linux/libbls384_256.a
