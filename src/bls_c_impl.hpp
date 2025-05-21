@@ -1,6 +1,5 @@
 #define BLS_DLL_EXPORT
 
-#include <bls/bls.h>
 #include "../src/cast.hpp"
 #include <mcl/lagrange.hpp>
 
@@ -155,11 +154,11 @@ void blsSetETHserialization(int ETHserialization)
 }
 
 #ifdef __EMSCRIPTEN__
-extern "C" BLS_DLL_API void *blsMalloc(size_t n)
+extern "C" MCL_DLL_API void *blsMalloc(size_t n)
 {
 	return malloc(n);
 }
-extern "C" BLS_DLL_API void blsFree(void *p)
+extern "C" MCL_DLL_API void blsFree(void *p)
 {
 	free(p);
 }
