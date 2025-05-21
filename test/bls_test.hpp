@@ -1078,10 +1078,10 @@ CYBOZU_TEST_AUTO(all)
 		const char *name;
 	} tbl[] = {
 		{ MCL_BN254, "BN254" },
-#if MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 6
+#if MCL_FP_BIT == 384 && MCLBN_FR_UNIT_SIZE == 6
 		{ MCL_BN381_1, "BN381_1" },
 #endif
-#if MCLBN_FP_UNIT_SIZE == 6 && MCLBN_FR_UNIT_SIZE == 4
+#if MCL_FP_BIT == 384 && MCL_FP_BIT == 256
 		{ MCL_BLS12_381, "BLS12_381" },
 #endif
 	};

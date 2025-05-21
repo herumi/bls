@@ -1,3 +1,3 @@
-#define MCLBN_FP_UNIT_SIZE 6
+#include <bls/bls384.h>
 #include "bls_test.hpp"
 
