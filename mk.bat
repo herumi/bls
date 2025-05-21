@@ -1,7 +1,8 @@
 @echo off
 set MCL_DIR=./mcl
 call setvar.bat
-set LOCAL_CFLAGS=%BLS_CFLAGS%
+set LOCAL_CFLAGS=%BLS_CFLAGS% lib/bls384_256.lib
+set LOCAL_LDFLAGS=%BLS_LDFLAGS%
 if "%1"=="-s" (
   echo use static lib
   set LOCAL_CFLAGS=%LOCAL_CFLAGS% /DMCL_DONT_EXPORT
@@ -25,7 +26,7 @@ set EXE=%SRC:.cpp=.exe%
 set EXE=%EXE:.c=.exe%
 set EXE=%EXE:test\=bin\%
 set EXE=%EXE:sample\=bin\%
-echo cl %LOCAL_CFLAGS% %1 /Fe:%EXE% /link %LDFLAGS%
-cl %LOCAL_CFLAGS% %1 /Fe:%EXE% /link %LDFLAGS%
+echo cl %LOCAL_CFLAGS% %1 /Fe:%EXE% /link %LOCAL_LDFLAGS%
+cl %LOCAL_CFLAGS% %1 /Fe:%EXE% /link %LOCAL_LDFLAGS%
 
 :exit

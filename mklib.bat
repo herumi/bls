@@ -1,5 +1,12 @@
 @echo off
-set MCL_DIR=./mcl
+set MCL_DIR=mcl
+pushd %MCL_DIR%
+if "%1" == "dll" (
+	call mklib.bat dll
+) else (
+	call mklib.bat
+)
+popd
 call setvar.bat
 set MAKE_DLL=0
 set BLS_ETH=0
@@ -18,18 +25,18 @@ if "%1"=="eth" (
 )
 echo LOCAL_CFLAGS=%LOCAL_CFLAGS%
 
-ml64 -c %MCL_DIR%/src/asm/bint-x64-win.asm
+set OBJS=%MCL_DIR%\obj\fp.obj %MCL_DIR%\obj\msm_avx.obj %MCL_DIR%\bint-x64-win.obj
+set OBJS=%OBJS% obj\bls_c384_256.obj
 
-set OBJS=obj\fp.obj bint-x64-win.obj
+cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
 
-if %MAKE_DLL%==1 (
+echo lib /nologo /OUT:lib/bls384_256.lib /nodefaultlib %OBJS%
+lib /nologo /OUT:lib/bls384_256.lib /nodefaultlib %OBJS%
+
+if "%MAKE_DLL%" == "1" (
   echo make dynamic library DLL
-  cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
-  cl /c %LOCAL_CFLAGS% /Foobj/fp.obj %MCL_DIR%/src/fp.cpp
-  link /nologo /DLL /OUT:bin\bls384_256.dll obj\bls_c384_256.obj %OBJS% %LDFLAGS% /implib:lib\bls384_256.lib
+  echo link /nologo /DLL /OUT:bin\bls384_256.dll %OBJS% %LDFLAGS% /implib:lib\bls384_256.lib
+  link /nologo /DLL /OUT:bin\bls384_256.dll %OBJS% %LDFLAGS% /implib:lib\bls384_256.lib
 ) else (
   echo make static library LIB
-  cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
-  cl /c %LOCAL_CFLAGS% /Foobj/fp.obj %MCL_DIR%/src/fp.cpp
-  lib /OUT:lib/bls384_256.lib /nodefaultlib obj/bls_c384_256.obj %OBJS% %LDFLAGS%
 )
