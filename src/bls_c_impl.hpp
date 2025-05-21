@@ -1,5 +1,3 @@
-#define BLS_DLL_EXPORT
-
 #include "../src/cast.hpp"
 #include <mcl/lagrange.hpp>
 
