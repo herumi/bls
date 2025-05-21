@@ -24,6 +24,8 @@ option(
 	"OFF"
 )
 
+set(bit "384_256")
+
 if(BLS_ETH)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DBLS_ETH")
 endif()
@@ -48,21 +50,19 @@ endif()
 
 add_subdirectory(mcl)
 
-foreach(bit IN ITEMS 256 384 384_256)
-	add_library(bls${bit} SHARED src/bls_c${bit}.cpp)
-	add_library(bls::bls${bit} ALIAS bls${bit})
-	target_compile_definitions(bls${bit} PRIVATE BLS_NO_AUTOLINK)
-	target_include_directories(bls${bit} PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
-	target_link_libraries(bls${bit} PUBLIC mcl::mcl mcl::mcl_st mcl::mclbn${bit})
-	set_target_properties(bls${bit} PROPERTIES
-	  POSITION_INDEPENDENT_CODE ON
-	  VERSION ${bls_VERSION}
-	  SONAME ${bls_VERSION_MAJOR})
-endforeach()
+add_library(bls${bit} SHARED src/bls_c${bit}.cpp)
+add_library(bls::bls${bit} ALIAS bls${bit})
+target_compile_definitions(bls${bit} PRIVATE BLS_NO_AUTOLINK)
+target_include_directories(bls${bit} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_DIR}/include>)
+target_link_libraries(bls${bit} PUBLIC mcl::mcl mcl::mcl_st)
+set_target_properties(bls${bit} PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  VERSION ${bls_VERSION}
+  SONAME ${bls_VERSION_MAJOR})
 
-install(TARGETS bls256 bls384 bls384_256
+install(TARGETS bls${bit}
 	EXPORT blsTargets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
