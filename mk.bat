@@ -4,11 +4,11 @@ call setvar.bat
 set LOCAL_CFLAGS=%BLS_CFLAGS%
 if "%1"=="-s" (
   echo use static lib
-  set LOCAL_CFLAGS=%LOCAL_CFLAGS% /DBLS_DONT_EXPORT /DMCL_DONT_EXPORT
+  set LOCAL_CFLAGS=%LOCAL_CFLAGS% /DMCL_DONT_EXPORT
   shift
 ) else if "%1"=="-d" (
   echo use dynamic lib
-  set LOCAL_CFLAGS=%LOCAL_CFLAGS%
+  set LOCAL_CFLAGS=%LOCAL_CFLAGS% /DMCL_DLL
   shift
 ) else (
   echo "mk (-s|-d) [eth] <source file>"
