@@ -205,7 +205,7 @@ minimized_static_test: $(EXE_DIR)/minimized_static_test.exe
 
 clean:
 	make -C $(MCL_DIR) clean
-	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC) $(BLS256_LIB) $(BLS256_SLIB) $(BLS384_LIB) $(BLS384_SLIB) $(BLS384_256_LIB) $(BLS384_256_SLIB) $(BLS512_LIB) $(BLS512_SLIB)
+	$(RM) $(OBJ_DIR)/*.d $(OBJ_DIR)/*.o $(EXE_DIR)/*.exe $(LIB_DIR)/*.a $(LIB_DIR)/*.$(LIB_SUF) $(LIB_DIR)/*. $(GEN_EXE) $(ASM_SRC) $(ASM_OBJ) $(LLVM_SRC)
 
 ALL_SRC=$(SRC_SRC) $(TEST_SRC) $(SAMPLE_SRC)
 DEPEND_FILE=$(addprefix $(OBJ_DIR)/, $(ALL_SRC:.cpp=.d))
