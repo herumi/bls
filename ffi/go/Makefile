@@ -10,7 +10,7 @@ PATH_VAL=$$PATH:$(COMMON_LIB_PATH) LD_LIBRARY_PATH=$(COMMON_LIB_PATH) DYLD_LIBRA
 	$(MAKE) -C ../.. minimized_static
 
 ./sample: sample.go ../../lib/libbls384_256.a
-	env CGO_CFLAGS="-I$(PWD)/../../include -I$(PWD)/../../../mcl/include" CGO_LDFLAGS="-L$(PWD)/../../lib" go build -tags bn384_256 sample.go
+	env CGO_CFLAGS="-I$(PWD)/../../include -I$(PWD)/../../../mcl/include" CGO_LDFLAGS="-L$(PWD)/../../lib" go build sample.go
 
 test: ./sample
 	./sample

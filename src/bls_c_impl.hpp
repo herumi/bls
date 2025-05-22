@@ -1,17 +1,12 @@
-#ifndef MCLBN_FORCE_EXPORT
-	#define MCLBN_DONT_EXPORT
-#endif
-#define BLS_DLL_EXPORT
-
-#include <bls/bls.h>
-
-#include "mcl/impl/bn_c_impl.hpp"
+#include "../src/cast.hpp"
+#include <mcl/lagrange.hpp>
 
 #if (CYBOZU_CPP_VERSION >= CYBOZU_CPP_VERSION_CPP11) && !defined(__EMSCRIPTEN__) && !defined(__wasm__)
 #include <thread>
 #define BLS_MULTI_VERIFY_THREAD
 #endif
 
+using namespace mcl;
 
 inline void Gmul(G1& z, const G1& x, const Fr& y) { G1::mul(z, x, y); }
 inline void Gmul(G2& z, const G2& x, const Fr& y) { G2::mul(z, x, y); }
@@ -61,9 +56,9 @@ typedef G1 G;
 typedef G2 Gother;
 static G2 g_Q;
 const size_t maxQcoeffN = 128;
-static mcl::FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
+static FixedArray<Fp6, maxQcoeffN> g_Qcoeff; // precomputed Q
 inline const G2& getBasePoint() { return g_Q; }
-inline const mcl::FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
+inline const FixedArray<Fp6, maxQcoeffN>& getQcoeff() { return g_Qcoeff; }
 #endif
 
 int blsSetETHmode(int mode)
@@ -92,7 +87,7 @@ int blsInit(int curve, int compiledTimeVar)
 	if (compiledTimeVar != MCLBN_COMPILED_TIME_VAR) {
 		return -(compiledTimeVar + (MCLBN_COMPILED_TIME_VAR * 1000));
 	}
-	const mcl::CurveParam* cp = mcl::getCurveParam(curve);
+	const CurveParam* cp = getCurveParam(curve);
 	if (cp == 0) return -1;
 	bool b;
 	initPairing(&b, *cp);
@@ -127,13 +122,13 @@ int blsInit(int curve, int compiledTimeVar)
 #if MCL_SIZEOF_UNIT == 8
 	if (curve == MCL_BN254) {
 		#include "./qcoeff-bn254.hpp"
-		g_Qcoeff.resize(BN::param.precomputedQcoeffSize);
+		g_Qcoeff.resize(getPrecomputedQcoeffSize());
 		assert(g_Qcoeff.size() == CYBOZU_NUM_OF_ARRAY(QcoeffTblBN254));
 		for (size_t i = 0; i < g_Qcoeff.size(); i++) {
 			Fp6& x6 = g_Qcoeff[i];
 			for (size_t j = 0; j < 6; j++) {
 				Fp& x = x6.getFp0()[j];
-				mcl::Unit *p = const_cast<mcl::Unit*>(x.getUnit());
+				Unit *p = const_cast<Unit*>(x.getUnit());
 				for (size_t k = 0; k < 4; k++) {
 					p[k] = QcoeffTblBN254[i][j][k];
 				}
@@ -157,11 +152,11 @@ void blsSetETHserialization(int ETHserialization)
 }
 
 #ifdef __EMSCRIPTEN__
-extern "C" BLS_DLL_API void *blsMalloc(size_t n)
+extern "C" MCL_DLL_API void *blsMalloc(size_t n)
 {
 	return malloc(n);
 }
-extern "C" BLS_DLL_API void blsFree(void *p)
+extern "C" MCL_DLL_API void blsFree(void *p)
 {
 	free(p);
 }
@@ -263,7 +258,7 @@ void blsMultiVerifySub(mclBnGT *e, blsSignature *aggSig, blsSignature *sigVec, c
 	G2 g2Vec[N];
 	bool initE = true;
 	while (n > 0) {
-		size_t m = mcl::fp::min_<size_t>(n, N);
+		size_t m = fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			bool b;
 			rand[i].setArray(&b, (const uint8_t *)&randVec[i * randSize], randSize);
@@ -447,7 +442,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 	bool initE = true;
 
 	while (n > 0) {
-		size_t m = mcl::fp::min_<size_t>(n, N);
+		size_t m = fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
 			if (g1Vec[i].isZero()) return 0;
@@ -464,7 +459,7 @@ int blsAggregateVerifyNoCheck(const blsSignature *sig, const blsPublicKey *pubVe
 		millerLoopVec(e, g1Vec, g2Vec, m, initE);
 		initE = false;
 	}
-	BN::finalExp(e, e);
+	finalExp(e, e);
 	return e.isOne();
 #else
 	const char *p = (const char *)msgVec;
@@ -574,35 +569,35 @@ int blsSignatureIsZero(const blsSignature *x)
 int blsSecretKeyShare(blsSecretKey *sec, const blsSecretKey* msk, mclSize k, const blsId *id)
 {
 	bool b;
-	mcl::evaluatePolynomial(&b, *cast(&sec->v), cast(&msk->v), k, *cast(&id->v));
+	evaluatePolynomial(&b, *cast(&sec->v), cast(&msk->v), k, *cast(&id->v));
 	return b ? 0 : -1;
 }
 
 int blsPublicKeyShare(blsPublicKey *pub, const blsPublicKey *mpk, mclSize k, const blsId *id)
 {
 	bool b;
-	mcl::evaluatePolynomial(&b, *cast(&pub->v), cast(&mpk->v), k, *cast(&id->v));
+	evaluatePolynomial(&b, *cast(&pub->v), cast(&mpk->v), k, *cast(&id->v));
 	return b ? 0 : -1;
 }
 
 int blsSecretKeyRecover(blsSecretKey *sec, const blsSecretKey *secVec, const blsId *idVec, mclSize n)
 {
 	bool b;
-	mcl::LagrangeInterpolation(&b, *cast(&sec->v), cast(&idVec->v), cast(&secVec->v), n);
+	LagrangeInterpolation(&b, *cast(&sec->v), cast(&idVec->v), cast(&secVec->v), n);
 	return b ? 0 : -1;
 }
 
 int blsPublicKeyRecover(blsPublicKey *pub, const blsPublicKey *pubVec, const blsId *idVec, mclSize n)
 {
 	bool b;
-	mcl::LagrangeInterpolation(&b, *cast(&pub->v), cast(&idVec->v), cast(&pubVec->v), n);
+	LagrangeInterpolation(&b, *cast(&pub->v), cast(&idVec->v), cast(&pubVec->v), n);
 	return b ? 0 : -1;
 }
 
 int blsSignatureRecover(blsSignature *sig, const blsSignature *sigVec, const blsId *idVec, mclSize n)
 {
 	bool b;
-	mcl::LagrangeInterpolation(&b, *cast(&sig->v), cast(&idVec->v), cast(&sigVec->v), n);
+	LagrangeInterpolation(&b, *cast(&sig->v), cast(&idVec->v), cast(&sigVec->v), n);
 	return b ? 0 : -1;
 }
 
@@ -659,9 +654,9 @@ inline bool toG(G& Hm, const void *h, mclSize size)
 	t.setArrayMask((const uint8_t *)h, size);
 	bool b;
 #ifdef BLS_ETH
-	BN::mapToG2(&b, Hm, Fp2(t, 0));
+	mapToG2(&b, Hm, Fp2(t, 0));
 #else
-	BN::mapToG1(&b, Hm, t);
+	mapToG1(&b, Hm, t);
 #endif
 	return b;
 }
@@ -677,7 +672,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 #ifdef BLS_ETH
 	bool initE = true;
 	while (n > 0) {
-		size_t m = mcl::fp::min_<size_t>(n, N);
+		size_t m = fp::min_<size_t>(n, N);
 		for (size_t i = 0; i < m; i++) {
 			g1Vec[i] = *cast(&pubVec[i].v);
 			if (g1Vec[i].isZero()) return 0;
@@ -699,7 +694,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		e(aggSig, Q) = prod_i e(hVec[i], pubVec[i])
 		<=> finalExp(ML(-aggSig, Q) * prod_i ML(hVec[i], pubVec[i])) == 1
 	*/
-	BN::precomputedMillerLoop(e, -*cast(&aggSig->v), g_Qcoeff.data());
+	precomputedMillerLoop(e, -*cast(&aggSig->v), g_Qcoeff.data());
 	while (n > 0) {
 		size_t m = N;
 		if (n < m) m = n;
@@ -714,7 +709,7 @@ int blsVerifyAggregatedHashes(const blsSignature *aggSig, const blsPublicKey *pu
 		n -= m;
 	}
 #endif
-	BN::finalExp(e, e);
+	finalExp(e, e);
 	return e.isOne();
 }
 
@@ -915,7 +910,7 @@ void blsSignatureMulVec(blsSignature *z, blsSignature *x, const blsSecretKey *y,
 
 mclSize blsGetOpUnitSize() // FpUint64Size
 {
-	return Fp::getUnitSize() * sizeof(mcl::Unit) / sizeof(uint64_t);
+	return Fp::getUnitSize() * sizeof(Unit) / sizeof(uint64_t);
 }
 
 int blsGetCurveOrder(char *buf, mclSize maxBufSize)
@@ -1019,7 +1014,7 @@ int blsSecretKeySetByCSPRNG(blsSecretKey *sec)
 }
 void blsSetRandFunc(void *self, unsigned int (*readFunc)(void *self, void *buf, unsigned int bufSize))
 {
-	mcl::fp::RandGen::setRandFunc(self, readFunc);
+	fp::RandGen::setRandFunc(self, readFunc);
 }
 #endif
 

@@ -1,3 +1,4 @@
-#define MCLBN_FP_UNIT_SIZE 6
+#define MCL_DLL_EXPORT
+#include <bls/bls384.h>
 #include "bls_c_impl.hpp"
 
