@@ -14,7 +14,8 @@
 		error if BLS_ETH is inconsistently defined between library and exe
 	*/
 	#undef MCLBN_COMPILED_TIME_VAR
-	#define MCLBN_COMPILED_TIME_VAR ((MCL_FP_BIT/64) * 10 + (MCL_FR_BIT/64) + BLS_COMPILER_TIME_VAR_ADJ)
+	// DON'T CHANGE this value because it is used from other languages such as C# and WASM.
+	#define MCLBN_COMPILED_TIME_VAR ((MCLBN_FR_UNIT_SIZE) * 10 + (MCLBN_FP_UNIT_SIZE) + BLS_COMPILER_TIME_VAR_ADJ)
 #endif
 
 #ifdef __cplusplus
