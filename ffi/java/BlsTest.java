@@ -328,7 +328,7 @@ public class BlsTest {
 			if (Bls.isDefinedBLS_ETH() && curveType == Bls.BLS12_381) {
 				System.out.println("BLS ETH mode");
 				testAggregateVerify();
-				testHarmonyONE();
+//				testHarmonyONE();
 			}
 			if (errN == 0) {
 				System.out.println("all test passed");

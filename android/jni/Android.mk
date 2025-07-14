@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_CPPFLAGS += $(ETH_CFLAGS)
 
-LOCAL_CPP_EXTENSION := .cpp .ll
+LOCAL_CPP_EXTENSION := .cpp .ll .cxx
 LOCAL_MODULE := bls384_256
 
 ifeq ($(TARGET_ARCH_ABI),x86_64)
@@ -34,11 +34,21 @@ ifeq ($(TARGET_ARCH_ABI),x86_64)
 else
   MY_BINT := $(LOCAL_PATH)/../../mcl/src/bint$(MY_BIT).ll
 endif
-LOCAL_SRC_FILES :=  $(LOCAL_PATH)/../../src/bls_c384_256.cpp $(LOCAL_PATH)/../../mcl/src/fp.cpp $(MY_BASE_LL) $(MY_BINT)
+LOCAL_SRC_FILES =  $(LOCAL_PATH)/../../src/bls_c384_256.cpp $(LOCAL_PATH)/../../mcl/src/fp.cpp $(MY_BASE_LL) $(MY_BINT)
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../include $(LOCAL_PATH)/../../mcl/include
 LOCAL_CPPFLAGS += -O3 -DNDEBUG -fPIC -DMCL_DONT_USE_OPENSSL -DMCL_USE_LLVM=1 -DMCL_MAX_BIT_SIZE=384 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING -std=c++03
+LOCAL_CPPFLAGS += -DMCL_MSM=0
 LOCAL_CPPFLAGS += -fno-threadsafe-statics
-LOCAL_CPPFLAGS += -D_FORTIFY_SOURCE=0
+#LOCAL_CPPFLAGS += -D_FORTIFY_SOURCE=0
+ifeq ($(BLS_ETH),1)
+  LOCAL_CPPFLAGS += -DBLS_ETH=1
+endif
+ifeq ($(BLS_JAVA),1)
+  LOCAL_SRC_FILES += $(LOCAL_PATH)/../../ffi/java/bls_wrap.cxx
+  LOCAL_CPPFLAGS += -fexceptions -frtti
+  LOCAL_MODULE := blsjava
+  BLS_LIB_SHARED=1
+endif
 
 #LOCAL_LDLIBS := -llog #-Wl,--no-warn-shared-textrel
 ifeq ($(BLS_LIB_SHARED),1)
