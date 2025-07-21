@@ -288,10 +288,10 @@ git clone --recursive https://github.com/herumi/bls
 ### Build static library for Linux and macOS
 
 ```
-make -C mcl lib/libmcl.a
-make BLS_ETH=1 lib/libbls384_256.a
+make -f Makefile.onelib LIB_DIR=lib
 ```
-If the option `MCL_USE_GMP=0` (resp.`MCL_USE_OPENSSL=0`) is used then GMP (resp. OpenSSL) is not used.
+
+`CMakeLists.txt` generates a shared library with libmcl.
 
 ### Build library for Windows
 Open the x64 Native Tools for Visual Studio and type the following command.
