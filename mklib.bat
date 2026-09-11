@@ -25,7 +25,7 @@ if "%1"=="eth" (
 )
 echo LOCAL_CFLAGS=%LOCAL_CFLAGS%
 
-set OBJS=%MCL_DIR%\obj\fp.obj %MCL_DIR%\obj\msm_avx.obj %MCL_DIR%\bint-x64-win.obj
+set OBJS=%MCL_DIR%\obj\fp.obj %MCL_DIR%\obj\msm_avx.obj %MCL_DIR%\obj\bint-x64-win.obj
 set OBJS=%OBJS% obj\bls_c384_256.obj
 
 cl /c %LOCAL_CFLAGS% /Foobj/bls_c384_256.obj src/bls_c384_256.cpp
